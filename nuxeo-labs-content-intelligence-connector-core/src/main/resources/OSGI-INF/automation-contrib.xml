@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.labs.hyland.content.intelligence.automation">
+
+    <extension point="operations" target="org.nuxeo.ecm.core.operation.OperationServiceComponent">
+        <!-- Enrichment -->
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKEInvokeOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKEUploadFileOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKEEnrichOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKECurateOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.ConfigureServiceOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKEEnrichSeveralOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKESendForEnrichmentOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKEGetEnrichmentResultsOp"/>
+
+        <!-- Discovery -->
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.discovery.automation.HylandKDInvokeOp"/>
+    </extension>
+
+</component>

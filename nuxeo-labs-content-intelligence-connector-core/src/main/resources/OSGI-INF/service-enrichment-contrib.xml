@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.labs.hyland.content.intelligence.HylandKEService">
+
+  <!-- Enrichment -->
+  <implementation class="org.nuxeo.labs.hyland.content.intelligence.enrichment.service.HylandKEServiceImpl" />
+
+  <service>
+    <provide interface="org.nuxeo.labs.hyland.content.intelligence.enrichment.service.HylandKEService" />
+  </service>
+</component>
