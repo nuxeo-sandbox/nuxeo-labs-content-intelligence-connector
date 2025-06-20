@@ -11,6 +11,7 @@ The plugin connects to Hyland Content Intelligence Cloud APIs to use:
 For now a connector to [Knowledge Enrichment](https://github.com/nuxeo-sandbox/nuxeo-labs-knowledge-enrichment-connector) is ready. All its code has been moved here, but the operations will keep the same IDs so you will not have to change your configuration once you switch to nuxeo-labs-content-intelligence-connector.
 
 <hr>
+
 ## Support
 **These features are not part of the Nuxeo Production platform.**
 
