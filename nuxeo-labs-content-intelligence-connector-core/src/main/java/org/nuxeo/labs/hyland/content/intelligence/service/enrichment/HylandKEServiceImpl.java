@@ -47,6 +47,7 @@ import org.nuxeo.labs.hyland.content.intelligence.AuthenticationTokenEnrichment;
 import org.nuxeo.labs.hyland.content.intelligence.ContentToProcess;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
 
@@ -118,7 +119,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         switch (maxTries) {
         case 0:
             // Revert to config or default
-            pullResultsMaxTries = configParamToInt(PULL_RESULTS_MAX_TRIES_PARAM, PULL_RESULTS_MAX_TRIES_DEFAULT);
+            pullResultsMaxTries = ServicesUtils.configParamToInt(PULL_RESULTS_MAX_TRIES_PARAM, PULL_RESULTS_MAX_TRIES_DEFAULT);
             break;
 
         case -1:
@@ -132,7 +133,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
         switch (sleepIntervalMS) {
         case 0:
-            pullResultsSleepIntervalMS = configParamToInt(PULL_RESULTS_SLEEP_INTERVAL_PARAM,
+            pullResultsSleepIntervalMS = ServicesUtils.configParamToInt(PULL_RESULTS_SLEEP_INTERVAL_PARAM,
                     PULL_RESULTS_SLEEP_INTERVAL_DEFAULT);
             break;
 
@@ -221,24 +222,9 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         dataCurationAuthToken = new AuthenticationTokenEnrichment(authFullUrl, dataCurationClientId, dataCurationClientSecret);
 
         // ==========> Other params
-        pullResultsMaxTries = configParamToInt(PULL_RESULTS_MAX_TRIES_PARAM, PULL_RESULTS_MAX_TRIES_DEFAULT);
-        pullResultsSleepIntervalMS = configParamToInt(PULL_RESULTS_SLEEP_INTERVAL_PARAM,
+        pullResultsMaxTries = ServicesUtils.configParamToInt(PULL_RESULTS_MAX_TRIES_PARAM, PULL_RESULTS_MAX_TRIES_DEFAULT);
+        pullResultsSleepIntervalMS = ServicesUtils.configParamToInt(PULL_RESULTS_SLEEP_INTERVAL_PARAM,
                 PULL_RESULTS_SLEEP_INTERVAL_DEFAULT);
-    }
-
-    protected int configParamToInt(String param, int defaultValue) {
-
-        int value;
-
-        String paramValue = Framework.getProperty(param, "" + defaultValue);
-        try {
-            value = Integer.parseInt(paramValue);
-        } catch (NumberFormatException e) {
-            log.error(param + " is not a valid integer. Using default value");
-            value = PULL_RESULTS_SLEEP_INTERVAL_DEFAULT;
-        }
-
-        return value;
     }
 
     @Override

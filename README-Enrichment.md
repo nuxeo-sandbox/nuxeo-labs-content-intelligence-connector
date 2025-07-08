@@ -17,7 +17,7 @@ It provides two kinds of operations handling the calls to the service (see detai
 
 ## Usage
 
-See `Usage` in the main [README](/README.md).
+See `Common Usage (Both Enrichment and Discovery)` in the main [README](/README.md).
 
 To summarize, every call returns a Blob, stringified JSON object that has at least 3 fields:
 
@@ -40,9 +40,9 @@ To summarize, every call returns a Blob, stringified JSON object that has at lea
 
 For calling the Enrichment/Data curation service, you need to setup the following configuration parameters in nuxeo.conf.
 
-* `nuxeo.hyland.cic.endpoint.auth`: The authentication endpoint. The plugin adds the "/connect/token" final path. So your URL is something like https://auth.etc.etc.hyland.com/idp
-* `nuxeo.hyland.cic.endpoint.contextEnrichment`: The enrichment endpoint.
-* `nuxeo.hyland.cic.endpoint.dataCuration`: The Data Curation endpoint.
+* `nuxeo.hyland.cic.auth.baseUrl`: The authentication endpoint. The plugin adds the "/connect/token" final path. So your URL is something like `https://auth.etc.etc.hyland.com/idp` (This is the same parameter as for Knowledge Enrichment)
+* `nuxeo.hyland.cic.contextEnrichment.baseUrl`: The enrichment base URL (endpoints, like `"/api/content/process"` will be added to this URL).
+* `nuxeo.hyland.cic.dataCuration.baseUrl`: The Data Curation base URL
 * `nuxeo.hyland.cic.enrichment.clientId`: Your enrichment clientId
 * `nuxeo.hyland.cic.enrichment.clientSecret`: Your enrichment client secret
 * `nuxeo.hyland.cic.datacuration.clientId`: Your data curation clientId
@@ -96,7 +96,7 @@ A high level operation that handles all the different calls to the service (get 
   * `actions`: String required. A list of comma separated actions to perform. See KE documentation about available actions
   * `classes`: String, optional.  A list of comma separated classes, to be used with some classification actions (can be ommitted or null for other actions)
   * `similarMetadata`: String, optional.  A JSON Array (as string) of similar metadata (array of key/value pairs). To be used with the misc. "metadata" actions.
-  * `extraJsonPayloadStr`: String, optional. A JSON object as string, with extra parameters for the service. For example, use "maxWordCount" to increase or decrease the text-summary. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload. 
+  * `extraPayloadJsonStr`: String, optional. A JSON object as string, with extra parameters for the service. For example, use "maxWordCount" to increase or decrease the text-summary. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload. 
 
 > [!NOTE]
 > Again, please, see Knowledge Enrichment API documentation for details on the values that can be used/passed.
@@ -112,7 +112,7 @@ The operation calls the service and returns a JSON Blob, that contains the objec
 
 ### `HylandKnowledgeEnrichment.EnrichSeveral`
 
-This operation performs the same featieres as `HylandKnowledgeEnrichment.Enrich`, but allows for hanlding several files in batch.
+This operation performs the same features as `HylandKnowledgeEnrichment.Enrich`, but allows for hanlding several files in batch.
 
 * Input: `documents` or `blobs`
 * Output: `Blob`, a JSON blob
@@ -120,7 +120,7 @@ This operation performs the same featieres as `HylandKnowledgeEnrichment.Enrich`
   * `actions`: String required. A list of comma separated actions to perform. See KE documentation about available actions
   * `classes`: String, optional.  A list of comma separated classes, to be used with some classification actions (can be ommitted or null for other actions)
   * `similarMetadata`: String, optional.  A JSON Array (as string) of similar metadata (array of key/value pairs). To be used with the misc. "metadata" actions.
-  * `extraJsonPayloadStr`: String, optional. A JSON object as string, with extra parameters for the service. For example, use "maxWordCount" to increase or decrease the text-summary. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload.
+  * `extraPayloadJsonStr`: String, optional. A JSON object as string, with extra parameters for the service. For example, use "maxWordCount" to increase or decrease the text-summary. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload.
   *  `xpath`: String, optional. When input is `document`, the xpath to use to get the blob. Default "file:content".
   * `sourceIds`: String, required if input is `blobs`. A comma separated list of unique ID, one for each input object (Document of Blob), _in the same order_. If input is `document` and `sourceIds`is not passed, the plugin uses each Document UUID. See below for more details. 
 
@@ -167,7 +167,7 @@ This can be interesting when you need more fine tuning or when you know the proc
   * `actions`: String required. A list of comma separated actions to perform. See KE documentation about available actions
   * `classes`: String, optional.  A list of comma separated classes, to be used with some classification actions (can be ommitted or null for other actions)
   * `similarMetadata`: String, optional.  A JSON Array (as string) of similar metadata (array of key/value pairs). To be used with the misc. "metadata" actions.
-  * `extraJsonPayloadStr`: String, optional. A JSON object as string, with extra parameters for the service. For example, use "maxWordCount" to increase or decrease the text-summary. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload. 
+  * `extraPayloadJsonStr`: String, optional. A JSON object as string, with extra parameters for the service. For example, use "maxWordCount" to increase or decrease the text-summary. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload. 
 
 The `response` property of the result JSON (if succesfull) will hhave a `processingId` property, to be saved and used later with `HylandKnowledgeEnrichment.GetEnrichmentResults`
 

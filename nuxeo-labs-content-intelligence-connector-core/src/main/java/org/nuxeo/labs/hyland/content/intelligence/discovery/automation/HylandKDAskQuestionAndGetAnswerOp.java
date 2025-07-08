@@ -36,7 +36,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDServ
 /**
  * @since TODO
  */
-@Operation(id = HylandKDAskQuestionAndGetAnswerOp.ID, category = "Hyland Knowledge Discovery", label = "Ask Quesiton and Get Answer", description = ""
+@Operation(id = HylandKDAskQuestionAndGetAnswerOp.ID, category = "Hyland Knowledge Discovery", label = "Ask Question and Get Answer", description = ""
         + "Returns a JSON blob holding  the result of the call. Call its getString() method then JSON.parse()."
         + " See documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
         + " and the returned result is in the 'response' property." + " Ask a question, with optional parameters:"

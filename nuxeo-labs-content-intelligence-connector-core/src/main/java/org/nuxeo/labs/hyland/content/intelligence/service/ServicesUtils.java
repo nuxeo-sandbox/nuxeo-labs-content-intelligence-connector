@@ -23,7 +23,10 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
+import org.nuxeo.runtime.api.Framework;
 
 /**
  * Shared utilities. Just DRY pattern.
@@ -31,6 +34,8 @@ import org.json.JSONObject;
  * @since 2023
  */
 public class ServicesUtils {
+    
+    private static final Logger log = LogManager.getLogger(ServicesUtils.class);
 
     /**
      * If jsonObjectStr is null or empty, returns null
@@ -56,5 +61,22 @@ public class ServicesUtils {
 
         return map;
 
+    }
+    
+
+
+    public static int configParamToInt(String param, int defaultValue) {
+
+        int value;
+
+        String paramValue = Framework.getProperty(param, "" + defaultValue);
+        try {
+            value = Integer.parseInt(paramValue);
+        } catch (NumberFormatException e) {
+            log.error("Parameter <" + param + "> is not a valid integer. Using default value");
+            value = defaultValue;
+        }
+
+        return value;
     }
 }

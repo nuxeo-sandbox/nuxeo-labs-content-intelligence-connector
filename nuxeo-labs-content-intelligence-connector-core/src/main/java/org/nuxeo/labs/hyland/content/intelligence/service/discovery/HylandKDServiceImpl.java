@@ -15,6 +15,7 @@ import org.nuxeo.labs.hyland.content.intelligence.AuthenticationToken;
 import org.nuxeo.labs.hyland.content.intelligence.AuthenticationTokenDiscovery;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.ComponentContext;
@@ -44,6 +45,14 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     public static final String DISCOVERY_DEFAULT_SOURCEID_PARAM = "nuxeo.hyland.cic.discovery.default.sourceId";
 
     public static final String DISCOVERY_DEFAULT_AGENTID_PARAM = "nuxeo.hyland.cic.discovery.default.agentId";
+    
+    public static final String PULL_RESULTS_MAX_TRIES_PARAM = "nuxeo.hyland.cic.discovery.pullResultsMaxTries";
+
+    public static final int PULL_RESULTS_MAX_TRIES_DEFAULT = 10;
+
+    public static final String PULL_RESULTS_SLEEP_INTERVAL_PARAM = "nuxeo.hyland.cic.discovery.pullResultsSleepInterval";
+
+    public static final int PULL_RESULTS_SLEEP_INTERVAL_DEFAULT = 3000;
 
     protected static AuthenticationToken discoveryAuthToken;
 
@@ -62,6 +71,10 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     protected static String defaultSourceId;
 
     protected static String defaultAgentId;
+
+    protected static int pullResultsMaxTries;
+
+    protected static int pullResultsSleepIntervalMS;
 
     protected static ServiceCall serviceCall = new ServiceCall();
 
@@ -119,6 +132,9 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
         // ==========> Misc Optional Parameters
         defaultSourceId = Framework.getProperty(DISCOVERY_DEFAULT_SOURCEID_PARAM);
         defaultAgentId = Framework.getProperty(DISCOVERY_DEFAULT_AGENTID_PARAM);
+        pullResultsMaxTries = ServicesUtils.configParamToInt(PULL_RESULTS_MAX_TRIES_PARAM, PULL_RESULTS_MAX_TRIES_DEFAULT);
+        pullResultsSleepIntervalMS = ServicesUtils.configParamToInt(PULL_RESULTS_SLEEP_INTERVAL_PARAM,
+                PULL_RESULTS_SLEEP_INTERVAL_DEFAULT);
 
     }
 
@@ -241,22 +257,21 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
         // Get the answer. This is a loop-pull. For now, we hard code the tries
         String endPoint = "/qna/questions/" + questionId + "/answer";
         int count = 0;
-        int MAXTRIES = 10;
         JSONObject response;
         boolean gotIt = false;
         do {
             count += 1;
             if (count > 2) {
                 log.info("getAnswer(), trying to get an answer to question ID " + questionId + ", call " + count + "/"
-                        + MAXTRIES + ".");
+                        + pullResultsMaxTries + ".");
             } else if (count > 9) {
                 log.warn("getAnswer(), trying to get an answer to question ID " + questionId + ", call " + count + "/"
-                        + MAXTRIES + ".");
+                        + pullResultsMaxTries + ".");
             }
 
             result = invokeDiscovery("GET", endPoint, null, extraHeaders);
             if (!result.callResponseOK()) {
-                Thread.sleep(3000);
+                Thread.sleep(pullResultsSleepIntervalMS);
             } else {
                 response = result.getResponseAsJSONObject();
                 // Wheh asked too quickly, we can get a 200 OK with a null answer.
@@ -264,11 +279,11 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
                 String answer = response.optString("answer", null);
                 gotIt = StringUtils.isNoneBlank(answer);
                 if (!gotIt) {
-                    Thread.sleep(3000);
+                    Thread.sleep(pullResultsSleepIntervalMS);
                 }
             }
 
-        } while (!gotIt && count < MAXTRIES);
+        } while (!gotIt && count < pullResultsMaxTries);
 
         return result;
     }
