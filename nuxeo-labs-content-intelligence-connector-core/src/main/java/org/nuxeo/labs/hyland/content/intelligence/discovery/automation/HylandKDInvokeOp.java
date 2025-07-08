@@ -18,14 +18,17 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.discovery.automation;
 
+import java.util.Map;
+
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
 import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
 import org.nuxeo.ecm.automation.core.annotations.Param;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
-import org.nuxeo.labs.hyland.content.intelligence.discovery.service.HylandKDService;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
+import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService;
 
 /**
  * 
@@ -33,7 +36,9 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
  */
 @Operation(id = HylandKDInvokeOp.ID, category = "Hyland Knowledge Discovery", label = "Call Hyland Knowledge Discovery Service", description = ""
         + "Invoke the Hyland Content Intelligence/Discovery API."
-        + " Used for the low-level calls. (See Discovery API documentation for details)")
+        + " Used for the low-level calls. (See Discovery API documentation for details)."
+        + " The result will have a 'responseCode' property that you should check,"
+        + " and the returned result is in the 'response' property.")
 public class HylandKDInvokeOp {
     
     public static final String ID = "HylandKnowledgeDiscovery.Invoke";
@@ -49,11 +54,16 @@ public class HylandKDInvokeOp {
 
     @Param(name = "jsonPayload", required = false)
     protected String jsonPayload;
+
+    @Param(name = "extraHeadersJsonStr", required = false)
+    protected String extraHeadersJsonStr;
     
     @OperationMethod
     public Blob run() {
         
-        ServiceCallResult result = kdService.invokeDiscovery(httpMethod, endpoint, jsonPayload);
+        Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
+        
+        ServiceCallResult result = kdService.invokeDiscovery(httpMethod, endpoint, jsonPayload, extraHeaders);
         
         return Blobs.createJSONBlob(result.toJsonString());
     }

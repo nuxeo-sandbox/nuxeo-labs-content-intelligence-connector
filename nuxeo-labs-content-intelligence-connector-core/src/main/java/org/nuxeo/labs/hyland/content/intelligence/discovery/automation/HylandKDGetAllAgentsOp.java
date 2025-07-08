@@ -18,20 +18,17 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.discovery.automation;
 
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
 import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
 import org.nuxeo.ecm.automation.core.annotations.Param;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
-import org.nuxeo.labs.hyland.content.intelligence.discovery.service.HylandKDService;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
+import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService;
 
 /**
  * 
@@ -39,9 +36,9 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
  */
 @Operation(id = HylandKDGetAllAgentsOp.ID, category = "Hyland Knowledge Discovery", label = "Get All Agents", description = ""
         + "Returns a JSON blob holding  the result of the call. Call its getString() method then JSON.parse()."
-        + " See documentation for values. The result will have a responseCode that you should check (must be 200),"
-        + " and the array of agents is in the response property."
-        + " You can pass extra headers as a Json object (stringified)")
+        + " See documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
+        + " and the array of agents is in the 'response' property."
+        + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object")
 public class HylandKDGetAllAgentsOp {
     
     public static final String ID = "HylandKnowledgeDiscovery.getAllAgents";
@@ -49,22 +46,13 @@ public class HylandKDGetAllAgentsOp {
     @Context
     protected HylandKDService kdService;
 
-    @Param(name = "extraHeadersJsonStr", required = true)
+    @Param(name = "extraHeadersJsonStr", required = false)
     protected String extraHeadersJsonStr;
     
     @OperationMethod
     public Blob run() {
         
-        Map<String, String> extraHeaders = null;
-        if(StringUtils.isNotBlank(extraHeadersJsonStr)) {
-            JSONObject extraHeadersJson = new JSONObject(extraHeadersJsonStr);
-            extraHeaders = new HashMap<>();
-            Iterator<String> keys = extraHeadersJson.keys();
-            while (keys.hasNext()) {
-                String key = keys.next();
-                extraHeaders.put(key, extraHeadersJson.getString(key));
-            }
-        }
+        Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
         
         ServiceCallResult result = kdService.getAllAgents(extraHeaders);
         

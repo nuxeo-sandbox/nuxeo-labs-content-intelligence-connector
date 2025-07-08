@@ -37,8 +37,8 @@ import org.junit.runner.RunWith;
 import org.nuxeo.common.utils.FileUtils;
 import org.nuxeo.ecm.platform.test.PlatformFeature;
 import org.nuxeo.labs.hyland.content.intelligence.ContentToProcess;
-import org.nuxeo.labs.hyland.content.intelligence.enrichment.service.HylandKEService;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
@@ -76,7 +76,9 @@ public class TestHylandKEService {
 
     @Test
     public void shouldReturn404OnBadEndPoint() {
-        Assume.assumeTrue(ConfigCheckerFeature.hasEnrichmentClientInfo());
+
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         ServiceCallResult result = hylandKEService.invokeEnrichment("GET", "/INVALID_END_POINT", null);
 
@@ -89,7 +91,8 @@ public class TestHylandKEService {
     @Test
     public void canGetContentProcessActions() {
 
-        Assume.assumeTrue(ConfigCheckerFeature.hasEnrichmentClientInfo());
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         ServiceCallResult result = hylandKEService.invokeEnrichment("GET", "/api/content/process/actions", null);
 
@@ -105,7 +108,8 @@ public class TestHylandKEService {
     @Test
     public void shouldGetPresignedUrl() {
 
-        Assume.assumeTrue(ConfigCheckerFeature.hasEnrichmentClientInfo());
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         ServiceCallResult result = hylandKEService.invokeEnrichment("GET",
                 "/api/files/upload/presigned-url?contentType=" + TEST_IMAGE_MIMETYPE.replace("/", "%2F"), null);
@@ -127,7 +131,8 @@ public class TestHylandKEService {
     @Test
     public void shouldSendThenGetResults() throws Exception {
 
-        Assume.assumeTrue(ConfigCheckerFeature.hasEnrichmentClientInfo());
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         // 1. Send file
         File f = FileUtils.getResourceFileFromContext(TEST_IMAGE_PATH);
@@ -171,7 +176,9 @@ public class TestHylandKEService {
 
     @Test
     public void shouldGetImageDescription() throws Exception {
-        Assume.assumeTrue(ConfigCheckerFeature.hasEnrichmentClientInfo());
+
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         File f = FileUtils.getResourceFileFromContext(TEST_IMAGE_PATH);
         ServiceCallResult result = hylandKEService.enrich(f, TEST_IMAGE_MIMETYPE, List.of("image-description"), null,
@@ -199,7 +206,8 @@ public class TestHylandKEService {
     @Test
     public void shouldGetImageEmbeddings() throws Exception {
 
-        Assume.assumeTrue(ConfigCheckerFeature.hasEnrichmentClientInfo());
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         File f = FileUtils.getResourceFileFromContext(TEST_IMAGE_PATH);
         ServiceCallResult result = hylandKEService.enrich(f, TEST_IMAGE_MIMETYPE, List.of("image-embeddings"), null,
@@ -225,7 +233,8 @@ public class TestHylandKEService {
     @Test
     public void shouldGetImageClassification() throws Exception {
 
-        Assume.assumeTrue(ConfigCheckerFeature.hasEnrichmentClientInfo());
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         File f = FileUtils.getResourceFileFromContext(TEST_IMAGE_PATH);
         ServiceCallResult result = hylandKEService.enrich(f, TEST_IMAGE_MIMETYPE, List.of("image-classification"),
@@ -253,7 +262,8 @@ public class TestHylandKEService {
     @Test
     public void shouldGetSeveralEnrichmentsOnImage() throws Exception {
 
-        Assume.assumeTrue(ConfigCheckerFeature.hasEnrichmentClientInfo());
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         File f = FileUtils.getResourceFileFromContext(TEST_IMAGE_PATH);
         ServiceCallResult result = hylandKEService.enrich(f, TEST_IMAGE_MIMETYPE,
@@ -298,7 +308,9 @@ public class TestHylandKEService {
 
     @Test
     public void shouldGetImageMetadata() throws Exception {
-        Assume.assumeTrue(ConfigCheckerFeature.hasEnrichmentClientInfo());
+
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         String similarMetadata = """
                 [{
@@ -321,30 +333,30 @@ public class TestHylandKEService {
                                """;
 
         File f = FileUtils.getResourceFileFromContext(TEST_IMAGE_PATH);
-        
+
         JSONObject responseJson;
         String status;
         int tryCount = 0;
         // In first beat version of the service, it may fail then work fine (most of the
         // time it works fine), so let's try it 2-3 times? (except if response is not OK 200)
         do {
-            
-            ServiceCallResult result = hylandKEService.enrich(f, TEST_IMAGE_MIMETYPE, List.of("image-metadata-generation"),
-                    null, similarMetadata, null);
+
+            ServiceCallResult result = hylandKEService.enrich(f, TEST_IMAGE_MIMETYPE,
+                    List.of("image-metadata-generation"), null, similarMetadata, null);
             assertNotNull(result);
-    
+
             // Expecting HTTP OK
             assertTrue(result.callResponseOK());
-    
+
             responseJson = result.getResponseAsJSONObject();
             status = responseJson.getString("status");
-            
+
             tryCount += 1;
-            if(tryCount > 1) {
+            if (tryCount > 1) {
                 System.out.println("shouldGetImageMetadata: Servcice returned " + status + "n trying again.");
             }
-            
-        } while(tryCount < 4 || !"SUCCESS".equals(status));
+
+        } while (tryCount < 4 || !"SUCCESS".equals(status));
         // Fail after the 2-3 attempts
         assertEquals("SUCCESS", status);
 
@@ -391,6 +403,9 @@ public class TestHylandKEService {
     @Test
     public void shouldGetDescriptionOnSeveralImages() throws Exception {
 
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasEnrichmentClientInfo());
+
         File f1 = FileUtils.getResourceFileFromContext(TEST_IMAGE_PATH);
         File f2 = FileUtils.getResourceFileFromContext(TEST_OTHER_IMAGE_PATH);
 
@@ -434,7 +449,8 @@ public class TestHylandKEService {
     @Test
     public void shouldGetDataCuration() throws Exception {
 
-        Assume.assumeTrue(ConfigCheckerFeature.hasDataCurationClientInfo());
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasDataCurationClientInfo());
 
         File f = FileUtils.getResourceFileFromContext(TEST_CONTRACT_PATH);
 
@@ -483,7 +499,8 @@ public class TestHylandKEService {
     @Test
     public void shouldSummarizeText() throws Exception {
 
-        Assume.assumeTrue(ConfigCheckerFeature.hasEnrichmentClientInfo());
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         File f = FileUtils.getResourceFileFromContext(TEST_CONTRACT_PATH);
 
@@ -505,7 +522,8 @@ public class TestHylandKEService {
     @Test
     public void shouldUseMaxWordCount() throws Exception {
 
-        Assume.assumeTrue(ConfigCheckerFeature.hasEnrichmentClientInfo());
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         File f = FileUtils.getResourceFileFromContext(TEST_CONTRACT_PATH);
 

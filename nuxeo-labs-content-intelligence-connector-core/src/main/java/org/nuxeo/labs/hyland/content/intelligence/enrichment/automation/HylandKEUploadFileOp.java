@@ -30,9 +30,9 @@ import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.CloseableFile;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.platform.mimetype.interfaces.MimetypeRegistry;
-import org.nuxeo.labs.hyland.content.intelligence.enrichment.service.HylandKEService;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 import org.nuxeo.runtime.api.Framework;
 
 @Operation(id = HylandKEUploadFileOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Knowledge Enrichement Upload File", description = ""

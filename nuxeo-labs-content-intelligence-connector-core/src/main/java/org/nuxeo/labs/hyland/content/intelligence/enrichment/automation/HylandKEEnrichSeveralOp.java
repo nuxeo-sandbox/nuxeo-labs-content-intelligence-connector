@@ -35,8 +35,8 @@ import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentModelList;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.labs.hyland.content.intelligence.ContentToProcess;
-import org.nuxeo.labs.hyland.content.intelligence.enrichment.service.HylandKEService;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 
 @Operation(id = HylandKEEnrichSeveralOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Knowledge Enrichement on Blobs or documents", description = ""
         + "Invoke the Hyland Knowledge Enrichment (KE) API to enrich the input documents/blobs. actions is a list of actions to process"

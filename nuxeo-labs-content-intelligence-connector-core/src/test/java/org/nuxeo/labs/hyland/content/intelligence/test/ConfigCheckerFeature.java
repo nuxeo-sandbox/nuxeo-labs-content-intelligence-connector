@@ -23,8 +23,8 @@ package org.nuxeo.labs.hyland.content.intelligence.test;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
-import org.nuxeo.labs.hyland.content.intelligence.discovery.service.HylandKDServiceImpl;
-import org.nuxeo.labs.hyland.content.intelligence.enrichment.service.HylandKEServiceImpl;
+import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDServiceImpl;
+import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
 import org.nuxeo.runtime.test.runner.RunnerFeature;
 

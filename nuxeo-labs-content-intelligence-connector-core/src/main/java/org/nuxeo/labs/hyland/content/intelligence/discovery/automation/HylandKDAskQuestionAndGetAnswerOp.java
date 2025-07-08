@@ -19,29 +19,28 @@
 package org.nuxeo.labs.hyland.content.intelligence.discovery.automation;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
 import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
 import org.nuxeo.ecm.automation.core.annotations.Param;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
-import org.nuxeo.labs.hyland.content.intelligence.discovery.service.HylandKDService;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
+import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService;
 
 /**
  * @since TODO
  */
 @Operation(id = HylandKDAskQuestionAndGetAnswerOp.ID, category = "Hyland Knowledge Discovery", label = "Ask Quesiton and Get Answer", description = ""
         + "Returns a JSON blob holding  the result of the call. Call its getString() method then JSON.parse()."
-        + " Ask a question, with optional parameters:"
-        + " agenId => If is empty, it will be read from nuxeo.hyland.cic.discovery.default.agentId."
+        + " See documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
+        + " and the returned result is in the 'response' property." + " Ask a question, with optional parameters:"
+        + " agenId => If empty, it is  read from nuxeo.hyland.cic.discovery.default.agentId."
         + " contextObjectIdsJsonArrayStr is a stringified JSON array of object Ids (doc UUIDs in Nuxeo) to be used for the context."
         + " extraPayloadJsonStr is a stringified JSON Object, to be merged to the payload built by the service (if you need extra parameters)."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object")
@@ -58,13 +57,13 @@ public class HylandKDAskQuestionAndGetAnswerOp {
     @Param(name = "question", required = true)
     protected String question;
 
-    @Param(name = "contextObjectIdsJsonArrayStr", required = true)
+    @Param(name = "contextObjectIdsJsonArrayStr", required = false)
     protected String contextObjectIdsJsonArrayStr;
 
-    @Param(name = "extraPayloadJsonStr", required = true)
+    @Param(name = "extraPayloadJsonStr", required = false)
     protected String extraPayloadJsonStr;
 
-    @Param(name = "extraHeadersJsonStr", required = true)
+    @Param(name = "extraHeadersJsonStr", required = false)
     protected String extraHeadersJsonStr;
 
     @OperationMethod
@@ -79,16 +78,7 @@ public class HylandKDAskQuestionAndGetAnswerOp {
             }
         }
 
-        Map<String, String> extraHeaders = null;
-        if (StringUtils.isNotBlank(extraHeadersJsonStr)) {
-            JSONObject extraHeadersJson = new JSONObject(extraHeadersJsonStr);
-            extraHeaders = new HashMap<>();
-            Iterator<String> keys = extraHeadersJson.keys();
-            while (keys.hasNext()) {
-                String key = keys.next();
-                extraHeaders.put(key, extraHeadersJson.getString(key));
-            }
-        }
+        Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
 
         ServiceCallResult result = kdService.askQuestionAndGetAnswer(agentId, question, contextObjectIds,
                 extraPayloadJsonStr, extraHeaders);

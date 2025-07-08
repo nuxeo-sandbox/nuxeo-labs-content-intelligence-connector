@@ -16,7 +16,7 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence.enrichment.service;
+package org.nuxeo.labs.hyland.content.intelligence.service.enrichment;
 
 import java.io.File;
 import java.io.IOException;

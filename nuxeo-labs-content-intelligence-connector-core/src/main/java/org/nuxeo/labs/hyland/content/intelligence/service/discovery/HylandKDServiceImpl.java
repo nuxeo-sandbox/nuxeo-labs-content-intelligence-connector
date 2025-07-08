@@ -1,4 +1,4 @@
-package org.nuxeo.labs.hyland.content.intelligence.discovery.service;
+package org.nuxeo.labs.hyland.content.intelligence.service.discovery;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -13,9 +13,9 @@ import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.labs.hyland.content.intelligence.AuthenticationToken;
 import org.nuxeo.labs.hyland.content.intelligence.AuthenticationTokenDiscovery;
-import org.nuxeo.labs.hyland.content.intelligence.enrichment.service.HylandKEServiceImpl;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.ComponentContext;
 import org.nuxeo.runtime.model.DefaultComponent;

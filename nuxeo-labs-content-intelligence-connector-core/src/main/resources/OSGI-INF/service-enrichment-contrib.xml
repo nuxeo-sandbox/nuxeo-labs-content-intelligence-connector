@@ -2,9 +2,9 @@
 <component name="org.nuxeo.labs.hyland.content.intelligence.HylandKEService">
 
   <!-- Enrichment -->
-  <implementation class="org.nuxeo.labs.hyland.content.intelligence.enrichment.service.HylandKEServiceImpl" />
+  <implementation class="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl" />
 
   <service>
-    <provide interface="org.nuxeo.labs.hyland.content.intelligence.enrichment.service.HylandKEService" />
+    <provide interface="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService" />
   </service>
 </component>

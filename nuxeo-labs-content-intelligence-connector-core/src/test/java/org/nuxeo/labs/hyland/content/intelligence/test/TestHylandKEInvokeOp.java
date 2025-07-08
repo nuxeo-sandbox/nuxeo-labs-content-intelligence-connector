@@ -56,7 +56,8 @@ public class TestHylandKEInvokeOp {
     @Test
     public void shouldGetAPresignedUrl() throws Exception {
 
-        Assume.assumeTrue(ConfigCheckerFeature.hasEnrichmentClientInfo());
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         OperationContext ctx = new OperationContext(session);
         Map<String, Object> params = new HashMap<>();
@@ -70,7 +71,7 @@ public class TestHylandKEInvokeOp {
         JSONObject resultJson = new JSONObject(result.getString());
         int responseCode = resultJson.getInt("responseCode");
         assertEquals(200, responseCode);
-        
+
         JSONObject responseJson = resultJson.getJSONObject("response");
         assertNotNull(responseJson.optString("presignedUrl", null));
         assertNotNull(responseJson.optString("objectKey", null));

@@ -46,8 +46,8 @@ import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.impl.blob.FileBlob;
 import org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKEEnrichOp;
 import org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKEEnrichSeveralOp;
-import org.nuxeo.labs.hyland.content.intelligence.enrichment.service.HylandKEService;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
@@ -69,16 +69,17 @@ public class TestHylandKEEnrichOp {
     @Test
     public void shouldEnrichBlob() throws Exception {
 
-        Assume.assumeTrue(ConfigCheckerFeature.hasEnrichmentClientInfo());
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         OperationContext ctx = new OperationContext(session);
-        
+
         File f = FileUtils.getResourceFileFromContext(TestHylandKEService.TEST_IMAGE_PATH);
         Blob blob = new FileBlob(f);
         blob.setMimeType(TestHylandKEService.TEST_IMAGE_MIMETYPE);
         blob.setFilename(f.getName());
         ctx.setInput(blob);
-        
+
         Map<String, Object> params = new HashMap<>();
         params.put("actions", "image-description,image-embeddings,image-classification");
         params.put("classes", "Disney,DC Comics,Marvel");
@@ -91,7 +92,7 @@ public class TestHylandKEEnrichOp {
         // Chekc HTTP call
         int responseCode = resultJson.getInt("responseCode");
         assertEquals(200, responseCode);
-        
+
         // Now check service results
         JSONObject response = resultJson.getJSONObject("response");
         String status = response.getString("status");
@@ -99,47 +100,49 @@ public class TestHylandKEEnrichOp {
 
         JSONArray results = response.getJSONArray("results");
         JSONObject theResult = results.getJSONObject(0);
-        
+
         // ==========> Description
         JSONObject descriptionJson = theResult.getJSONObject("imageDescription");
-        if(descriptionJson.getBoolean("isSuccess")) {
+        if (descriptionJson.getBoolean("isSuccess")) {
             String description = descriptionJson.getString("result");
             // We should have at least "Mickey"
             assertTrue(description.toLowerCase().indexOf("mickey") > -1);
         }
-        
+
         // ==========> Embeddings
         JSONObject embeddingsJson = theResult.getJSONObject("imageEmbeddings");
-        if(embeddingsJson.getBoolean("isSuccess")) {
+        if (embeddingsJson.getBoolean("isSuccess")) {
             JSONArray embeddings = embeddingsJson.getJSONArray("result");
             assertTrue(embeddings.length() == 1024);
         }
-        
-        
+
         // ==========> Classification
         JSONObject classificationJson = theResult.getJSONObject("imageClassification");
-        if(classificationJson.getBoolean("isSuccess")) {
+        if (classificationJson.getBoolean("isSuccess")) {
             String classification = classificationJson.getString("result");
-            // So far the service returns the value lowercase anyway (which is a problem if the list of values are from a
+            // So far the service returns the value lowercase anyway (which is a problem if the list of values are from
+            // a
             // vocabulary)
             assertEquals("disney", classification.toLowerCase());
         }
     }
+
     @Test
     public void shouldEnrichSeveralBlobs() throws Exception {
 
-        Assume.assumeTrue(ConfigCheckerFeature.hasEnrichmentClientInfo());
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         File f1 = FileUtils.getResourceFileFromContext(TestHylandKEService.TEST_IMAGE_PATH);
         Blob blob1 = new FileBlob(f1);
         blob1.setMimeType(TestHylandKEService.TEST_IMAGE_MIMETYPE);
         blob1.setFilename(f1.getName());
-        
+
         File f2 = FileUtils.getResourceFileFromContext(TestHylandKEService.TEST_OTHER_IMAGE_PATH);
         Blob blo2b = new FileBlob(f1);
         blo2b.setMimeType(TestHylandKEService.TEST_OTHER_IMAGE_MIMETYPE);
         blo2b.setFilename(f2.getName());
-        
+
         BlobList blobs = new BlobList();
         blobs.add(blob1);
         blobs.add(blo2b);
@@ -154,13 +157,13 @@ public class TestHylandKEEnrichOp {
 
         Blob resultBlob = (Blob) automationService.run(ctx, HylandKEEnrichSeveralOp.ID, params);
         Assert.assertNotNull(resultBlob);
-        
+
         ServiceCallResult result = new ServiceCallResult(resultBlob.getString());
         assertNotNull(result);
-        
+
         // Expecting HTTP OK
         assertTrue(result.callWasSuccesful());
-        
+
         JSONArray mapping = result.getObjectKeysMapping();
         assertNotNull(mapping);
         assertEquals(2, mapping.length());
@@ -175,21 +178,21 @@ public class TestHylandKEEnrichOp {
 
         JSONArray results = responseJson.getJSONArray("results");
         assertTrue(results.length() == 2);
-        
-        //Check we have a description with the correct object Mapping
+
+        // Check we have a description with the correct object Mapping
         results.forEach(oneResult -> {
             JSONObject resultObj = (JSONObject) oneResult;
-            
+
             JSONObject descriptionObj = resultObj.getJSONObject("imageDescription");
             assertNotNull(descriptionObj);
-            
+
             boolean isSuccess = descriptionObj.getBoolean("isSuccess");
-            if(isSuccess) {
+            if (isSuccess) {
                 String objectKey = resultObj.getString("objectKey");
                 // Must exists in the returned mapping
                 assertTrue(TestHylandKEService.hasValueInJSONArray(mapping, "objectKey", objectKey));
             }
         });
-        
+
     }
 }

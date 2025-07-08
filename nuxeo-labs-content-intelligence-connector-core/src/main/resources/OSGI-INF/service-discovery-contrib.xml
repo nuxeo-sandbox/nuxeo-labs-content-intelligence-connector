@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <component name="org.nuxeo.labs.hyland.content.intelligence.HylandKDService">
   <!-- Discovery -->-->
-  <implementation class="org.nuxeo.labs.hyland.content.intelligence.discovery.service.HylandKDServiceImpl" />
+  <implementation class="org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDServiceImpl" />
 
   <service>
-    <provide interface="org.nuxeo.labs.hyland.content.intelligence.discovery.service.HylandKDService" />
+    <provide interface="org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService" />
   </service>
 </component>

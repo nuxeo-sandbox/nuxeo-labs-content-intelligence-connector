@@ -16,7 +16,7 @@ i * (C) Copyright 2025 Hyland (http://hyland.com/) and others.
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence.enrichment.service;
+package org.nuxeo.labs.hyland.content.intelligence.service.enrichment;
 
 import java.io.BufferedReader;
 import java.io.File;

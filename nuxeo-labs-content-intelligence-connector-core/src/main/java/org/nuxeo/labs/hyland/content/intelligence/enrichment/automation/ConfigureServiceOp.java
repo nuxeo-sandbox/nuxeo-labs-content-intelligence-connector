@@ -22,7 +22,7 @@ import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
 import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
 import org.nuxeo.ecm.automation.core.annotations.Param;
-import org.nuxeo.labs.hyland.content.intelligence.enrichment.service.HylandKEService;
+import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 
 @Operation(id = ConfigureServiceOp.ID, category = "Hyland Knowledge Enrichment", label = "Configure Calls to Service", description = ""
         + "Allows fordynamically changing some settings when calling the service."

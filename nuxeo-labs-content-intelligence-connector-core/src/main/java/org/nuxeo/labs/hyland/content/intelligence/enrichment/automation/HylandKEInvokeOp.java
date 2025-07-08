@@ -24,8 +24,8 @@ import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
 import org.nuxeo.ecm.automation.core.annotations.Param;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
-import org.nuxeo.labs.hyland.content.intelligence.enrichment.service.HylandKEService;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 
 @Operation(id = HylandKEInvokeOp.ID, category = "Hyland Knowledge Enrichment", label = "Call Hyland Knowledge Enrichment Service", description = ""
         + "Invoke the Hyland Content Intelligence/Knowledge Enrichment API."
