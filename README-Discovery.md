@@ -1,17 +1,17 @@
-# nuxeo-labs-content-intelligence-connector: Knowledge Enrichment
+# nuxeo-labs-content-intelligence-connector: Knowledge Discovery
 
-This part of the plugin connects a [Nuxeo](https://www.hyland.com/solutions/products/nuxeo-platform) application to [**Hyland Content Intelligence**](https://www.hyland.com/en/solutions/products/hyland-content-intelligence) and leverages its [**Knowledge Enrichment**](https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment) APIs.
+This part of the plugin connects a [Nuxeo](https://www.hyland.com/solutions/products/nuxeo-platform) application to [**Hyland Content Intelligence**](https://www.hyland.com/en/solutions/products/hyland-content-intelligence) and leverages its [**Knowledge Discovery**](https://hyland.github.io/ContentIntelligence-Docs/KnowledgeDiscovery) APIs.
 
 It provides two kinds of operations handling the calls to the service (see details for each operation below):
 
-* For Enrichment and Data Curation, high-level operations (`HylandKnowledgeEnrichment.Enrich` and `HylandKnowledgeEnrichment.Curate`) that perform all the different individual calls required to get the enrichement/curation for a blob: Get a presigned URL, then upload the file, etc. This makes it easy to call the service.
-* For Enrichment only, a low-level operation, `HylandKnowledgeEnrichment.Invoke`, that calls the service and returns the JSON response without adding any logic. This is for flexibility: When/if Hyland Content Intelligence adds new endpoints, and/or adds/changes endpoint expected payload, no need to wait for a new version the plugin, just modify the caller (in most of our usages, Nuxeo Studio project and JavaScript Automation).
+* For ease of use, High-level operations (`HylandKnowledgeDiscovery.getAllAgents` and `HylandKnowledgeDiscovery.askQuestionAndGetAnswer`) that perform all the different individual calls required to get the answer from the service. No need to know the exact endpoints and JSON payload, etc.
+* A low-level operation, `HylandKnowledgeDiscovery.Invoke`, that calls the service and returns the JSON response without adding any logic. This is for flexibility: When/if Hyland Content Intelligence adds new endpoints, and/or adds/changes endpoint expected payload, no need to wait for a new version of the plugin, just modify the caller (in most of our usages, Nuxeo Studio project and JavaScript Automation).
 
 > [!NOTE]
 >In all cases, the plugin handles authentication, you never need to handle it (see below).
 
 > [!TIP]
-> Examples of Nuxeo JavaScript Automation using the misc. operations describeb below can be found in the [JS Automation Examples](/README-Enrichment-JS-Automation-Examples.md) file.
+> Examples of Nuxeo JavaScript Automation using the misc. operations describeb below can be found in the [JS Automation Examples](/README-Discovery-JS-Automation-Examples.md) file.
 
 <br>
 
@@ -30,15 +30,10 @@ To summarize, every call returns a Blob, stringified JSON object that has at lea
 
 <br>
 
-## Know Limitation
-
-* The service allows sending/handling files in batch, the plugin, for now, handles sending several files only for the Enrich operation (see below).
-
-<br>
 
 ## Nuxeo Configuration Parameters
 
-For calling the Enrichment/Data curation service, you need to setup the following configuration parameters in nuxeo.conf.
+For calling the CIC Discovery service, you need to setup the following configuration parameters in nuxeo.conf.
 
 * `nuxeo.hyland.cic.endpoint.auth`: The authentication endpoint. The plugin adds the "/connect/token" final path. So your URL is something like https://auth.etc.etc.hyland.com/idp
 * `nuxeo.hyland.cic.endpoint.contextEnrichment`: The enrichment endpoint.
@@ -58,10 +53,8 @@ Other parameters are used to tune the behavior:
 At startup, if some parameters are missing, the plugin logs a WARN. For example, if you do not provide a Data Curation clientId:
 
 ```
-WARN  [main] [org.nuxeo.labs.hyland.knowledge.service.enrichment.HylandKEServiceImpl] No CIC Data Curation ClientId provided (nuxeo.hyland.cic.datacuration.clientId), calls to the service will fail.
+WARN  [main] [org.nuxeo.labs.hyland.knowledge.enrichment.service.HylandKEServiceImpl] No CIC Data Curation ClientId provided (nuxeo.hyland.cic.datacuration.clientId), calls to the service will fail.
 ```
-
-<br>
 
 ## Authentication to the Service
 
@@ -69,12 +62,11 @@ This part is always handled by the plugin, using the different info provided in 
 
 The service returns a token valid a certain time: The plugin handles this timeout (so as to avoid requesting a token at each call, saving some loads)
 
-<br>
 
 ## Operations
 
 > [!TIP]
-> As of "today" (July 2025), CIC Knowledge Enrichment service accepts only PDF for text-based files (`text-classification`, `text-summarization`, etc.).
+> As of "today" (June 2025), CIC Knowledge Enrichment service accepts only PDF for text-based files (`text-classification`, `text-summarization`, etc.).
 > For text-based files enrichment, do not forget to first convert to PDF (see [JS Automation Examples](/README-Enrichment-JS-Automation-Examples.md))
 
 * `HylandKnowledgeEnrichment.Enrich`
@@ -317,18 +309,35 @@ See _Nuxeo Configuration Parameters_ above for explanation on the values.
     * If -1 => Do not change (same effect as not passing the parameter)
     * Other values set the parameter (make sure you don't pass a negative value)
 
-<br>
 
-## How to build
-```bash
-git clone https://github.com/nuxeo-sandbox/nuxeo-hyland-knowledge-enrichment-connector
-cd nuxeo-hyland-knowledge-enrichment-connector
-mvn clean install
-```
 
-You can add the `-DskipDocker` flag to skip building with Docker.
 
-Also you can use the `-DskipTests` flag.
 
-> [!IMPORTANT]
-> The Marketplace Package ID is `nuxeo-labs-knowledge-enrichment-connector`, not `nuxeo-hyland-knowledge-enrichment-connector`
+## Support
+**These features are not part of the Nuxeo Production platform.**
+
+These solutions are provided for inspiration and we encourage customers to use them as code samples and learning
+resources.
+
+This is a moving project (no API maintenance, no deprecation process, etc.) If any of these solutions are found to be
+useful for the Nuxeo Platform in general, they will be integrated directly into platform, not maintained here.
+
+
+## License
+[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html)
+
+
+## About Nuxeo
+Nuxeo Platform is an open source Content Services platform, written in Java. Data can be stored in both SQL & NoSQL
+databases.
+
+The development of the Nuxeo Platform is mostly done by Nuxeo employees with an open development model.
+
+The source code, documentation, roadmap, issue tracker, testing, benchmarks are all public.
+
+Typically, Nuxeo users build different types of information management solutions
+for [document management](https://www.nuxeo.com/solutions/document-management/), [case management](https://www.nuxeo.com/solutions/case-management/),
+and [digital asset management](https://www.nuxeo.com/solutions/dam-digital-asset-management/), use cases. It uses
+schema-flexible metadata & content models that allows content to be repurposed to fulfill future use cases.
+
+More information is available at [www.nuxeo.com](https://www.nuxeo.com).

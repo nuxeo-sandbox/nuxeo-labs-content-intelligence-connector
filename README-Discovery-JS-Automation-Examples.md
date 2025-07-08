@@ -1,9 +1,9 @@
-# nuxeo-labs-content-intelligence-connector: JavaScript Automation Examples for Knowledge Enrichment 
+# Nuxeo JavaScript Automation, examples using nuxeo-labs-knowledge-enrichment-connector
 
-These examples are referenced from the [README](/README-Enrichment.md) of the plugin.
+These examples are referenced from the README of the plugin.
 
 > [!IMPORTANT]
-> All the examples assume Nuxeo was correctly configured to access Hyland CIC Knowledge Enrichment service. See [README](/README-Enrichment.md) > Nuxeo Configuration Parameters
+> All the examples assume Nuxeo was correctly configured to access Hyland CIC Knowledge Enrichment service. See README > Nuxeo Configuration Parameters
 
 ## Examples Using `HylandKnowledgeEnrichment.Enrich`
 
