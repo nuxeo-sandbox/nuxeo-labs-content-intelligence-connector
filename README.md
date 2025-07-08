@@ -1,14 +1,14 @@
 # nuxeo-labs-content-intelligence-connector
 
-> [!WARNING]
-> This is Work In Progress. Using Github mainly as backup.
-> => **Do not use this plugin for now**
-
-The plugin connects to Hyland Content Intelligence Cloud APIs to use:
+The plugin connects [Nuxeo](https://www.hyland.com/solutions/products/nuxeo-platform) to [Hyland Content Intelligence](https://www.hyland.com/en/solutions/products/hyland-content-intelligence) Cloud APIs to use:
 * Knowledge Enrichment/data curation (get description of an image, summarization of text, classification, ...)
-* Knowledge Discovery: Ask a question to a LLM, based on documents and metadata you previously sent to your repository. This requires to use nuxeo-hxai-connector to send the documents there. We will explain in details once we are ready :-)
+* Knowledge Discovery: Ask a question to a LLM, based on documents and metadata you previously sent to your repository. Sending documents to CIC requires to use nuxeo-hxai-connector.
 
-For now a connector to [Knowledge Enrichment](https://github.com/nuxeo-sandbox/nuxeo-labs-knowledge-enrichment-connector) is ready. All its code has been moved here, but the operations will keep the same IDs so you will not have to change your configuration once you switch to nuxeo-labs-content-intelligence-connector.
+> [!NOTE]
+> A connector to [Knowledge Enrichment](https://github.com/nuxeo-sandbox/nuxeo-labs-knowledge-enrichment-connector) was written previously, and should not be used anymore (not maintained)
+> All its code has been moved here, but the operations will keep the same IDs so you will not have to change your configuration once you switch to nuxeo-labs-content-intelligence-connector. Just make sure you don't deploy both plugins.
+
+The documentation is split in two parts, one for [Knowledge Enrichment](/README-Enrichment.md), one for [Knowledge Discovery](/README-Discovery.md).
 
 <hr>
 
@@ -27,7 +27,7 @@ useful for the Nuxeo Platform in general, they will be integrated directly into 
 
 
 ## About Nuxeo
-Nuxeo Platform is an open source Content Services platform, written in Java. Data can be stored in both SQL & NoSQL
+[Nuxeo Platform](https://www.hyland.com/solutions/products/nuxeo-platform) is an open source Content Services platform, written in Java. Data can be stored in both SQL & NoSQL
 databases.
 
 The development of the Nuxeo Platform is mostly done by Nuxeo employees with an open development model.
