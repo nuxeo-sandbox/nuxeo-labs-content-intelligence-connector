@@ -59,7 +59,7 @@ public class TestHylandKDService {
     }
 
     @Test
-    public void shouldGetAllAgents() {
+    public void shouldGetAllAgentsWithLowLevelCall() {
         
         Assume.assumeTrue(ConfigCheckerFeature.hasDiscoveryClientInfo());
         
@@ -74,7 +74,43 @@ public class TestHylandKDService {
     }
     
     @Test
-    public void shouldAskQuestionAndGetAnswer() throws Exception {
+    public void shouldGetAllAgentsWithHelper() {
+        
+        Assume.assumeTrue(ConfigCheckerFeature.hasDiscoveryClientInfo());
+        
+        ServiceCallResult result = hylandKDService.getAllAgents(null);
+        assertNotNull(result);
+        
+        assertTrue(result.callResponseOK());
+
+        JSONArray arr = result.getResponseAsJSONArray();
+        assertNotNull(arr);
+        assertTrue(arr.length() > 0);
+    }
+    
+    @Test
+    public void shouldAskQuestionAndGetAnswerWithHelper() throws Exception {
+        
+        Assume.assumeTrue(ConfigCheckerFeature.hasDiscoveryClientInfo());
+        
+        String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID);
+        ServiceCallResult result = hylandKDService.askQuestionAndGetAnswer(agentId, "How many documents do we have in this repository?", null, null, null);
+        assertNotNull(result);
+        
+        // We can't consider a 404 as an error here, it's the service not responding in time.
+        if(result.callResponseOK()) {
+            JSONObject response = result.getResponseAsJSONObject();
+            String answer = response.getString("answer");
+            assertFalse(StringUtils.isBlank(answer));
+            
+            String answerAgentId = response.getString("agentId");
+            assertEquals(agentId, answerAgentId);
+        }
+        
+    }
+    
+    @Test
+    public void shouldAskQuestionAndGetAnswerWithLowLevelCall() throws Exception {
         
         Assume.assumeTrue(ConfigCheckerFeature.hasDiscoveryClientInfo());
         
@@ -93,7 +129,7 @@ public class TestHylandKDService {
         // 2. Call service with this agent
         String endPoint = "/agent/agents/" + agentId + "/questions";
         JSONObject payload = new JSONObject();
-        payload.put("question", "How many documents do we have in our repository?");
+        payload.put("question", "How many documents do we have in this repository?");
         payload.put("contextObjectIds", new JSONArray());
         
         ServiceCallResult result = hylandKDService.invokeDiscovery("POST", endPoint, payload.toString());
@@ -136,12 +172,12 @@ public class TestHylandKDService {
             String answer = response.getString("answer");
             assertFalse(StringUtils.isBlank(answer));
             
-            System.out.println("\n\n" + answer + "\n\n");
+            //System.out.println("\n\n" + answer + "\n\n");
             
             String answerAgentId = response.getString("agentId");
             assertEquals(agentId, answerAgentId);
         } else {
-            System.out.println("\n\nCLAHBLABBLAh\n\n");
+            System.out.println("\n\n" + result.toJsonString(2));
         }
         
     }

@@ -18,6 +18,12 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.discovery.automation;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
 import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
@@ -31,29 +37,36 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
  * 
  * @since TODO
  */
-@Operation(id = HylandKDInvokeOp.ID, category = "Hyland Knowledge Discovery", label = "Call Hyland Knowledge Discovery Service", description = ""
-        + "Invoke the Hyland Content Intelligence/Discovery API."
-        + " Used for the low-level calls. (See Discovery API documentation for details)")
-public class HylandKDInvokeOp {
+@Operation(id = HylandKDGetAllAgentsOp.ID, category = "Hyland Knowledge Discovery", label = "Get All Agents", description = ""
+        + "Returns a JSON blob holding  the result of the call. Call its getString() method then JSON.parse()."
+        + " See documentation for values. The result will have a responseCode that you should check (must be 200),"
+        + " and the array of agents is in the response property."
+        + " You can pass extra headers as a Json object (stringified)")
+public class HylandKDGetAllAgentsOp {
     
-    public static final String ID = "HylandKnowledgeDiscovery.Invoke";
+    public static final String ID = "HylandKnowledgeDiscovery.getAllAgents";
     
     @Context
     protected HylandKDService kdService;
 
-    @Param(name = "httpMethod", required = true)
-    protected String httpMethod;
-    
-    @Param(name = "endpoint", required = true)
-    protected String endpoint;
-
-    @Param(name = "jsonPayload", required = false)
-    protected String jsonPayload;
+    @Param(name = "extraHeadersJsonStr", required = true)
+    protected String extraHeadersJsonStr;
     
     @OperationMethod
     public Blob run() {
         
-        ServiceCallResult result = kdService.invokeDiscovery(httpMethod, endpoint, jsonPayload);
+        Map<String, String> extraHeaders = null;
+        if(StringUtils.isNotBlank(extraHeadersJsonStr)) {
+            JSONObject extraHeadersJson = new JSONObject(extraHeadersJsonStr);
+            extraHeaders = new HashMap<>();
+            Iterator<String> keys = extraHeadersJson.keys();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                extraHeaders.put(key, extraHeadersJson.getString(key));
+            }
+        }
+        
+        ServiceCallResult result = kdService.getAllAgents(extraHeaders);
         
         return Blobs.createJSONBlob(result.toJsonString());
     }
