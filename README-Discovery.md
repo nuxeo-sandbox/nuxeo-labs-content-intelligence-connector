@@ -53,7 +53,7 @@ For calling the CIC Discovery service, you need to setup the following configura
 * `nuxeo.hyland.cic.discovery.clientId`: Your Discovery clientId
 * `nuxeo.hyland.cic.discovery.clientSecret`: Your Discovery client secret
 * `nuxeo.hyland.cic.discovery.environment`: The environment
-* `nuxeo.hyland.cic.discovery.default.sourceId`: AThe source ID to use when none is passed as a parameter
+* `nuxeo.hyland.cic.discovery.default.sourceId`: The source ID to use when none is passed as a parameter
 * `nuxeo.hyland.cic.discovery.default.agentId`: The Agent ID to use when none is passed as a parameter
 
 Other parameters are used to tune the behavior:
