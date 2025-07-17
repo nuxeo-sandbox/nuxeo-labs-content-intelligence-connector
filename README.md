@@ -19,6 +19,10 @@ The documentation is split in two parts:
 
 1. Have a valid application on Content Intelligence Cloud/Content Innovation Cloud. Also look at its documentation. You need valid endpoints (authentication, content intelligence, data curation, knowledge discovery), and valid clientId and clientSecret for each service.
 2. Setup the configuration parameters required by the plugin
+
+> [!TIP]
+> Each service is configurable and can connect using several clientIDs, clientSecrets, baseUrls, etc.
+
 3. From Nuxeo Studio, create an Automation Script that calls the operation(s), then handle the JSON result. From this result, you will typically save values in fields.
 
 The returned JSON is always formated as follow. It encapsulates a couple information about the call to the service (HTTP Result code) and the response as returned by the service. This response is returned "as is", no modification is applied by the plugin, and it is stored in the `"response"` property of the result.

@@ -36,9 +36,13 @@ To summarize, every call returns a Blob, stringified JSON object that has at lea
 
 <br>
 
-## Nuxeo Configuration Parameters
+## Nuxeo Configuration Parameters and Service Contributions
 
-For calling the Enrichment/Data curation service, you need to setup the following configuration parameters in nuxeo.conf.
+The service for calling Enrichment/Data curation is configurable: You can contribute several XML extensions, each with a different `name`, then use this `name` when calling one of the operations. The plugin will then authenticate and connect to a `baseUrl` using the specified configuration.
+
+The plugin provides a `"default"` configuration, that uses the following configuration parameters that you should set in nuxeo.conf if you want to call only one possible application in Hyland Content Intelligence Cloud.
+
+#### Configuration Parameters
 
 * `nuxeo.hyland.cic.auth.baseUrl`: The authentication endpoint. The plugin adds the "/connect/token" final path. So your URL is something like `https://auth.etc.etc.hyland.com/idp` (This is the same parameter as for Knowledge Enrichment)
 * `nuxeo.hyland.cic.contextEnrichment.baseUrl`: The enrichment base URL (endpoints, like `"/api/content/process"` will be added to this URL).
@@ -48,17 +52,87 @@ For calling the Enrichment/Data curation service, you need to setup the followin
 * `nuxeo.hyland.cic.datacuration.clientId`: Your data curation clientId
 * `nuxeo.hyland.cic.datacuration.clientSecret`: Your data curation client secret
 
-Other parameters are used to tune the behavior:
+Other parameters are used to tune the behavior (independant to the service configuration):
 * As of now, getting the results is asynchronous and we need to poll and check if they are ready. The following parameters are used in a loop, where if the service does not return a "success" HTTP Code, the thread sleeps a certain time then tries again, until a certain number of tries:
   * `nuxeo.hyland.cic.pullResultsMaxTries`, an interger max number of tries. Default value is `10`.
   * `nuxeo.hyland.cic.pullResultsSleepInterval`: an integer, the sleep value in milliseconds. Default value is 3000
   
   So, with these default values, the code will try maximum 10 times and it will take about 30s max.
 
-At startup, if some parameters are missing, the plugin logs a WARN. For example, if you do not provide a Data Curation clientId:
+#### XML Contribution
+
+You can contribute the `"knowledgeEnrichment"` or the `"dataCuration"` points of the `"org.nuxeo.labs.hyland.content.intelligence.HylandKEService"` service.
+
+> [!TIP]
+> If you plan to use only one CIC app, youdon't need to contribute XML, you just set the nuxeo.conf paramerets values
+
+Here are the two `"default"` contributions for each.
+
+```xml
+<!-- Default contributions use configuration parameters -->
+<extension
+  target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
+  point="knowledgeEnrichment">
+  <knowledgeEnrichment>
+    <name>default</name>
+    <authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
+    <baseUrl>${nuxeo.hyland.cic.contextEnrichment.baseUrl:=}</baseUrl>
+    <clientId>${nuxeo.hyland.cic.enrichment.clientId:=}</clientId>
+    <clientSecret>${nuxeo.hyland.cic.enrichment.clientSecret:=}</clientSecret>
+  </knowledgeEnrichment>
+</extension>
+
+<extension
+  target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
+  point="dataCuration">
+  <dataCuration>
+    <name>default</name>
+    <authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
+    <baseUrl>${nnuxeo.hyland.cic.dataCuration.baseUrl:=}</baseUrl>
+    <clientId>${nuxeo.hyland.cic.datacuration.clientId:=}</clientId>
+    <clientSecret>${nuxeo.hyland.cic.datacuration.clientSecret:=}</clientSecret>
+  </dataCuration>
+</extension>
+```
+
+You could, for example, add more, like:
+
+```xml
+<extension
+  target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
+  point="knowledgeEnrichment">
+  <knowledgeEnrichment>
+    <name>otherEnrichmentApp</name>
+    <authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
+    <baseUrl>https://some.other.enrichment.base.url.com</baseUrl>
+    <clientId>123456-abcdef-890-...</clientId>
+    <clientSecret>098765-jhgfds-etc.</clientSecret>
+  </knowledgeEnrichment>
+</extension>
+
+<extension
+  target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
+  point="dataCuration">
+  <dataCuration>
+    <name>otherDCApp</name>
+    <authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
+    <baseUrl>https://yet-another-baseUrl-app.com</baseUrl>
+    <clientId>another-client-id-here . . .. . .</clientId>
+    <clientSecret>another-secret-here. . .</clientSecret>
+  </dataCuration>
+</extension>
+```
+Now, when calling one of the misc.operations, you can pass "otherEnrichmentApp" in the `configName` parameter.
+
+> [!TIP]
+> When you pass no value (`null` or `""`), the code uses the `"default"` configuration.
+
+#### Error-Check
+
+At startup, if some parameters are missing, the plugin logs a WARN. For example, if you do not provide an Enrichment clientId:
 
 ```
-WARN  [main] [org.nuxeo.labs.hyland.knowledge.service.enrichment.HylandKEServiceImpl] No CIC Data Curation ClientId provided (nuxeo.hyland.cic.datacuration.clientId), calls to the service will fail.
+WARN  [main] [org.nuxeo.labs.hyland.knowledge.service.enrichment.KEDescriptor] No CIC Enrichment ClientId provided for configuration 'default', calls to the service will fail.
 ```
 
 <br>
@@ -96,7 +170,8 @@ A high level operation that handles all the different calls to the service (get 
   * `actions`: String required. A list of comma separated actions to perform. See KE documentation about available actions
   * `classes`: String, optional.  A list of comma separated classes, to be used with some classification actions (can be ommitted or null for other actions)
   * `similarMetadata`: String, optional.  A JSON Array (as string) of similar metadata (array of key/value pairs). To be used with the misc. "metadata" actions.
-  * `extraPayloadJsonStr`: String, optional. A JSON object as string, with extra parameters for the service. For example, use "maxWordCount" to increase or decrease the text-summary. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload. 
+  * `extraPayloadJsonStr`: String, optional. A JSON object as string, with extra parameters for the service. For example, use "maxWordCount" to increase or decrease the text-summary. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload.
+  * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
 
 > [!NOTE]
 > Again, please, see Knowledge Enrichment API documentation for details on the values that can be used/passed.
@@ -123,6 +198,7 @@ This operation performs the same features as `HylandKnowledgeEnrichment.Enrich`,
   * `extraPayloadJsonStr`: String, optional. A JSON object as string, with extra parameters for the service. For example, use "maxWordCount" to increase or decrease the text-summary. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload.
   *  `xpath`: String, optional. When input is `document`, the xpath to use to get the blob. Default "file:content".
   * `sourceIds`: String, required if input is `blobs`. A comma separated list of unique ID, one for each input object (Document of Blob), _in the same order_. If input is `document` and `sourceIds`is not passed, the plugin uses each Document UUID. See below for more details. 
+  * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
 
 > [!IMPORTANT]
 > Make sure the files are of the same kind, supporting the `actions` request. For example, do not mix images and PDFs if you ask for image-description. Or do not pass images and PDFs ans ask for both image-description and text-summarization. This is because the service, in this case, will return a global PARTIAL_FAILURE, and for each file, a failure for the requested action when the file is not of the good type.
@@ -167,7 +243,8 @@ This can be interesting when you need more fine tuning or when you know the proc
   * `actions`: String required. A list of comma separated actions to perform. See KE documentation about available actions
   * `classes`: String, optional.  A list of comma separated classes, to be used with some classification actions (can be ommitted or null for other actions)
   * `similarMetadata`: String, optional.  A JSON Array (as string) of similar metadata (array of key/value pairs). To be used with the misc. "metadata" actions.
-  * `extraPayloadJsonStr`: String, optional. A JSON object as string, with extra parameters for the service. For example, use "maxWordCount" to increase or decrease the text-summary. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload. 
+  * `extraPayloadJsonStr`: String, optional. A JSON object as string, with extra parameters for the service. For example, use "maxWordCount" to increase or decrease the text-summary. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload.
+  * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
 
 The `response` property of the result JSON (if succesfull) will hhave a `processingId` property, to be saved and used later with `HylandKnowledgeEnrichment.GetEnrichmentResults`
 
@@ -182,6 +259,7 @@ After calling `HylandKnowledgeEnrichment.SendForEnrichment`, you need to get the
 * output `Blob`, a JSON blob
 * Parameters
   * `jobId`: String, required. The value returned in the JSON after a call to `HylandKnowledgeEnrichment.SendForEnrichment`
+  * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
 
 The operation gets the results for the job ID. Notice you have to wait for an HTTP response of OK with the status "Done". before this, you may get dirrerent steps ("acceoted", "processing", ...)
 
@@ -196,6 +274,7 @@ A low level operation, for which you must provide the correct endpoints, correct
   * `httpMethod`: String, required, "GET", "PUT" or "POST"
   * `endpoint`: String, required, the endpoint to call. This string will be just appended to the Content Enrichment Endpoint URL you set up in the configuration parameters.
   * `jsonPayload`: String, optjonal. A JSON string for POST/PUT request, depending on the endpoint.
+  * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
 
 The operation calls the Enrichment service (after handling authentication) and returns the result. See above for the structure of returned JSON.
 
@@ -223,6 +302,7 @@ A high level operation that handles all the different calls to the service (get 
 * Input: `blob`
 * Output: `Blob`, a JSON blob
 * Parameters
+  * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
   * `jsonOptions`: String optional. A JSON string holding the options for calling the service. See the Data Curation API documentation for a list of possible values. If the parameter is not passed (or `null`), default values are applied, getting every info and using the `MDAST` JSON schema:
 
 ```JSON

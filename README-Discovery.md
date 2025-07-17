@@ -44,15 +44,21 @@ Before asking a quesiton or handling agents from within Nuxeo, you must:
 
 <br>
 
-## Nuxeo Configuration Parameters
+## Nuxeo Configuration Parameters and Service Contributions
 
-For calling the CIC Discovery service, you need to setup the following configuration parameters in nuxeo.conf.
+The service for calling the CIC Discovery service is configurable: You can contribute several XML extensions, each with a different `name`, then use this `name` when calling one of the operations. The plugin will then authenticate and connect to a `baseUrl` using the specified configuration.
+
+The plugin provides a `"default"` configuration, that uses the following configuration parameters that you should set in nuxeo.conf if you want to call only one possible application in Hyland Content Intelligence Cloud.
+
+#### Configuration Parameters
 
 * `nuxeo.hyland.cic.auth.baseUrl`: The authentication endpoint. The plugin adds the "/connect/token" final path. So your URL is something like `https://auth.etc.etc.hyland.com/idp` (This is the same parameter as for Knowledge Enrichment)
 * `nuxeo.hyland.cic.discovery.baseUrl`: The Discovery base URL.
 * `nuxeo.hyland.cic.discovery.clientId`: Your Discovery clientId
 * `nuxeo.hyland.cic.discovery.clientSecret`: Your Discovery client secret
 * `nuxeo.hyland.cic.discovery.environment`: The environment
+
+The following are not part of the configurable service:
 * `nuxeo.hyland.cic.discovery.default.sourceId`: The source ID to use when none is passed as a parameter
 * `nuxeo.hyland.cic.discovery.default.agentId`: The Agent ID to use when none is passed as a parameter
 
@@ -63,6 +69,54 @@ Other parameters are used to tune the behavior:
   
   So, with these default values, the code will try maximum 10 times and it will take about 30s max.
 
+#### XML Contribution
+
+You can contribute the `"knowledgeEnrichment"` or the `"dataCuration"` points of the `"org.nuxeo.labs.hyland.content.intelligence.HylandKEService"` service.
+
+> [!TIP]
+> If you plan to use only one CIC app, youdon't need to contribute XML, you just set the nuxeo.conf paramerets values
+
+Here are the two `"default"` contributions for each.
+
+```xml
+<!-- Default contributions use configuration parameters -->
+<extension
+  target="org.nuxeo.labs.hyland.content.intelligence.HylandKDService"
+  point="knowledgeDiscovery">
+  <knowledgeDiscovery>
+    <name>default</name>
+    <authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
+    <baseUrl>${nuxeo.hyland.cic.discovery.baseUrl:=}</baseUrl>
+    <clientId>${nuxeo.hyland.cic.discovery.clientId:=}</clientId>
+    <clientSecret>${nuxeo.hyland.cic.discovery.clientSecret:=}</clientSecret>
+    <environment>${nuxeo.hyland.cic.discovery.environment:=}</environment>
+  </knowledgeDiscovery>
+</extension>
+```
+
+You could, for example, add more, like:
+
+```xml
+<extension
+  target="org.nuxeo.labs.hyland.content.intelligence.HylandKDService"
+  point="knowledgeDiscovery">
+  <knowledgeDiscovery>
+    <name>myOtherApp</name>
+    <authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
+    <baseUrl>https://other.app.for.hyland.discovery.com</baseUrl>
+    <clientId>456123-abcdef-etc. . .</clientId>
+    <clientSecret>765839-rtuklj-etc. . .</clientSecret>
+    <environment>someenv-abcdef-123456-etc. . .</environment>
+  </knowledgeDiscovery>
+</extension>
+```
+Now, when calling one of the misc.operations, you can pass "myOtherApp" in the `configName` parameter.
+
+> [!TIP]
+> When you pass no value (`null` or `""`), the code uses the `"default"` configuration.
+
+
+#### Error-Check
 At startup, if some key parameters are missing (client ID, base URL, …), the plugin logs a WARN. For example, if you do not provide a Data Curation clientId:
 
 ```
@@ -94,7 +148,8 @@ A high level operation that gets a list of all agents
 * Input: `void`
 * Output: `Blob`, a JSON blob
 * Parameters
-  * `extraHeadersJsonStr`: String optional. A JSON object as string, with more headers than the one sent byt the plugin, allowing for extra tuning if needed 
+  * `extraHeadersJsonStr`: String optional. A JSON object as string, with more headers than the one sent byt the plugin, allowing for extra tuning if needed
+  * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
 
 The operation calls the service and returns a JSON Blob, that contains the object described in `Common Usage (Both Enrichment and Discovery)` in the main [README](/README.md)
 
@@ -149,7 +204,8 @@ A high level operation that sends a question, waits for the answer, then returns
   * `agentId`: String, optional. The ID of the agent to ask the question. If not passed, the plugin uses the value of `nuxeo.hyland.cic.discovery.default.agentId`
   * `contextObjectIdsJsonArrayStr`: String, optional.  A stringified JSON Array of Document UUIDs whoch were sent to the service previously, and will be used for the context of the question.
   * `extraPayloadJsonStr`: String, optional. A JSON object as string, with extra parameters for the service. Check the Knowledge Discovery docmentation. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload.
-  * `extraHeadersJsonStr`: String optional. A JSON object as string, with more headers than the one sent byt the plugin, allowing for extra tuning if needed 
+  * `extraHeadersJsonStr`: String optional. A JSON object as string, with more headers than the one sent byt the plugin, allowing for extra tuning if needed
+  * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
 
 The plugin sends the question (and the optional `contextObjectIds`) to the service and wait for the answer. This means, with current implementation of the Discovery Service, the plugin _pulls_ the answer. It does it max `nuxeo.hyland.cic.discovery.pullResultsMaxTries` time, and sleeps `nuxeo.hyland.cic.discovery.pullResultsSleepInterval` milliseconds between 2 tries. No error is thrown in case of timeout, the plugin just return the latest response from the service.
 
@@ -217,7 +273,8 @@ A hilowgh level operation that calls CIC Knowledge Discovery Service API
   * `httpMethod`: String required. the method to use ("GET", "POST", etc.)
   * `endpoint`: String, required. The endpoint to call. This will be added to `nuxeo.hyland.cic.discovery.baseUrl`. "/agent/agents" for example
   * `jsonPayloadStr`: String, optional. A JSON object as string, containing the JSON payload as expected by the endpoint
-  * `extraHeadersJsonStr`: String optional. A JSON object as string, with more headers than the one sent byt the plugin, allowing for extra tuning if needed 
+  * `extraHeadersJsonStr`: String optional. A JSON object as string, with more headers than the one sent byt the plugin, allowing for extra tuning if needed
+  * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
 
 The operation calls the endpoint service and returns the raw result. You have to handle the HTTP return code (202 - not 200 - when sending a quesiton for example), check all is OK, process the result, maybe do another call, etc.
 
