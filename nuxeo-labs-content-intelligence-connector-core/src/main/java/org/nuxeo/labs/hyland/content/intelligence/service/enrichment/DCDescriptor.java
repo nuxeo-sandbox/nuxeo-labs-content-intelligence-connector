@@ -18,15 +18,19 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.service.enrichment;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.nuxeo.common.xmap.annotation.XNode;
 import org.nuxeo.common.xmap.annotation.XObject;
 
 /**
- * 
- * @since TODO
+ * @since 2023
  */
 @XObject("dataCuration")
 public class DCDescriptor {
+
+    private static final Logger log = LogManager.getLogger(DCDescriptor.class);
 
     @XNode("name")
     protected String name = null;
@@ -61,6 +65,30 @@ public class DCDescriptor {
 
     public String getClientSecret() {
         return clientSecret;
+    }
+
+    public void checkConfigAndLogErrors() {
+
+        if (StringUtils.isBlank(authenticationBaseUrl)) {
+            log.warn("No CIC Authentication endpoint provided for configuration '" + name
+                    + "', calls to the service will fail.");
+        }
+
+        if (StringUtils.isBlank(baseUrl)) {
+            log.warn("No CIC Data Curation endpoint provided for configuration '" + name
+                    + "', calls to the service will fail.");
+        }
+
+        if (StringUtils.isBlank(clientId)) {
+            log.warn("No CIC Data Curation ClientId provided for configuration '" + name
+                    + "', calls to the service will fail.");
+        }
+
+        if (StringUtils.isBlank(clientSecret)) {
+            log.warn("No CIC Data Curation clientSecret provided for configuration '" + name
+                    + "', calls to the service will fail.");
+        }
+
     }
 
 }

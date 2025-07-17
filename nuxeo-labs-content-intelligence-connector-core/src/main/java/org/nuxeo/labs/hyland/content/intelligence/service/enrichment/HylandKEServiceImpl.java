@@ -84,28 +84,8 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
     public static final String DATA_CURATION_PRESIGN_DEFAULT_OPTIONS = "{\"normalization\": {\"quotations\": true},\"chunking\": true,\"embedding\": true,\"json_schema\": \"PIPELINE\"}";
 
-    protected static String enrichmentClientId = null;
-
-    protected static String enrichmentClientSecret = null;
-
-    protected static String dataCurationClientId = null;
-
-    protected static String dataCurationClientSecret = null;
-
-    protected static String authBaseUrl = null;
-
-    protected static String authFullUrl;
-
-    protected static String contextEnrichmentBaseUrl = null;
-
-    protected static String dataCurationBaseUrl = null;
-
     public static final String CONTENT_INTELL_CACHE = "content_intelligence_cache";
 
-    /*
-     * protected static AuthenticationToken enrichmentAuthToken;
-     * protected static AuthenticationToken dataCurationAuthToken;
-     */
     protected static Map<String, AuthenticationToken> enrichmentAuthTokens = null;
 
     protected static Map<String, AuthenticationToken> dataCurationAuthTokens = null;
@@ -182,72 +162,6 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
     protected void initialize() {
 
-        System.out.println("\n\nINITIALIZE\n\n");
-
-        // ==========> Auth
-        authBaseUrl = Framework.getProperty(AUTH_BASE_URL_PARAM);
-
-        // ==========> EndPoints
-        contextEnrichmentBaseUrl = Framework.getProperty(CONTEXT_ENRICHMENT_BASE_URL_PARAM);
-        dataCurationBaseUrl = Framework.getProperty(DATA_CURATION_BASE_URL_PARAM);
-
-        // ==========> Clients
-        enrichmentClientId = Framework.getProperty(ENRICHMENT_CLIENT_ID_PARAM);
-        enrichmentClientSecret = Framework.getProperty(ENRICHMENT_CLIENT_SECRET_PARAM);
-        dataCurationClientId = Framework.getProperty(DATA_CURATION_CLIENT_ID_PARAM);
-        dataCurationClientSecret = Framework.getProperty(DATA_CURATION_CLIENT_SECRET_PARAM);
-
-        // ==========> SanityChecks
-        if (StringUtils.isBlank(authBaseUrl)) {
-            log.warn("No CIC Authentication endpoint provided (" + AUTH_BASE_URL_PARAM
-                    + "), calls to the service will fail.");
-            authBaseUrl = ""; // avoid null for setting authFullUrl
-        }
-        // authFullUrl = authBaseUrl + AUTH_ENDPOINT;
-
-        if (StringUtils.isBlank(contextEnrichmentBaseUrl)) {
-            log.warn("No CIC Context Enrichment endpoint provided (" + CONTEXT_ENRICHMENT_BASE_URL_PARAM
-                    + "), calls to the service will fail.");
-        } else if (contextEnrichmentBaseUrl.endsWith("/")) {
-            contextEnrichmentBaseUrl = contextEnrichmentBaseUrl.substring(0, contextEnrichmentBaseUrl.length() - 1);
-        }
-
-        if (StringUtils.isBlank(dataCurationBaseUrl)) {
-            log.warn("No CIC Data Curation endpoint provided (" + DATA_CURATION_BASE_URL_PARAM
-                    + "), calls to the service will fail.");
-        } else if (dataCurationBaseUrl.endsWith("/")) {
-            dataCurationBaseUrl = dataCurationBaseUrl.substring(0, dataCurationBaseUrl.length() - 1);
-        }
-
-        if (StringUtils.isBlank(enrichmentClientId)) {
-            log.warn("No CIC Enrichment ClientId provided (" + ENRICHMENT_CLIENT_ID_PARAM
-                    + "), calls to the service will fail.");
-        }
-
-        if (StringUtils.isBlank(enrichmentClientSecret)) {
-            log.warn("No CIC Enrichment ClientSecret provided (" + ENRICHMENT_CLIENT_SECRET_PARAM
-                    + "), calls to the service will fail.");
-        }
-
-        if (StringUtils.isBlank(dataCurationClientId)) {
-            log.warn("No CIC Data Curation ClientId provided (" + DATA_CURATION_CLIENT_ID_PARAM
-                    + "), calls to the service will fail.");
-        }
-
-        if (StringUtils.isBlank(dataCurationClientSecret)) {
-            log.warn("No CIC Data Curation ClientSecret provided (" + DATA_CURATION_CLIENT_SECRET_PARAM
-                    + "), calls to the service will fail.");
-        }
-
-        // ==========> Prepare for getting auth. tokens
-        // (we can't set the tokens map here, the constructor is called before loading extensions, of course)
-        /*
-         * enrichmentAuthToken = new AuthenticationTokenEnrichment(authFullUrl, enrichmentClientId,
-         * enrichmentClientSecret);
-         * dataCurationAuthToken = new AuthenticationTokenEnrichment(authFullUrl, dataCurationClientId,
-         * dataCurationClientSecret);
-         */
-        // ==========> Other params
         pullResultsMaxTries = ServicesUtils.configParamToInt(PULL_RESULTS_MAX_TRIES_PARAM,
                 PULL_RESULTS_MAX_TRIES_DEFAULT);
         pullResultsSleepIntervalMS = ServicesUtils.configParamToInt(PULL_RESULTS_SLEEP_INTERVAL_PARAM,
@@ -264,6 +178,15 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
         return token.getToken();
     }
+    
+    protected KEDescriptor getKEDescriptor(String configName) {
+
+        if (StringUtils.isBlank(configName)) {
+            configName = CONFIG_DEFAULT;
+        }
+        
+        return keContribs.get(configName);
+    }
 
     protected String getDCToken(String configName) {
 
@@ -274,6 +197,15 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         AuthenticationToken token = dataCurationAuthTokens.get(configName);
 
         return token.getToken();
+    }
+    
+    protected DCDescriptor getDCDescriptor(String configName) {
+
+        if (StringUtils.isBlank(configName)) {
+            configName = CONFIG_DEFAULT;
+        }
+        
+        return dcContribs.get(configName);
     }
 
     @Override
@@ -524,7 +456,8 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         }
 
         // ====================> 2. Get presigned stuff
-        String targetUrl = dataCurationBaseUrl;
+        DCDescriptor config = getDCDescriptor(configName);
+        String targetUrl = config.getBaseUrl();//dataCurationBaseUrl;
         targetUrl += "/api/presign";
 
         Map<String, String> headers = new HashMap<String, String>();
@@ -599,7 +532,8 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
             throw new IllegalArgumentException("jobId and/or getUrl - presigned - is/are null");
         }
 
-        String targetUrl = dataCurationBaseUrl + "/api/status/" + jobId;
+        DCDescriptor config = getDCDescriptor(configName);
+        String targetUrl = config.getBaseUrl() + "/api/status/" + jobId;
         boolean gotIt = false;
         do {
             if (count > 1) {
@@ -670,7 +604,8 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         }
 
         // URL/endpoint
-        String targetUrl = contextEnrichmentBaseUrl;
+        KEDescriptor config = getKEDescriptor(configName);
+        String targetUrl = config.getBaseUrl();
         if (!endpoint.startsWith("/")) {
             targetUrl += "/";
         }
@@ -777,6 +712,10 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         dcContribs = null;
     }
 
+    protected void checkConfigAndLogErrors(String service, KEDescriptor desc) {
+
+    }
+
     /**
      * Start the component. This method is called after all the components were resolved and activated
      *
@@ -794,6 +733,8 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
                 AuthenticationToken token = new AuthenticationTokenEnrichment(
                         desc.getAuthenticationBaseUrl() + AUTH_ENDPOINT, desc.getClientId(), desc.getClientSecret());
                 enrichmentAuthTokens.put(desc.getName(), token);
+
+                desc.checkConfigAndLogErrors();
             }
         }
 
@@ -806,6 +747,8 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
                 AuthenticationToken token = new AuthenticationTokenEnrichment(desc.getAuthenticationBaseUrl(),
                         desc.getClientId(), desc.getClientSecret());
                 dataCurationAuthTokens.put(desc.getName(), token);
+
+                desc.checkConfigAndLogErrors();
             }
         }
     }

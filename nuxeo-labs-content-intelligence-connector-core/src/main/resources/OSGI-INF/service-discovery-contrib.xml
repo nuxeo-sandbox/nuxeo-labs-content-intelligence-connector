@@ -6,4 +6,24 @@
   <service>
     <provide interface="org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService" />
   </service>
+
+	<extension-point name="knowledgeDiscovery">
+		<object
+			class="org.nuxeo.labs.hyland.content.intelligence.service.discovery.KDDescriptor" />
+	</extension-point>
+	
+	<!-- Default contributions use configuration parameters -->
+	<extension
+		target="org.nuxeo.labs.hyland.content.intelligence.HylandKDService"
+		point="knowledgeDiscovery">
+		<knowledgeDiscovery>
+			<name>default</name>
+			<authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
+			<baseUrl>${nuxeo.hyland.cic.discovery.baseUrl:=}</baseUrl>
+			<clientId>${nuxeo.hyland.cic.discovery.clientId:=}</clientId>
+			<clientSecret>${nuxeo.hyland.cic.discovery.clientSecret:=}</clientSecret>
+			<environment>${nuxeo.hyland.cic.discovery.environment:=}</environment>
+		</knowledgeDiscovery>
+	</extension>
+	
 </component>

@@ -58,13 +58,16 @@ public class HylandKDInvokeOp {
 
     @Param(name = "extraHeadersJsonStr", required = false)
     protected String extraHeadersJsonStr;
+
+    @Param(name = "configName", required = false)
+    protected String configName;
     
     @OperationMethod
     public Blob run() {
         
         Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
         
-        ServiceCallResult result = kdService.invokeDiscovery(httpMethod, endpoint, jsonPayloadStr, extraHeaders);
+        ServiceCallResult result = kdService.invokeDiscovery(configName, httpMethod, endpoint, jsonPayloadStr, extraHeaders);
         
         return Blobs.createJSONBlob(result.toJsonString());
     }

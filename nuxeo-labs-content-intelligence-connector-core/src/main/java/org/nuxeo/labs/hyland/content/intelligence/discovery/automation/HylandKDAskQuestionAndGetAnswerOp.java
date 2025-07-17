@@ -43,7 +43,8 @@ import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDServ
         + " agenId => If empty, it is  read from nuxeo.hyland.cic.discovery.default.agentId."
         + " contextObjectIdsJsonArrayStr is a stringified JSON array of object Ids (doc UUIDs in Nuxeo) to be used for the context."
         + " extraPayloadJsonStr is a stringified JSON Object, to be merged to the payload built by the service (if you need extra parameters)."
-        + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object")
+        + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
+        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
 public class HylandKDAskQuestionAndGetAnswerOp {
 
     public static final String ID = "HylandKnowledgeDiscovery.askQuestionAndGetAnswer";
@@ -66,6 +67,9 @@ public class HylandKDAskQuestionAndGetAnswerOp {
     @Param(name = "extraHeadersJsonStr", required = false)
     protected String extraHeadersJsonStr;
 
+    @Param(name = "configName", required = false)
+    protected String configName;
+
     @OperationMethod
     public Blob run() throws InterruptedException {
 
@@ -80,7 +84,7 @@ public class HylandKDAskQuestionAndGetAnswerOp {
 
         Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
 
-        ServiceCallResult result = kdService.askQuestionAndGetAnswer(agentId, question, contextObjectIds,
+        ServiceCallResult result = kdService.askQuestionAndGetAnswer(configName, agentId, question, contextObjectIds,
                 extraPayloadJsonStr, extraHeaders);
 
         return Blobs.createJSONBlob(result.toJsonString());

@@ -28,15 +28,14 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 
 @SuppressWarnings("rawtypes")
 public interface HylandKEService {
-    
+
     enum EnrichmentServiceType {
-        ENRICHMENT,
-        DATA_CURATION
+        ENRICHMENT, DATA_CURATION
     }
 
     /**
      * Send the blob for enrichment. In the response, and if succesful, there will be the job ID to use with
-     * getJobIdResult(). Also, <copde>sourceid</sourceId> is optional. I is returned in the result (see 
+     * getJobIdResult(). Also, <copde>sourceid</sourceId> is optional. I is returned in the result (see
      * ServiceCallResult#objectKeysMapping) and let the caller bind the job ID with the input blob.
      * If not passed, a random UUID is generated.
      * <br>
@@ -44,6 +43,11 @@ public interface HylandKEService {
      * the service documentation at
      * {@link https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/ContextEnrichmentAPI}
      * 
+     * <br>
+     * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
+     * by the plugin and using config. parameters)
+     * 
+     * @param configName
      * @param blob
      * @param sourceId
      * @param actions
@@ -54,12 +58,12 @@ public interface HylandKEService {
      * @throws IOException
      * @since 2023
      */
-    public ServiceCallResult sendForEnrichment(String configName, Blob blob, String sourceId, List<String> actions, List<String> classes,
-            String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException;
+    public ServiceCallResult sendForEnrichment(String configName, Blob blob, String sourceId, List<String> actions,
+            List<String> classes, String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException;
 
     /**
      * Send the file for enrichment. In the response, and if succesful, there will be the job ID to use with
-     * getJobIdResult(). Also, <copde>sourceid</sourceId> is optional. I is returned in the result (see 
+     * getJobIdResult(). Also, <copde>sourceid</sourceId> is optional. I is returned in the result (see
      * ServiceCallResult#objectKeysMapping) and let the caller bind the job ID with the input blob.
      * If not passed, a random UUID is generated.
      * <br>
@@ -67,6 +71,11 @@ public interface HylandKEService {
      * the service documentation at
      * {@link https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/ContextEnrichmentAPI}
      * 
+     * <br>
+     * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
+     * by the plugin and using config. parameters)
+     * 
+     * @param configName
      * @param file
      * @param sourceId
      * @param mimeType. If null or "", it will be calculated (can take time)
@@ -78,12 +87,19 @@ public interface HylandKEService {
      * @throws IOException
      * @since 2023
      */
-    public ServiceCallResult sendForEnrichment(String configName, File file, String sourceId, String mimeType, List<String> actions,
-            List<String> classes, String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException;
+    public ServiceCallResult sendForEnrichment(String configName, File file, String sourceId, String mimeType,
+            List<String> actions, List<String> classes, String similarMetadataJsonArrayStr, String extraJsonPayloadStr)
+            throws IOException;
 
     /**
      * Send a list of blobs for enrichment. In the response, and if succesful, there will be the job ID to use with
      * getJobIdResult()
+     * 
+     * <br>
+     * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
+     * by the plugin and using config. parameters)
+     * 
+     * @param configName
      * 
      * @param contentObjects
      * @param actions
@@ -94,12 +110,19 @@ public interface HylandKEService {
      * @throws IOException
      * @since 2023
      */
-    public ServiceCallResult sendForEnrichment(String configName, List<ContentToProcess> contentObjects, List<String> actions,
-            List<String> classes, String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException;
+    public ServiceCallResult sendForEnrichment(String configName, List<ContentToProcess> contentObjects,
+            List<String> actions, List<String> classes, String similarMetadataJsonArrayStr, String extraJsonPayloadStr)
+            throws IOException;
 
     /**
      * After calling one of the sendForEnrichment() method, pull the results with getJobIdResult().
      * The HTTP response mayb not be 200. it could be for example 202, "accepted"
+     * 
+     * <br>
+     * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
+     * by the plugin and using config. parameters)
+     * 
+     * @param configName
      * 
      * @param jobId
      * @return
@@ -116,6 +139,12 @@ public interface HylandKEService {
      * the service documentation at
      * {@link https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/ContextEnrichmentAPI}
      * 
+     * <br>
+     * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
+     * by the plugin and using config. parameters)
+     * 
+     * @param configName
+     * 
      * @param blob
      * @param actions
      * @param classes
@@ -131,6 +160,11 @@ public interface HylandKEService {
      * See method
      * <code>enrich(Blob blob, List<String> actions, List<String> classes, List<String> similarMetadata)</code>
      * 
+     * <br>
+     * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
+     * by the plugin and using config. parameters)
+     * 
+     * @param configName
      * @param file
      * @param mimeType. If null or "", it will be calculated (can take time)
      * @param actions
@@ -140,12 +174,17 @@ public interface HylandKEService {
      * @throws IOException
      * @since 2023
      */
-    public ServiceCallResult enrich(String configName, File file, String mimeType, List<String> actions, List<String> classes,
-            String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException;
+    public ServiceCallResult enrich(String configName, File file, String mimeType, List<String> actions,
+            List<String> classes, String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException;
 
     /**
      * Enrich a list of blobs
      * 
+     * <br>
+     * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
+     * by the plugin and using config. parameters)
+     * 
+     * @param configName
      * @param blobs
      * @param actions
      * @param classes
@@ -154,10 +193,9 @@ public interface HylandKEService {
      * @throws IOException
      * @since 2023
      */
-    public ServiceCallResult enrich(String configName, List<ContentToProcess> contentObjects, List<String> actions, List<String> classes,
-            String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException;
+    public ServiceCallResult enrich(String configName, List<ContentToProcess> contentObjects, List<String> actions,
+            List<String> classes, String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException;
 
-    
     /**
      * Call the KE service, using the configuration parameters (clientId, clientSecret, endpoints, …). This is a kind of
      * "low-level" call to the service.
@@ -169,13 +207,19 @@ public interface HylandKEService {
      * <code>endpoint</code> are documented here:
      * {@link https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/ContextEnrichmentAPI}
      * 
+     * <br>
+     * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
+     * by the plugin and using config. parameters)
+     * 
+     * @param configName
      * @param httpMethod
      * @param endpoint
      * @param jsonPayload
      * @return a ServiceCallResult
      * @since 2023
      */
-    public ServiceCallResult invokeEnrichment(String configName, String httpMethod, String endpoint, String jsonPayload);
+    public ServiceCallResult invokeEnrichment(String configName, String httpMethod, String endpoint,
+            String jsonPayload);
 
     /**
      * Call the DataCuraiton APi and returns
@@ -190,6 +234,11 @@ public interface HylandKEService {
      * "response": The response (as JSON string from the service
      * }
      * 
+     * <br>
+     * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
+     * by the plugin and using config. parameters)
+     * 
+     * @param configName
      * @param blob
      * @param jsonOptions
      * @return a ServiceCallResult
@@ -201,6 +250,11 @@ public interface HylandKEService {
     /**
      * (see <code>curate(Blob blob, String jsonOptions)</code>
      * 
+     * <br>
+     * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
+     * by the plugin and using config. parameters)
+     * 
+     * @param configName
      * @param file
      * @param jsonOptions
      * @return

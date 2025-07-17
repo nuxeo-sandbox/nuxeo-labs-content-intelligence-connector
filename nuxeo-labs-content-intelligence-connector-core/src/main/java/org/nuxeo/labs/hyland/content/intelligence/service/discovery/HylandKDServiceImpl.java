@@ -34,6 +34,8 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     // Will add "/connect/token" to this endpoint.
     public static final String AUTH_BASE_URL_PARAM = HylandKEServiceImpl.AUTH_BASE_URL_PARAM;
 
+    public static final String AUTH_ENDPOINT = HylandKEServiceImpl.AUTH_ENDPOINT;
+
     public static final String DISCOVERY_CLIENT_ID_PARAM = "nuxeo.hyland.cic.discovery.clientId";
 
     public static final String DISCOVERY_CLIENT_SECRET_PARAM = "nuxeo.hyland.cic.discovery.clientSecret";
@@ -45,7 +47,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     public static final String DISCOVERY_DEFAULT_SOURCEID_PARAM = "nuxeo.hyland.cic.discovery.default.sourceId";
 
     public static final String DISCOVERY_DEFAULT_AGENTID_PARAM = "nuxeo.hyland.cic.discovery.default.agentId";
-    
+
     public static final String PULL_RESULTS_MAX_TRIES_PARAM = "nuxeo.hyland.cic.discovery.pullResultsMaxTries";
 
     public static final int PULL_RESULTS_MAX_TRIES_DEFAULT = 10;
@@ -54,19 +56,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
 
     public static final int PULL_RESULTS_SLEEP_INTERVAL_DEFAULT = 3000;
 
-    protected static AuthenticationToken discoveryAuthToken;
-
-    protected static String authBaseUrl = null;
-
-    protected static String authFullUrl;
-
-    protected static String discoveryBaseUrl;
-
-    protected static String clientId = null;
-
-    protected static String clientSecret = null;
-
-    protected static String discoveryEnvironment;
+    protected static Map<String, AuthenticationToken> discoveryAuthTokens = null;
 
     protected static String defaultSourceId;
 
@@ -78,85 +68,69 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
 
     protected static ServiceCall serviceCall = new ServiceCall();
 
+    // ====================> Extensions points
+    protected static final String EXT_POINT_KD = "knowledgeDiscovery";
+
+    protected Map<String, KDDescriptor> kdContribs = new HashMap<String, KDDescriptor>();
+
+    public static final String CONFIG_DEFAULT = "default";
+
     public HylandKDServiceImpl() {
         initialize();
     }
 
     protected void initialize() {
 
-        // ==========> Auth
-        authBaseUrl = Framework.getProperty(AUTH_BASE_URL_PARAM);
-        discoveryEnvironment = Framework.getProperty(DISCOVERY_ENVIRONMENT_PARAM);
-
-        // ==========> EndPoints
-        discoveryBaseUrl = Framework.getProperty(DISCOVERY_BASE_URL_PARAM);
-
-        // ==========> Clients
-        clientId = Framework.getProperty(DISCOVERY_CLIENT_ID_PARAM);
-        clientSecret = Framework.getProperty(DISCOVERY_CLIENT_SECRET_PARAM);
-
-        // ==========> SanityChecks
-        if (StringUtils.isBlank(authBaseUrl)) {
-            log.warn("No CIC Authentication Base URL provided (" + AUTH_BASE_URL_PARAM
-                    + "), calls to the service will fail.");
-            authBaseUrl = ""; // avoid null for setting authFullUrl
-        }
-        authFullUrl = authBaseUrl + "/connect/token";
-
-        if (StringUtils.isBlank(discoveryBaseUrl)) {
-            log.warn("No CIC Data Curation endpoint provided (" + DISCOVERY_BASE_URL_PARAM
-                    + "), calls to the service will fail.");
-        } else if (discoveryBaseUrl.endsWith("/")) {
-            discoveryBaseUrl = discoveryBaseUrl.substring(0, discoveryBaseUrl.length() - 1);
-        }
-
-        if (StringUtils.isBlank(clientId)) {
-            log.warn("No CIC Discovery ClientId provided (" + DISCOVERY_CLIENT_ID_PARAM
-                    + "), calls to the service will fail.");
-        }
-
-        if (StringUtils.isBlank(clientSecret)) {
-            log.warn("No CIC Discovery ClientSecret provided (" + DISCOVERY_CLIENT_SECRET_PARAM
-                    + "), calls to the service will fail.");
-        }
-
-        if (StringUtils.isBlank(discoveryEnvironment)) {
-            log.warn("No CIC Discovery Environement provided (" + DISCOVERY_ENVIRONMENT_PARAM
-                    + "), calls to the service will fail.");
-        }
-
-        // ==========> Prepare for getting auth. tokens
-        discoveryAuthToken = new AuthenticationTokenDiscovery(authFullUrl, clientId, clientSecret,
-                discoveryEnvironment);
-
-        // ==========> Misc Optional Parameters
         defaultSourceId = Framework.getProperty(DISCOVERY_DEFAULT_SOURCEID_PARAM);
         defaultAgentId = Framework.getProperty(DISCOVERY_DEFAULT_AGENTID_PARAM);
-        pullResultsMaxTries = ServicesUtils.configParamToInt(PULL_RESULTS_MAX_TRIES_PARAM, PULL_RESULTS_MAX_TRIES_DEFAULT);
+        pullResultsMaxTries = ServicesUtils.configParamToInt(PULL_RESULTS_MAX_TRIES_PARAM,
+                PULL_RESULTS_MAX_TRIES_DEFAULT);
         pullResultsSleepIntervalMS = ServicesUtils.configParamToInt(PULL_RESULTS_SLEEP_INTERVAL_PARAM,
                 PULL_RESULTS_SLEEP_INTERVAL_DEFAULT);
 
     }
 
-    @Override
-    public ServiceCallResult invokeDiscovery(String httpMethod, String endpoint, String jsonPayload) {
-        return invokeDiscovery(httpMethod, endpoint, jsonPayload, null);
+    protected KDDescriptor getDescriptor(String configName) {
+
+        if (StringUtils.isBlank(configName)) {
+            configName = CONFIG_DEFAULT;
+        }
+
+        return kdContribs.get(configName);
+    }
+
+    protected String getToken(String configName) {
+
+        if (StringUtils.isBlank(configName)) {
+            configName = CONFIG_DEFAULT;
+        }
+
+        AuthenticationToken token = discoveryAuthTokens.get(configName);
+
+        return token.getToken();
     }
 
     @Override
-    public ServiceCallResult invokeDiscovery(String httpMethod, String endpoint, String jsonPayload,
+    public ServiceCallResult invokeDiscovery(String configName, String httpMethod, String endpoint,
+            String jsonPayload) {
+        return invokeDiscovery(configName, httpMethod, endpoint, jsonPayload, null);
+    }
+
+    @Override
+    public ServiceCallResult invokeDiscovery(String configName, String httpMethod, String endpoint, String jsonPayload,
             Map<String, String> extraHeaders) {
 
         ServiceCallResult result = null;
 
         // Get auth token
-        String bearer = discoveryAuthToken.getToken();
+        String bearer = getToken(configName);
         if (StringUtils.isBlank(bearer)) {
             throw new NuxeoException("No authentication info for calling the Enrichment service.");
         }
 
         // URL/endpoint
-        String targetUrl = discoveryBaseUrl;
+        KDDescriptor config = getDescriptor(configName);
+        String targetUrl = config.getBaseUrl();
         if (!endpoint.startsWith("/")) {
             targetUrl += "/";
         }
@@ -168,7 +142,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
         headers.put("Authorization", "Bearer " + bearer);
         headers.put("Content-Type", "application/json");
         // More specific Discovery
-        headers.put("Hxp-Environment", discoveryEnvironment);
+        headers.put("Hxp-Environment", config.getEnvironment());
         headers.put("Hxp-App", "hxai-discovery");
 
         // Extra headers
@@ -206,16 +180,16 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     // ======================================================================
     // ======================================================================
     @Override
-    public ServiceCallResult getAllAgents(Map<String, String> extraHeaders) {
+    public ServiceCallResult getAllAgents(String configName, Map<String, String> extraHeaders) {
 
-        ServiceCallResult result = invokeDiscovery("GET", "/agent/agents", null, extraHeaders);
+        ServiceCallResult result = invokeDiscovery(configName, "GET", "/agent/agents", null, extraHeaders);
 
         return result;
     }
 
     @Override
-    public ServiceCallResult askQuestion(String agentId, String question, List<String> contextObjectIds,
-            String extraPayloadJsonStr, Map<String, String> extraHeaders) {
+    public ServiceCallResult askQuestion(String configName, String agentId, String question,
+            List<String> contextObjectIds, String extraPayloadJsonStr, Map<String, String> extraHeaders) {
 
         ServiceCallResult result = null;
 
@@ -243,13 +217,13 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
             }
         }
 
-        result = invokeDiscovery("POST", endPoint, payload.toString(), extraHeaders);
+        result = invokeDiscovery(configName, "POST", endPoint, payload.toString(), extraHeaders);
 
         return result;
     }
 
     @Override
-    public ServiceCallResult getAnswer(String questionId, Map<String, String> extraHeaders)
+    public ServiceCallResult getAnswer(String configName, String questionId, Map<String, String> extraHeaders)
             throws InterruptedException {
 
         ServiceCallResult result = null;
@@ -269,7 +243,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
                         + pullResultsMaxTries + ".");
             }
 
-            result = invokeDiscovery("GET", endPoint, null, extraHeaders);
+            result = invokeDiscovery(configName, "GET", endPoint, null, extraHeaders);
             if (!result.callResponseOK()) {
                 Thread.sleep(pullResultsSleepIntervalMS);
             } else {
@@ -289,22 +263,22 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     }
 
     @Override
-    public ServiceCallResult askQuestionAndGetAnswer(String agentId, String question, List<String> contextObjectIds,
-            String extraPayloadJsonStr, Map<String, String> extraHeaders) throws InterruptedException {
+    public ServiceCallResult askQuestionAndGetAnswer(String configName, String agentId, String question,
+            List<String> contextObjectIds, String extraPayloadJsonStr, Map<String, String> extraHeaders)
+            throws InterruptedException {
 
         ServiceCallResult result = null;
-        
+
         // 1. Ask the question
-        result = askQuestion(agentId, question, contextObjectIds, extraPayloadJsonStr, extraHeaders);
+        result = askQuestion(configName, agentId, question, contextObjectIds, extraPayloadJsonStr, extraHeaders);
         if (result.getResponseCode() != 202) {
             return result;
         }
         JSONObject response = result.getResponseAsJSONObject();
         String questionId = response.getString("questionId");
-        
-        
+
         // 2. Pull the answer
-        result = getAnswer(questionId, extraHeaders);
+        result = getAnswer(configName, questionId, extraHeaders);
 
         return result;
     }
@@ -346,6 +320,16 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     @Override
     public void registerExtension(Extension extension) {
         super.registerExtension(extension);
+
+        if (EXT_POINT_KD.equals(extension.getExtensionPoint())) {
+            Object[] contribs = extension.getContributions();
+            if (contribs != null) {
+                for (Object contrib : contribs) {
+                    KDDescriptor desc = (KDDescriptor) contrib;
+                    kdContribs.put(desc.getName(), desc);
+                }
+            }
+        }
     }
 
     /**
@@ -356,6 +340,8 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     @Override
     public void unregisterExtension(Extension extension) {
         super.unregisterExtension(extension);
+
+        kdContribs = null;
     }
 
     /**
@@ -365,7 +351,22 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
      */
     @Override
     public void start(ComponentContext context) {
-        // do nothing by default. You can remove this method if not used.
+
+        // OK, all extensions loaded, let's initialize the auth. tokens
+        if (kdContribs == null) {
+            log.error("No configuration found for Knowledge Enrichement. Calls, if any, will fail.");
+        } else {
+            discoveryAuthTokens = new HashMap<String, AuthenticationToken>();
+            for (Map.Entry<String, KDDescriptor> entry : kdContribs.entrySet()) {
+                KDDescriptor desc = entry.getValue();
+                AuthenticationToken token = new AuthenticationTokenDiscovery(
+                        desc.getAuthenticationBaseUrl() + AUTH_ENDPOINT, desc.getClientId(), desc.getClientSecret(),
+                        desc.getEnvironment());
+                discoveryAuthTokens.put(desc.getName(), token);
+
+                desc.checkConfigAndLogErrors();
+            }
+        }
     }
 
     /**

@@ -38,7 +38,8 @@ import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDServ
         + "Returns a JSON blob holding  the result of the call. Call its getString() method then JSON.parse()."
         + " See documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
         + " and the array of agents is in the 'response' property."
-        + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object")
+        + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
+        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
 public class HylandKDGetAllAgentsOp {
     
     public static final String ID = "HylandKnowledgeDiscovery.getAllAgents";
@@ -48,13 +49,16 @@ public class HylandKDGetAllAgentsOp {
 
     @Param(name = "extraHeadersJsonStr", required = false)
     protected String extraHeadersJsonStr;
+
+    @Param(name = "configName", required = false)
+    protected String configName;
     
     @OperationMethod
     public Blob run() {
         
         Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
         
-        ServiceCallResult result = kdService.getAllAgents(extraHeaders);
+        ServiceCallResult result = kdService.getAllAgents(configName, extraHeaders);
         
         return Blobs.createJSONBlob(result.toJsonString());
     }

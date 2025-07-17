@@ -64,7 +64,7 @@ public class TestHylandKDService {
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasDiscoveryClientInfo());
 
-        ServiceCallResult result = hylandKDService.invokeDiscovery("GET", "/agent/agents", null);
+        ServiceCallResult result = hylandKDService.invokeDiscovery(null, "GET", "/agent/agents", null);
         assertNotNull(result);
 
         assertTrue(result.callResponseOK());
@@ -80,7 +80,7 @@ public class TestHylandKDService {
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasDiscoveryClientInfo());
 
-        ServiceCallResult result = hylandKDService.getAllAgents(null);
+        ServiceCallResult result = hylandKDService.getAllAgents(null, null);
         assertNotNull(result);
 
         assertTrue(result.callResponseOK());
@@ -97,7 +97,7 @@ public class TestHylandKDService {
                 ConfigCheckerFeature.hasDiscoveryClientInfo());
 
         String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID);
-        ServiceCallResult result = hylandKDService.askQuestionAndGetAnswer(agentId,
+        ServiceCallResult result = hylandKDService.askQuestionAndGetAnswer(null, agentId,
                 "How many documents do we have in this repository?", null, null, null);
         assertNotNull(result);
 
@@ -136,7 +136,7 @@ public class TestHylandKDService {
         payload.put("question", "How many documents do we have in this repository?");
         payload.put("contextObjectIds", new JSONArray());
 
-        ServiceCallResult result = hylandKDService.invokeDiscovery("POST", endPoint, payload.toString());
+        ServiceCallResult result = hylandKDService.invokeDiscovery(null, "POST", endPoint, payload.toString());
         assertNotNull(result);
         assertEquals(202, result.getResponseCode()); // ACCEPTED
 
@@ -156,7 +156,7 @@ public class TestHylandKDService {
                         + ", call " + count + "/" + MAXTRIES + ".");
             }
 
-            result = hylandKDService.invokeDiscovery("GET", endPoint, null);
+            result = hylandKDService.invokeDiscovery(null, "GET", endPoint, null);
             assertNotNull(result);
             if (!result.callResponseOK()) {
                 Thread.sleep(3000);

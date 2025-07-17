@@ -16,7 +16,7 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence.service.enrichment;
+package org.nuxeo.labs.hyland.content.intelligence.service.discovery;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -27,10 +27,10 @@ import org.nuxeo.common.xmap.annotation.XObject;
 /**
  * @since 2023
  */
-@XObject("knowledgeEnrichment")
-public class KEDescriptor {
+@XObject("knowledgeDiscovery")
+public class KDDescriptor {
 
-    private static final Logger log = LogManager.getLogger(KEDescriptor.class);
+    private static final Logger log = LogManager.getLogger(KDDescriptor.class);
 
     @XNode("name")
     protected String name = null;
@@ -46,6 +46,9 @@ public class KEDescriptor {
 
     @XNode("clientSecret")
     protected String clientSecret = null;
+
+    @XNode("environment")
+    protected String environment = null;
 
     public String getName() {
         return name;
@@ -67,6 +70,10 @@ public class KEDescriptor {
         return clientSecret;
     }
 
+    public String getEnvironment() {
+        return environment;
+    }
+
     public void checkConfigAndLogErrors() {
 
         if (StringUtils.isBlank(authenticationBaseUrl)) {
@@ -75,20 +82,24 @@ public class KEDescriptor {
         }
 
         if (StringUtils.isBlank(baseUrl)) {
-            log.warn("No CIC Enrichment endpoint provided for configuration '" + name
+            log.warn("No CIC Knonwledge Discovery endpoint provided for configuration '" + name
                     + "', calls to the service will fail.");
         }
 
         if (StringUtils.isBlank(clientId)) {
-            log.warn("No CIC Enrichment ClientId provided for configuration '" + name
+            log.warn("No CIC Knonwledge Discovery ClientId provided for configuration '" + name
                     + "', calls to the service will fail.");
         }
 
         if (StringUtils.isBlank(clientSecret)) {
-            log.warn("No CIC Enrichment clientSecret provided for configuration '" + name
+            log.warn("No CIC Knonwledge Discovery clientSecret provided for configuration '" + name
+                    + "', calls to the service will fail.");
+        }
+
+        if (StringUtils.isBlank(environment)) {
+            log.warn("No CIC Knonwledge Discovery environment provided for configuration '" + name
                     + "', calls to the service will fail.");
         }
 
     }
-
 }
