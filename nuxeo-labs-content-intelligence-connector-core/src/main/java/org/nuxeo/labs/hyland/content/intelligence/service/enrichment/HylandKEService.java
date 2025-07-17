@@ -28,6 +28,11 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 
 @SuppressWarnings("rawtypes")
 public interface HylandKEService {
+    
+    enum EnrichmentServiceType {
+        ENRICHMENT,
+        DATA_CURATION
+    }
 
     /**
      * Send the blob for enrichment. In the response, and if succesful, there will be the job ID to use with
@@ -47,9 +52,9 @@ public interface HylandKEService {
      * @param extraJsonPayloadStr
      * @return
      * @throws IOException
-     * @since TODO
+     * @since 2023
      */
-    public ServiceCallResult sendForEnrichment(Blob blob, String sourceId, List<String> actions, List<String> classes,
+    public ServiceCallResult sendForEnrichment(String configName, Blob blob, String sourceId, List<String> actions, List<String> classes,
             String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException;
 
     /**
@@ -71,9 +76,9 @@ public interface HylandKEService {
      * @param extraJsonPayloadStr
      * @return
      * @throws IOException
-     * @since TODO
+     * @since 2023
      */
-    public ServiceCallResult sendForEnrichment(File file, String sourceId, String mimeType, List<String> actions,
+    public ServiceCallResult sendForEnrichment(String configName, File file, String sourceId, String mimeType, List<String> actions,
             List<String> classes, String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException;
 
     /**
@@ -87,9 +92,9 @@ public interface HylandKEService {
      * @param extraJsonPayloadStr
      * @return
      * @throws IOException
-     * @since TODO
+     * @since 2023
      */
-    public ServiceCallResult sendForEnrichment(List<ContentToProcess> contentObjects, List<String> actions,
+    public ServiceCallResult sendForEnrichment(String configName, List<ContentToProcess> contentObjects, List<String> actions,
             List<String> classes, String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException;
 
     /**
@@ -99,9 +104,9 @@ public interface HylandKEService {
      * @param jobId
      * @return
      * @throws IOException
-     * @since TODO
+     * @since 2023
      */
-    public ServiceCallResult getJobIdResult(String jobId) throws IOException;
+    public ServiceCallResult getJobIdResult(String configName, String jobId) throws IOException;
 
     /**
      * High level call performing all the different serial requests to the service (authenticate, then ask for presigned
@@ -119,7 +124,7 @@ public interface HylandKEService {
      * @throws IOException
      * @since 2023
      */
-    public ServiceCallResult enrich(Blob blob, List<String> actions, List<String> classes,
+    public ServiceCallResult enrich(String configName, Blob blob, List<String> actions, List<String> classes,
             String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException;
 
     /**
@@ -135,7 +140,7 @@ public interface HylandKEService {
      * @throws IOException
      * @since 2023
      */
-    public ServiceCallResult enrich(File file, String mimeType, List<String> actions, List<String> classes,
+    public ServiceCallResult enrich(String configName, File file, String mimeType, List<String> actions, List<String> classes,
             String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException;
 
     /**
@@ -147,9 +152,9 @@ public interface HylandKEService {
      * @param similarMetadataJsonArrayStr
      * @return
      * @throws IOException
-     * @since TODO
+     * @since 2023
      */
-    public ServiceCallResult enrich(List<ContentToProcess> contentObjects, List<String> actions, List<String> classes,
+    public ServiceCallResult enrich(String configName, List<ContentToProcess> contentObjects, List<String> actions, List<String> classes,
             String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException;
 
     
@@ -170,7 +175,7 @@ public interface HylandKEService {
      * @return a ServiceCallResult
      * @since 2023
      */
-    public ServiceCallResult invokeEnrichment(String httpMethod, String endpoint, String jsonPayload);
+    public ServiceCallResult invokeEnrichment(String configName, String httpMethod, String endpoint, String jsonPayload);
 
     /**
      * Call the DataCuraiton APi and returns
@@ -191,7 +196,7 @@ public interface HylandKEService {
      * @throws IOException
      * @since 2023
      */
-    public ServiceCallResult curate(Blob blob, String jsonOptions) throws IOException;
+    public ServiceCallResult curate(String configName, Blob blob, String jsonOptions) throws IOException;
 
     /**
      * (see <code>curate(Blob blob, String jsonOptions)</code>
@@ -202,7 +207,7 @@ public interface HylandKEService {
      * @throws IOException
      * @since 2023
      */
-    public ServiceCallResult curate(File file, String jsonOptions) throws IOException;
+    public ServiceCallResult curate(String configName, File file, String jsonOptions) throws IOException;
 
     /**
      * maxRetries and sleepinterval are configuration parametere, they can be tuned with this method.

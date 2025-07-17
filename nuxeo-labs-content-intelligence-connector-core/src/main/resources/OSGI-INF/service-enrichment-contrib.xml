@@ -1,10 +1,47 @@
 <?xml version="1.0"?>
 <component name="org.nuxeo.labs.hyland.content.intelligence.HylandKEService">
 
-  <!-- Enrichment -->
-  <implementation class="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl" />
+	<!-- Enrichment -->
+	<implementation
+		class="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl" />
 
-  <service>
-    <provide interface="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService" />
-  </service>
+	<service>
+		<provide
+			interface="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService" />
+	</service>
+
+	<extension-point name="knowledgeEnrichment">
+		<object
+			class="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.KEDescriptor" />
+	</extension-point>
+
+	<extension-point name="dataCuration">
+		<object
+			class="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.DCDescriptor" />
+	</extension-point>
+
+	<!-- Default contributions use configuration parameters -->
+	<extension
+		target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
+		point="knowledgeEnrichment">
+		<knowledgeEnrichment>
+			<name>default</name>
+			<authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
+			<baseUrl>${nuxeo.hyland.cic.contextEnrichment.baseUrl:=}</baseUrl>
+			<clientId>${nuxeo.hyland.cic.enrichment.clientId:=}</clientId>
+			<clientSecret>${nuxeo.hyland.cic.enrichment.clientSecret:=}</clientSecret>
+		</knowledgeEnrichment>
+	</extension>
+
+	<extension
+		target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
+		point="dataCuration">
+		<dataCuration>
+			<name>default</name>
+			<authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
+			<baseUrl>${nnuxeo.hyland.cic.dataCuration.baseUrl:=}</baseUrl>
+			<clientId>${nuxeo.hyland.cic.datacuration.clientId:=}</clientId>
+			<clientSecret>${nuxeo.hyland.cic.datacuration.clientSecret:=}</clientSecret>
+		</dataCuration>
+	</extension>
 </component>

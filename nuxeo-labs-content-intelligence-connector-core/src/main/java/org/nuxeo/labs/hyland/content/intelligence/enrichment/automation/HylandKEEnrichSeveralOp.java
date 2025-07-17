@@ -45,10 +45,14 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
         + " If input is Documents, use xpath to tell the operation where to find the blobs."
         + " To map the 'objectKey' returned by the service with your blobs, use the sourceIds param (comma separated list of unique valued)."
         + " If input is a list od Documents and sourceIds is not passed, then we use the document UUIDs as 'sourceId'. "
-        + " See the documentation for details.")
+        + " See the documentation for details."
+        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
 public class HylandKEEnrichSeveralOp {
 
     public static final String ID = "HylandKnowledgeEnrichment.EnrichSeveral";
+
+    @Context
+    protected HylandKEService keService;
 
     @Param(name = "actions", required = true)
     protected String actions;
@@ -68,8 +72,8 @@ public class HylandKEEnrichSeveralOp {
     @Param(name = "sourceIds", required = false)
     protected String sourceIds;
 
-    @Context
-    protected HylandKEService keService;
+    @Param(name = "configName", required = false)
+    protected String configName;
 
     @OperationMethod
     public Blob run(DocumentModelList docs) {
@@ -121,7 +125,7 @@ public class HylandKEEnrichSeveralOp {
 
         ServiceCallResult result;
         try {
-            result = keService.enrich(contentToProcess, theActions, theClasses, similarMetadataJsonArrayStr,
+            result = keService.enrich(configName, contentToProcess, theActions, theClasses, similarMetadataJsonArrayStr,
                     extraJsonPayloadStr);
         } catch (IOException e) {
             throw new NuxeoException(e);

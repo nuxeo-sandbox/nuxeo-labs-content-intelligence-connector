@@ -32,23 +32,27 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
 
 @Operation(id = HylandKECurateOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Data Curation on Blob", description = ""
         + "Invoke the Hyland Data Curation (DC) API to curate the blob. jsonOptions is optional, a JSON string"
-        + " that will tune the result.(See DC documentation for details, limitation, etc.)")
+        + " that will tune the result.(See DC documentation for details, limitation, etc.)."
+        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
 public class HylandKECurateOp {
 
     public static final String ID = "HylandKnowledgeEnrichment.Curate";
 
-    @Param(name = "jsonOptions", required = false)
-    protected String jsonOptions;
-
     @Context
     protected HylandKEService keService;
+
+    @Param(name = "configName", required = false)
+    protected String configName;
+
+    @Param(name = "jsonOptions", required = false)
+    protected String jsonOptions;
 
     @OperationMethod
     public Blob run(Blob blob) {
 
         ServiceCallResult result;
         try {
-            result = keService.curate(blob, jsonOptions);
+            result = keService.curate(configName, blob, jsonOptions);
         } catch (IOException e) {
             throw new NuxeoException(e);
         }

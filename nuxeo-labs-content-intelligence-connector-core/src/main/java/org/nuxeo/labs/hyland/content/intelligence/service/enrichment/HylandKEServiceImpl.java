@@ -49,7 +49,9 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.runtime.api.Framework;
+import org.nuxeo.runtime.model.ComponentContext;
 import org.nuxeo.runtime.model.DefaultComponent;
+import org.nuxeo.runtime.model.Extension;
 
 public class HylandKEServiceImpl extends DefaultComponent implements HylandKEService {
 
@@ -65,6 +67,8 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
     // Will add "/connect/token" to this baseUrl.
     public static final String AUTH_BASE_URL_PARAM = "nuxeo.hyland.cic.auth.baseUrl";
+
+    public static final String AUTH_ENDPOINT = "/connect/token";
 
     public static final String CONTEXT_ENRICHMENT_BASE_URL_PARAM = "nuxeo.hyland.cic.contextEnrichment.baseUrl";
 
@@ -98,9 +102,13 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
     public static final String CONTENT_INTELL_CACHE = "content_intelligence_cache";
 
-    protected static AuthenticationToken enrichmentAuthToken;
+    /*
+     * protected static AuthenticationToken enrichmentAuthToken;
+     * protected static AuthenticationToken dataCurationAuthToken;
+     */
+    protected static Map<String, AuthenticationToken> enrichmentAuthTokens = null;
 
-    protected static AuthenticationToken dataCurationAuthToken;
+    protected static Map<String, AuthenticationToken> dataCurationAuthTokens = null;
 
     protected static int pullResultsMaxTries;
 
@@ -109,6 +117,17 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     public static final String CUSTOM_ID_PREFIX = "CUSTOM_ID-";
 
     protected static ServiceCall serviceCall = new ServiceCall();
+
+    // ====================> Extensions points
+    protected static final String EXT_POINT_KE = "knowledgeEnrichment";
+
+    protected static final String EXT_POINT_DC = "dataCuration";
+
+    protected Map<String, KEDescriptor> keContribs = new HashMap<String, KEDescriptor>();
+
+    protected Map<String, DCDescriptor> dcContribs = new HashMap<String, DCDescriptor>();
+
+    public static final String CONFIG_DEFAULT = "default";
 
     public HylandKEServiceImpl() {
         initialize();
@@ -119,7 +138,8 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         switch (maxTries) {
         case 0:
             // Revert to config or default
-            pullResultsMaxTries = ServicesUtils.configParamToInt(PULL_RESULTS_MAX_TRIES_PARAM, PULL_RESULTS_MAX_TRIES_DEFAULT);
+            pullResultsMaxTries = ServicesUtils.configParamToInt(PULL_RESULTS_MAX_TRIES_PARAM,
+                    PULL_RESULTS_MAX_TRIES_DEFAULT);
             break;
 
         case -1:
@@ -162,6 +182,8 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
     protected void initialize() {
 
+        System.out.println("\n\nINITIALIZE\n\n");
+
         // ==========> Auth
         authBaseUrl = Framework.getProperty(AUTH_BASE_URL_PARAM);
 
@@ -181,19 +203,19 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
                     + "), calls to the service will fail.");
             authBaseUrl = ""; // avoid null for setting authFullUrl
         }
-        authFullUrl = authBaseUrl + "/connect/token";
+        // authFullUrl = authBaseUrl + AUTH_ENDPOINT;
 
         if (StringUtils.isBlank(contextEnrichmentBaseUrl)) {
             log.warn("No CIC Context Enrichment endpoint provided (" + CONTEXT_ENRICHMENT_BASE_URL_PARAM
                     + "), calls to the service will fail.");
-        } else if(contextEnrichmentBaseUrl.endsWith("/")) {
+        } else if (contextEnrichmentBaseUrl.endsWith("/")) {
             contextEnrichmentBaseUrl = contextEnrichmentBaseUrl.substring(0, contextEnrichmentBaseUrl.length() - 1);
         }
 
         if (StringUtils.isBlank(dataCurationBaseUrl)) {
             log.warn("No CIC Data Curation endpoint provided (" + DATA_CURATION_BASE_URL_PARAM
                     + "), calls to the service will fail.");
-        } else if(dataCurationBaseUrl.endsWith("/")) {
+        } else if (dataCurationBaseUrl.endsWith("/")) {
             dataCurationBaseUrl = dataCurationBaseUrl.substring(0, dataCurationBaseUrl.length() - 1);
         }
 
@@ -216,30 +238,57 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
             log.warn("No CIC Data Curation ClientSecret provided (" + DATA_CURATION_CLIENT_SECRET_PARAM
                     + "), calls to the service will fail.");
         }
-        
-        // ==========> Prepare for getting auth. tokens
-        enrichmentAuthToken = new AuthenticationTokenEnrichment(authFullUrl, enrichmentClientId, enrichmentClientSecret);
-        dataCurationAuthToken = new AuthenticationTokenEnrichment(authFullUrl, dataCurationClientId, dataCurationClientSecret);
 
+        // ==========> Prepare for getting auth. tokens
+        // (we can't set the tokens map here, the constructor is called before loading extensions, of course)
+        /*
+         * enrichmentAuthToken = new AuthenticationTokenEnrichment(authFullUrl, enrichmentClientId,
+         * enrichmentClientSecret);
+         * dataCurationAuthToken = new AuthenticationTokenEnrichment(authFullUrl, dataCurationClientId,
+         * dataCurationClientSecret);
+         */
         // ==========> Other params
-        pullResultsMaxTries = ServicesUtils.configParamToInt(PULL_RESULTS_MAX_TRIES_PARAM, PULL_RESULTS_MAX_TRIES_DEFAULT);
+        pullResultsMaxTries = ServicesUtils.configParamToInt(PULL_RESULTS_MAX_TRIES_PARAM,
+                PULL_RESULTS_MAX_TRIES_DEFAULT);
         pullResultsSleepIntervalMS = ServicesUtils.configParamToInt(PULL_RESULTS_SLEEP_INTERVAL_PARAM,
                 PULL_RESULTS_SLEEP_INTERVAL_DEFAULT);
     }
 
+    protected String getKEToken(String configName) {
+
+        if (StringUtils.isBlank(configName)) {
+            configName = CONFIG_DEFAULT;
+        }
+
+        AuthenticationToken token = enrichmentAuthTokens.get(configName);
+
+        return token.getToken();
+    }
+
+    protected String getDCToken(String configName) {
+
+        if (StringUtils.isBlank(configName)) {
+            configName = CONFIG_DEFAULT;
+        }
+
+        AuthenticationToken token = dataCurationAuthTokens.get(configName);
+
+        return token.getToken();
+    }
+
     @Override
-    public ServiceCallResult getJobIdResult(String jobId) {
+    public ServiceCallResult getJobIdResult(String configName, String jobId) {
 
         ServiceCallResult result = null;
 
-        result = invokeEnrichment("GET", "/api/content/process/" + jobId + "/results", null);
+        result = invokeEnrichment(configName, "GET", "/api/content/process/" + jobId + "/results", null);
 
         return result;
     }
 
     @Override
-    public ServiceCallResult sendForEnrichment(Blob blob, String sourceId, List<String> actions, List<String> classes,
-            String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException {
+    public ServiceCallResult sendForEnrichment(String configName, Blob blob, String sourceId, List<String> actions,
+            List<String> classes, String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException {
 
         if (StringUtils.isBlank(sourceId)) {
             sourceId = getCustomUUID();
@@ -250,16 +299,17 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         ContentToProcess<Blob> oneContent = new ContentToProcess<Blob>(sourceId, blob);
         contentToProcess.add(oneContent);
 
-        ServiceCallResult result = sendForEnrichment(contentToProcess, actions, classes, similarMetadataJsonArrayStr,
-                extraJsonPayloadStr);
+        ServiceCallResult result = sendForEnrichment(configName, contentToProcess, actions, classes,
+                similarMetadataJsonArrayStr, extraJsonPayloadStr);
 
         return result;
 
     }
 
     @Override
-    public ServiceCallResult sendForEnrichment(File file, String sourceId, String mimeType, List<String> actions,
-            List<String> classes, String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException {
+    public ServiceCallResult sendForEnrichment(String configName, File file, String sourceId, String mimeType,
+            List<String> actions, List<String> classes, String similarMetadataJsonArrayStr, String extraJsonPayloadStr)
+            throws IOException {
 
         if (StringUtils.isBlank(sourceId)) {
             sourceId = getCustomUUID();
@@ -270,16 +320,17 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         ContentToProcess<File> oneContent = new ContentToProcess<File>(sourceId, file);
         contentToProcess.add(oneContent);
 
-        ServiceCallResult result = sendForEnrichment(contentToProcess, actions, classes, similarMetadataJsonArrayStr,
-                extraJsonPayloadStr);
+        ServiceCallResult result = sendForEnrichment(configName, contentToProcess, actions, classes,
+                similarMetadataJsonArrayStr, extraJsonPayloadStr);
 
         return result;
     }
 
     @SuppressWarnings("rawtypes")
     @Override
-    public ServiceCallResult sendForEnrichment(List<ContentToProcess> contentObjects, List<String> actions,
-            List<String> classes, String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException {
+    public ServiceCallResult sendForEnrichment(String configName, List<ContentToProcess> contentObjects,
+            List<String> actions, List<String> classes, String similarMetadataJsonArrayStr, String extraJsonPayloadStr)
+            throws IOException {
 
         ServiceCallResult result = null;
         JSONObject serviceResponse;
@@ -290,7 +341,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         String errMsg;
         for (ContentToProcess content : contentObjects) {
 
-            result = invokeEnrichment("GET",
+            result = invokeEnrichment(configName, "GET",
                     "/api/files/upload/presigned-url?contentType=" + content.getMimeType().replace("/", "%2F"), null);
             if (result.callFailed()) {
                 // return result;
@@ -339,27 +390,28 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
         JSONObject payload = buildProcessActionPayload(objectKeys, actions, classes, similarMetadataJsonArrayStr,
                 extraJsonPayloadStr);
-        result = invokeEnrichment("POST", "/api/content/process", payload.toString());
+        result = invokeEnrichment(configName, "POST", "/api/content/process", payload.toString());
 
         return result;
     }
 
     @Override
     @SuppressWarnings("rawtypes")
-    public ServiceCallResult enrich(List<ContentToProcess> contentObjects, List<String> actions, List<String> classes,
-            String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException {
+    public ServiceCallResult enrich(String configName, List<ContentToProcess> contentObjects, List<String> actions,
+            List<String> classes, String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException {
 
         ServiceCallResult result = null;
         JSONObject serviceResponse;
 
-        result = sendForEnrichment(contentObjects, actions, classes, similarMetadataJsonArrayStr, extraJsonPayloadStr);
+        result = sendForEnrichment(configName, contentObjects, actions, classes, similarMetadataJsonArrayStr,
+                extraJsonPayloadStr);
         if (result.callFailed()) {
             return result;
         }
         serviceResponse = result.getResponseAsJSONObject();
         String resultId = serviceResponse.getString("processingId");
 
-        result = pullEnrichmentResults(resultId);
+        result = pullEnrichmentResults(configName, resultId);
 
         // Add the info so that caller can map objectKey and their blob/file
         if (result.callWasSuccesful()) {
@@ -387,7 +439,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     }
 
     @Override
-    public ServiceCallResult enrich(Blob blob, List<String> actions, List<String> classes,
+    public ServiceCallResult enrich(String configName, Blob blob, List<String> actions, List<String> classes,
             String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException {
 
         String sourceId = getCustomUUID();
@@ -397,7 +449,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         ContentToProcess<Blob> oneContent = new ContentToProcess<Blob>(sourceId, blob);
         contentToProcess.add(oneContent);
 
-        ServiceCallResult result = enrich(contentToProcess, actions, classes, similarMetadataJsonArrayStr,
+        ServiceCallResult result = enrich(configName, contentToProcess, actions, classes, similarMetadataJsonArrayStr,
                 extraJsonPayloadStr);
 
         return result;
@@ -431,8 +483,8 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     }
 
     @Override
-    public ServiceCallResult enrich(File file, String mimeType, List<String> actions, List<String> classes,
-            String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException {
+    public ServiceCallResult enrich(String configName, File file, String mimeType, List<String> actions,
+            List<String> classes, String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException {
 
         String sourceId = getCustomUUID();
 
@@ -441,22 +493,22 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         ContentToProcess<File> oneContent = new ContentToProcess<File>(sourceId, file);
         contentToProcess.add(oneContent);
 
-        ServiceCallResult result = enrich(contentToProcess, actions, classes, similarMetadataJsonArrayStr,
+        ServiceCallResult result = enrich(configName, contentToProcess, actions, classes, similarMetadataJsonArrayStr,
                 extraJsonPayloadStr);
 
         return result;
     }
 
     @Override
-    public ServiceCallResult curate(Blob blob, String jsonOptions) throws IOException {
+    public ServiceCallResult curate(String configName, Blob blob, String jsonOptions) throws IOException {
 
         try (CloseableFile closFile = blob.getCloseableFile()) {
-            return curate(closFile.getFile(), jsonOptions);
+            return curate(configName, closFile.getFile(), jsonOptions);
         }
     }
 
     @Override
-    public ServiceCallResult curate(File file, String jsonOptions) throws IOException {
+    public ServiceCallResult curate(String configName, File file, String jsonOptions) throws IOException {
 
         ServiceCallResult result;
         JSONObject jsonPresign;
@@ -465,9 +517,10 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         String putUrl = null;
 
         // ====================> 1. Get auth token
-        String bearer = dataCurationAuthToken.getToken();
+        String bearer = getDCToken(configName);// dataCurationAuthToken.getToken();
         if (StringUtils.isBlank(bearer)) {
-            throw new NuxeoException("No authentication info for calling the Data Curation service.");
+            throw new NuxeoException("No authentication info for calling the Data Curation service, for configuration '"
+                    + configName + "'.");
         }
 
         // ====================> 2. Get presigned stuff
@@ -499,13 +552,13 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         }
 
         // ====================> 4. Pull results
-        result = pullDataCurationResults(jobId, getUrl);
+        result = pullDataCurationResults(configName, jobId, getUrl);
 
         return result;
 
     }
 
-    protected ServiceCallResult pullEnrichmentResults(String resultId) {
+    protected ServiceCallResult pullEnrichmentResults(String configName, String resultId) {
 
         ServiceCallResult result;
         int count = 1;
@@ -524,7 +577,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
                         + pullResultsMaxTries + ")");
             }
 
-            result = getJobIdResult(resultId);
+            result = getJobIdResult(configName, resultId);
             count += 1;
 
             // We must get an OK. A 202 "Accepted" for example does not have the full response.
@@ -537,7 +590,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
      * Pull to dataCurationEndPoint/status/job_id until getting it "Done"
      * Once "Done", just GET at the getUrl (presigned)
      */
-    protected ServiceCallResult pullDataCurationResults(String jobId, String getUrl) {
+    protected ServiceCallResult pullDataCurationResults(String configName, String jobId, String getUrl) {
 
         ServiceCallResult result = null;
         int count = 1;
@@ -561,9 +614,11 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
                         + pullResultsMaxTries + ")");
             }
 
-            String bearer = dataCurationAuthToken.getToken();
+            String bearer = getDCToken(configName);// dataCurationAuthToken.getToken();
             if (StringUtils.isBlank(bearer)) {
-                throw new NuxeoException("No authentication info for calling the Data Curation service.");
+                throw new NuxeoException(
+                        "No authentication info for calling the Data Curation service, for configuration '" + configName
+                                + "'.");
             }
 
             Map<String, String> headers = new HashMap<String, String>();
@@ -602,12 +657,14 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
     }
 
-    public ServiceCallResult invokeEnrichment(String httpMethod, String endpoint, String jsonPayload) {
+    @Override
+    public ServiceCallResult invokeEnrichment(String configName, String httpMethod, String endpoint,
+            String jsonPayload) {
 
         ServiceCallResult result = null;
 
         // Get auth token
-        String bearer = enrichmentAuthToken.getToken();
+        String bearer = getKEToken(null);// enrichmentAuthToken.getToken();
         if (StringUtils.isBlank(bearer)) {
             throw new NuxeoException("No authentication info for calling the Enrichment service.");
         }
@@ -648,6 +705,120 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
         return result;
 
+    }
+
+    // ======================================================================
+    // ======================================================================
+    // Handling the component
+    // ======================================================================
+    // ======================================================================
+    /**
+     * Component activated notification.
+     * Called when the component is activated. All component dependencies are resolved at that moment.
+     * Use this method to initialize the component.
+     *
+     * @param context the component context.
+     */
+    @Override
+    public void activate(ComponentContext context) {
+        super.activate(context);
+    }
+
+    /**
+     * Component deactivated notification.
+     * Called before a component is unregistered.
+     * Use this method to do cleanup if any and free any resources held by the component.
+     *
+     * @param context the component context.
+     */
+    @Override
+    public void deactivate(ComponentContext context) {
+        super.deactivate(context);
+    }
+
+    /**
+     * Registers the given extension.
+     *
+     * @param extension the extension to register
+     */
+    @Override
+    public void registerExtension(Extension extension) {
+        super.registerExtension(extension);
+
+        if (EXT_POINT_KE.equals(extension.getExtensionPoint())) {
+            Object[] contribs = extension.getContributions();
+            if (contribs != null) {
+                for (Object contrib : contribs) {
+                    KEDescriptor desc = (KEDescriptor) contrib;
+                    keContribs.put(desc.getName(), desc);
+                }
+            }
+        } else if (EXT_POINT_DC.equals(extension.getExtensionPoint())) {
+            Object[] contribs = extension.getContributions();
+            if (contribs != null) {
+                for (Object contrib : contribs) {
+                    DCDescriptor desc = (DCDescriptor) contrib;
+                    dcContribs.put(desc.getName(), desc);
+                }
+            }
+        }
+    }
+
+    /**
+     * Unregisters the given extension.
+     *
+     * @param extension the extension to unregister
+     */
+    @Override
+    public void unregisterExtension(Extension extension) {
+        super.unregisterExtension(extension);
+
+        keContribs = null;
+        dcContribs = null;
+    }
+
+    /**
+     * Start the component. This method is called after all the components were resolved and activated
+     *
+     * @param context the component context. Use it to get the current bundle context
+     */
+    @Override
+    public void start(ComponentContext context) {
+        // OK, all extensions loaded, let's initialize the auth. tokens
+        if (keContribs == null) {
+            log.error("No configuration found for Knowledge Enrichement. Calls, if any, will fail.");
+        } else {
+            enrichmentAuthTokens = new HashMap<String, AuthenticationToken>();
+            for (Map.Entry<String, KEDescriptor> entry : keContribs.entrySet()) {
+                KEDescriptor desc = entry.getValue();
+                AuthenticationToken token = new AuthenticationTokenEnrichment(
+                        desc.getAuthenticationBaseUrl() + AUTH_ENDPOINT, desc.getClientId(), desc.getClientSecret());
+                enrichmentAuthTokens.put(desc.getName(), token);
+            }
+        }
+
+        if (dcContribs == null) {
+            log.error("No configuration found for Data Curation. Calls, if any, will fail.");
+        } else {
+            dataCurationAuthTokens = new HashMap<String, AuthenticationToken>();
+            for (Map.Entry<String, DCDescriptor> entry : dcContribs.entrySet()) {
+                DCDescriptor desc = entry.getValue();
+                AuthenticationToken token = new AuthenticationTokenEnrichment(desc.getAuthenticationBaseUrl(),
+                        desc.getClientId(), desc.getClientSecret());
+                dataCurationAuthTokens.put(desc.getName(), token);
+            }
+        }
+    }
+
+    /**
+     * Stop the component.
+     *
+     * @param context the component context. Use it to get the current bundle context
+     * @throws InterruptedException
+     */
+    @Override
+    public void stop(ComponentContext context) throws InterruptedException {
+        // do nothing by default. You can remove this method if not used.
     }
 
     // ================================================================================

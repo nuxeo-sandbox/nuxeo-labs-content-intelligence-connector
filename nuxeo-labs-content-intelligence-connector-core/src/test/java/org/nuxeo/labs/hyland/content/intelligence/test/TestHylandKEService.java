@@ -80,7 +80,7 @@ public class TestHylandKEService {
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
 
-        ServiceCallResult result = hylandKEService.invokeEnrichment("GET", "/INVALID_END_POINT", null);
+        ServiceCallResult result = hylandKEService.invokeEnrichment(null, "GET", "/INVALID_END_POINT", null);
 
         assertNotNull(result);
 
@@ -94,7 +94,7 @@ public class TestHylandKEService {
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
 
-        ServiceCallResult result = hylandKEService.invokeEnrichment("GET", "/api/content/process/actions", null);
+        ServiceCallResult result = hylandKEService.invokeEnrichment(null, "GET", "/api/content/process/actions", null);
 
         assertNotNull(result);
 
@@ -111,7 +111,7 @@ public class TestHylandKEService {
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
 
-        ServiceCallResult result = hylandKEService.invokeEnrichment("GET",
+        ServiceCallResult result = hylandKEService.invokeEnrichment(null, "GET",
                 "/api/files/upload/presigned-url?contentType=" + TEST_IMAGE_MIMETYPE.replace("/", "%2F"), null);
         assertNotNull(result);
 
@@ -136,7 +136,7 @@ public class TestHylandKEService {
 
         // 1. Send file
         File f = FileUtils.getResourceFileFromContext(TEST_IMAGE_PATH);
-        ServiceCallResult result = hylandKEService.sendForEnrichment(f, null, TEST_IMAGE_MIMETYPE,
+        ServiceCallResult result = hylandKEService.sendForEnrichment(null, f, null, TEST_IMAGE_MIMETYPE,
                 List.of("image-description"), null, null, null);
         assertNotNull(result);
 
@@ -154,7 +154,7 @@ public class TestHylandKEService {
         int count = 0;
         do {
             count += 1;
-            result = hylandKEService.getJobIdResult(jobId);
+            result = hylandKEService.getJobIdResult(null, jobId);
             if (!result.callResponseOK()) {
                 java.lang.Thread.sleep(3000);
             }
@@ -181,7 +181,7 @@ public class TestHylandKEService {
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         File f = FileUtils.getResourceFileFromContext(TEST_IMAGE_PATH);
-        ServiceCallResult result = hylandKEService.enrich(f, TEST_IMAGE_MIMETYPE, List.of("image-description"), null,
+        ServiceCallResult result = hylandKEService.enrich(null, f, TEST_IMAGE_MIMETYPE, List.of("image-description"), null,
                 null, null);
         assertNotNull(result);
 
@@ -210,7 +210,7 @@ public class TestHylandKEService {
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         File f = FileUtils.getResourceFileFromContext(TEST_IMAGE_PATH);
-        ServiceCallResult result = hylandKEService.enrich(f, TEST_IMAGE_MIMETYPE, List.of("image-embeddings"), null,
+        ServiceCallResult result = hylandKEService.enrich(null, f, TEST_IMAGE_MIMETYPE, List.of("image-embeddings"), null,
                 null, null);
         assertNotNull(result);
 
@@ -237,7 +237,7 @@ public class TestHylandKEService {
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         File f = FileUtils.getResourceFileFromContext(TEST_IMAGE_PATH);
-        ServiceCallResult result = hylandKEService.enrich(f, TEST_IMAGE_MIMETYPE, List.of("image-classification"),
+        ServiceCallResult result = hylandKEService.enrich(null, f, TEST_IMAGE_MIMETYPE, List.of("image-classification"),
                 List.of("Disney", "DC Comics", "Marvel"), null, null);
         assertNotNull(result);
 
@@ -266,7 +266,7 @@ public class TestHylandKEService {
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         File f = FileUtils.getResourceFileFromContext(TEST_IMAGE_PATH);
-        ServiceCallResult result = hylandKEService.enrich(f, TEST_IMAGE_MIMETYPE,
+        ServiceCallResult result = hylandKEService.enrich(null, f, TEST_IMAGE_MIMETYPE,
                 List.of("image-description", "image-embeddings", "image-classification"),
                 List.of("Disney", "DC Comics", "Marvel"), null, null);
         assertNotNull(result);
@@ -341,7 +341,7 @@ public class TestHylandKEService {
         // time it works fine), so let's try it 2-3 times? (except if response is not OK 200)
         do {
 
-            ServiceCallResult result = hylandKEService.enrich(f, TEST_IMAGE_MIMETYPE,
+            ServiceCallResult result = hylandKEService.enrich(null, f, TEST_IMAGE_MIMETYPE,
                     List.of("image-metadata-generation"), null, similarMetadata, null);
             assertNotNull(result);
 
@@ -413,7 +413,7 @@ public class TestHylandKEService {
         List<ContentToProcess> content = List.of(new ContentToProcess<File>("12345", f1),
                 new ContentToProcess<File>("67890", f2));
 
-        ServiceCallResult result = hylandKEService.enrich(content, List.of("image-description"), null, null, null);
+        ServiceCallResult result = hylandKEService.enrich(null, content, List.of("image-description"), null, null, null);
         assertNotNull(result);
 
         // Expecting HTTP OK
@@ -458,7 +458,7 @@ public class TestHylandKEService {
         // schema MDATS - FULL - PIPELINE. See
         // https://hyland.github.io/DocumentFilters-Docs/latest/getting_started_with_document_filters/about_json_output.html#json_output_schema
         String options = "{\"normalization\": {\"quotations\": true},\"chunking\": true,\"embedding\": false, \"json_schema\": \"MDAST\"}";
-        ServiceCallResult result = hylandKEService.curate(f, options);
+        ServiceCallResult result = hylandKEService.curate(null, f, options);
         assertNotNull(result);
 
         // File file = new File("/Users/ME/Desktop/output-MDAST.json");
@@ -504,7 +504,7 @@ public class TestHylandKEService {
 
         File f = FileUtils.getResourceFileFromContext(TEST_CONTRACT_PATH);
 
-        ServiceCallResult result = hylandKEService.enrich(f, TEST_CONTRACT_MIMETYPE, List.of("text-summarization"),
+        ServiceCallResult result = hylandKEService.enrich(null, f, TEST_CONTRACT_MIMETYPE, List.of("text-summarization"),
                 null, null, null);
         assertNotNull(result);
 
@@ -527,7 +527,7 @@ public class TestHylandKEService {
 
         File f = FileUtils.getResourceFileFromContext(TEST_CONTRACT_PATH);
 
-        ServiceCallResult result = hylandKEService.enrich(f, TEST_CONTRACT_MIMETYPE, List.of("text-summarization"),
+        ServiceCallResult result = hylandKEService.enrich(null, f, TEST_CONTRACT_MIMETYPE, List.of("text-summarization"),
                 null, null, null);
         assertNotNull(result);
 
@@ -537,7 +537,7 @@ public class TestHylandKEService {
         String summary1 = summaryObj.getString("result");
 
         // Now, same call, few words
-        result = hylandKEService.enrich(f, TEST_CONTRACT_MIMETYPE, List.of("text-summarization"), null, null,
+        result = hylandKEService.enrich(null, f, TEST_CONTRACT_MIMETYPE, List.of("text-summarization"), null, null,
                 "{\"maxWordCount\": 50}");
         assertNotNull(result);
 

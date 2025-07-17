@@ -40,10 +40,14 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
         + " The result is a JSON as string. If succesful, its response object will have a processingId property,"
         + " it is the value to pass to the HylandKnowledgeEnrichment.GetEnrichmentResults operation to actually get the results."
         + " sourceId is optional, it makes it possible to bind the result jobId to a document, for example, so you can get the"
-        + " document when calling HylandKnowledgeEnrichment.GetEnrichmentResults.")
+        + " document when calling HylandKnowledgeEnrichment.GetEnrichmentResults."
+        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
 public class HylandKESendForEnrichmentOp {
 
     public static final String ID = "HylandKnowledgeEnrichment.SendForEnrichment";
+
+    @Context
+    protected HylandKEService keService;
 
     @Param(name = "sourceId", required = true)
     protected String sourceId;
@@ -60,8 +64,8 @@ public class HylandKESendForEnrichmentOp {
     @Param(name = "extraJsonPayloadStr", required = false)
     protected String extraJsonPayloadStr = null;
 
-    @Context
-    protected HylandKEService keService;
+    @Param(name = "configName", required = false)
+    protected String configName;
 
     @OperationMethod
     public Blob run(Blob blob) {
@@ -75,7 +79,7 @@ public class HylandKESendForEnrichmentOp {
 
         ServiceCallResult result;
         try {
-            result = keService.sendForEnrichment(blob, sourceId, theActions, theClasses, similarMetadataJsonArrayStr,
+            result = keService.sendForEnrichment(configName, blob, sourceId, theActions, theClasses, similarMetadataJsonArrayStr,
                     extraJsonPayloadStr);
         } catch (IOException e) {
             throw new NuxeoException(e);

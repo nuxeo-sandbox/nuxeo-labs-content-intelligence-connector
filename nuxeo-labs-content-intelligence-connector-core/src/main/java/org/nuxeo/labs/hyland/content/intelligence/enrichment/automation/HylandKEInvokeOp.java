@@ -29,10 +29,14 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
 
 @Operation(id = HylandKEInvokeOp.ID, category = "Hyland Knowledge Enrichment", label = "Call Hyland Knowledge Enrichment Service", description = ""
         + "Invoke the Hyland Content Intelligence/Knowledge Enrichment API."
-        + " Used for the low-level calls. (See Knowledge Enrichment API documentation for details)")
+        + " Used for the low-level calls. (See Knowledge Enrichment API documentation for details)"
+        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
 public class HylandKEInvokeOp {
 
     public static final String ID = "HylandKnowledgeEnrichment.Invoke";
+
+    @Context
+    protected HylandKEService keService;
 
     @Param(name = "httpMethod", required = true)
     protected String httpMethod;
@@ -43,12 +47,12 @@ public class HylandKEInvokeOp {
     @Param(name = "jsonPayload", required = false)
     protected String jsonPayload;
 
-    @Context
-    protected HylandKEService keService;
+    @Param(name = "configName", required = false)
+    protected String configName;
 
     @OperationMethod
     public Blob run() {
-        ServiceCallResult result = keService.invokeEnrichment(httpMethod, endpoint, jsonPayload);
+        ServiceCallResult result = keService.invokeEnrichment(configName, httpMethod, endpoint, jsonPayload);
         
         return Blobs.createJSONBlob(result.toJsonString());
     }

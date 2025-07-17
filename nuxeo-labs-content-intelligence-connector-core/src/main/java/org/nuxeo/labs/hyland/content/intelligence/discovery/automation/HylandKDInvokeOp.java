@@ -38,7 +38,8 @@ import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDServ
         + "Invoke the Hyland Content Intelligence/Discovery API."
         + " Used for the low-level calls. (See Discovery API documentation for details)."
         + " The result will have a 'responseCode' property that you should check,"
-        + " and the returned result is in the 'response' property.")
+        + " and the returned result is in the 'response' property."
+        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
 public class HylandKDInvokeOp {
     
     public static final String ID = "HylandKnowledgeDiscovery.Invoke";

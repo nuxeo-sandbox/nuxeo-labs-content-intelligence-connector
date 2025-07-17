@@ -32,23 +32,27 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
 
 @Operation(id = HylandKEGetEnrichmentResultsOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Knowledge Enrichement Get Results", description = ""
         + "Invoke the Hyland Knowledge Enrichment (KE) API to get the processing results. Pass in jobId the value received"
-        + " after a call to the HylandKnowledgeEnrichment.SendForEnrichment operation.")
+        + " after a call to the HylandKnowledgeEnrichment.SendForEnrichment operation."
+        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
 public class HylandKEGetEnrichmentResultsOp {
 
     public static final String ID = "HylandKnowledgeEnrichment.GetEnrichmentResults";
 
+    @Context
+    protected HylandKEService keService;
+
     @Param(name = "jobId", required = true)
     protected String jobId;
 
-    @Context
-    protected HylandKEService keService;
+    @Param(name = "configName", required = false)
+    protected String configName;
 
     @OperationMethod
     public Blob run() {
 
         ServiceCallResult result;
         try {
-            result = keService.getJobIdResult(jobId);
+            result = keService.getJobIdResult(configName, jobId);
         } catch (IOException e) {
             throw new NuxeoException(e);
         }

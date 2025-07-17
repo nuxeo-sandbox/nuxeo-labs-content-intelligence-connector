@@ -36,10 +36,14 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
 @Operation(id = HylandKEEnrichOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Knowledge Enrichement on Blob", description = ""
         + "Invoke the Hyland Knowledge Enrichment (KE) API to enrich the blob. actions is a list of actions to process"
         + " (image-description, image-embeddings, …), classes a list of values to be used for classification,"
-        + " and similarValues is used for metadata endpoint. It must be passed as a. (See KE documentation for details, limitation, etc.)")
+        + " and similarValues is used for metadata endpoint. It must be passed as a. (See KE documentation for details, limitation, etc.)"
+        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
 public class HylandKEEnrichOp {
 
     public static final String ID = "HylandKnowledgeEnrichment.Enrich";
+
+    @Context
+    protected HylandKEService keService;
 
     @Param(name = "actions", required = true)
     protected String actions;
@@ -53,8 +57,8 @@ public class HylandKEEnrichOp {
     @Param(name = "extraJsonPayloadStr", required = false)
     protected String extraJsonPayloadStr = null;
 
-    @Context
-    protected HylandKEService keService;
+    @Param(name = "configName", required = false)
+    protected String configName;
 
     @OperationMethod
     public Blob run(Blob blob) {
@@ -68,7 +72,7 @@ public class HylandKEEnrichOp {
 
         ServiceCallResult result;
         try {
-            result = keService.enrich(blob, theActions, theClasses, similarMetadataJsonArrayStr, extraJsonPayloadStr);
+            result = keService.enrich(configName, blob, theActions, theClasses, similarMetadataJsonArrayStr, extraJsonPayloadStr);
         } catch (IOException e) {
             throw new NuxeoException(e);
         }
