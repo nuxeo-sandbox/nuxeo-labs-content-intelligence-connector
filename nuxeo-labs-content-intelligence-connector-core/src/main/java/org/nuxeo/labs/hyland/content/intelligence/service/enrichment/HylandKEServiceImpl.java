@@ -178,13 +178,13 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
         return token.getToken();
     }
-    
+
     protected KEDescriptor getKEDescriptor(String configName) {
 
         if (StringUtils.isBlank(configName)) {
             configName = CONFIG_DEFAULT;
         }
-        
+
         return keContribs.get(configName);
     }
 
@@ -198,13 +198,13 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
         return token.getToken();
     }
-    
+
     protected DCDescriptor getDCDescriptor(String configName) {
 
         if (StringUtils.isBlank(configName)) {
             configName = CONFIG_DEFAULT;
         }
-        
+
         return dcContribs.get(configName);
     }
 
@@ -457,7 +457,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
         // ====================> 2. Get presigned stuff
         DCDescriptor config = getDCDescriptor(configName);
-        String targetUrl = config.getBaseUrl();//dataCurationBaseUrl;
+        String targetUrl = config.getBaseUrl();// dataCurationBaseUrl;
         targetUrl += "/api/presign";
 
         Map<String, String> headers = new HashMap<String, String>();
@@ -744,8 +744,8 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
             dataCurationAuthTokens = new HashMap<String, AuthenticationToken>();
             for (Map.Entry<String, DCDescriptor> entry : dcContribs.entrySet()) {
                 DCDescriptor desc = entry.getValue();
-                AuthenticationToken token = new AuthenticationTokenEnrichment(desc.getAuthenticationBaseUrl(),
-                        desc.getClientId(), desc.getClientSecret());
+                AuthenticationToken token = new AuthenticationTokenEnrichment(
+                        desc.getAuthenticationBaseUrl() + AUTH_ENDPOINT, desc.getClientId(), desc.getClientSecret());
                 dataCurationAuthTokens.put(desc.getName(), token);
 
                 desc.checkConfigAndLogErrors();

@@ -39,7 +39,7 @@
 		<dataCuration>
 			<name>default</name>
 			<authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
-			<baseUrl>${nnuxeo.hyland.cic.dataCuration.baseUrl:=}</baseUrl>
+			<baseUrl>${nuxeo.hyland.cic.dataCuration.baseUrl:=}</baseUrl>
 			<clientId>${nuxeo.hyland.cic.datacuration.clientId:=}</clientId>
 			<clientSecret>${nuxeo.hyland.cic.datacuration.clientSecret:=}</clientSecret>
 		</dataCuration>
