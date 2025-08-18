@@ -25,7 +25,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.util.Base64;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
