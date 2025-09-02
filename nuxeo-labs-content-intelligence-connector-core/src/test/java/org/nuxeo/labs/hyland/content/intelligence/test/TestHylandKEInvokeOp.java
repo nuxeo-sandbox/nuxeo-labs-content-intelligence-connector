@@ -62,7 +62,7 @@ public class TestHylandKEInvokeOp {
         OperationContext ctx = new OperationContext(session);
         Map<String, Object> params = new HashMap<>();
         params.put("httpMethod", "GET");
-        params.put("endpoint", "/api/files/upload/presigned-url?contentType=image%2Fjpeg");
+        params.put("endpoint", "/files/upload/presigned-url?contentType=image%2Fjpeg");
         // No jsonPayload required
 
         Blob result = (Blob) automationService.run(ctx, HylandKEInvokeOp.ID, params);
