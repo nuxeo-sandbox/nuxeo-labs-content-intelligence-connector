@@ -213,7 +213,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
         ServiceCallResult result = null;
 
-        result = invokeEnrichment(configName, "GET", "/api/content/process/" + jobId + "/results", null);
+        result = invokeEnrichment(configName, "GET", "/content/process/" + jobId + "/results", null);
 
         return result;
     }
@@ -274,7 +274,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         for (ContentToProcess content : contentObjects) {
 
             result = invokeEnrichment(configName, "GET",
-                    "/api/files/upload/presigned-url?contentType=" + content.getMimeType().replace("/", "%2F"), null);
+                    "/files/upload/presigned-url?contentType=" + content.getMimeType().replace("/", "%2F"), null);
             if (result.callFailed()) {
                 // return result;
 
@@ -322,7 +322,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
         JSONObject payload = buildProcessActionPayload(objectKeys, actions, classes, similarMetadataJsonArrayStr,
                 extraJsonPayloadStr);
-        result = invokeEnrichment(configName, "POST", "/api/content/process", payload.toString());
+        result = invokeEnrichment(configName, "POST", "/content/process", payload.toString());
 
         return result;
     }
@@ -615,7 +615,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Accept", "*/*");
         headers.put("Authorization", "Bearer " + bearer);
-        if (endpoint.startsWith("/api/content/process")) {
+        if (endpoint.startsWith("/content/process")) {
             headers.put("Content-Type", "application/json");
         }
 
@@ -644,7 +644,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
     // ======================================================================
     // ======================================================================
-    // Handling the component
+    // Service Configuration
     // ======================================================================
     // ======================================================================
     /**
