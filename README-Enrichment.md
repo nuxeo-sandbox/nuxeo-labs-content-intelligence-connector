@@ -45,7 +45,7 @@ The plugin provides a `"default"` configuration, that uses the following configu
 #### Configuration Parameters
 
 * `nuxeo.hyland.cic.auth.baseUrl`: The authentication endpoint. The plugin adds the "/connect/token" final path. So your URL is something like `https://auth.etc.etc.hyland.com/idp` (This is the same parameter as for Knowledge Enrichment)
-* `nuxeo.hyland.cic.contextEnrichment.baseUrl`: The enrichment base URL (endpoints, like `"/api/content/process"` will be added to this URL).
+* `nuxeo.hyland.cic.contextEnrichment.baseUrl`: The enrichment base URL (endpoints, like `"/content/process"` will be added to this URL).
 * `nuxeo.hyland.cic.dataCuration.baseUrl`: The Data Curation base URL
 * `nuxeo.hyland.cic.enrichment.clientId`: Your enrichment clientId
 * `nuxeo.hyland.cic.enrichment.clientSecret`: Your enrichment client secret
