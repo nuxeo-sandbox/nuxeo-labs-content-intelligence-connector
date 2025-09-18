@@ -31,3 +31,4 @@ bin/
 *~gen
 .env
 nashorn_code_cache
+dev_null
