@@ -25,7 +25,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.util.List;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
@@ -94,7 +94,7 @@ public class TestHylandKEService {
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
 
-        ServiceCallResult result = hylandKEService.invokeEnrichment(null, "GET", "/api/content/process/actions", null);
+        ServiceCallResult result = hylandKEService.invokeEnrichment(null, "GET", "/content/process/actions", null);
 
         assertNotNull(result);
 
@@ -112,7 +112,7 @@ public class TestHylandKEService {
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         ServiceCallResult result = hylandKEService.invokeEnrichment(null, "GET",
-                "/api/files/upload/presigned-url?contentType=" + TEST_IMAGE_MIMETYPE.replace("/", "%2F"), null);
+                "/files/upload/presigned-url?contentType=" + TEST_IMAGE_MIMETYPE.replace("/", "%2F"), null);
         assertNotNull(result);
 
         assertTrue(result.callResponseOK());

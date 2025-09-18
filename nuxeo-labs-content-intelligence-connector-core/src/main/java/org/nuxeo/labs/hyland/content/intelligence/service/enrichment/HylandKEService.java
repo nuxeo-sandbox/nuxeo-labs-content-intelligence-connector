@@ -280,17 +280,4 @@ public interface HylandKEService {
      */
     public void setPullResultsSettings(int maxTries, int sleepIntervalMS);
 
-    // ====================================================================================================
-    /*
-     * Used when CIC provided APIs for quick demos, showing work in progress
-     * Not to be used, these APIs and the server will be removed/shutdown at some point.
-     */
-    public static final String CONTENT_INTELL_URL_PARAM = "nuxeo.hyland.content.intelligence.baseUrl";
-
-    public static final String CONTENT_INTELL_HEADER_NAME_PARAM = "nuxeo.hyland.content.intelligence.authenticationHeaderName";
-
-    public static final String CONTENT_INTELL_HEADER_VALUE_PARAM = "nuxeo.hyland.content.intelligence.authenticationHeaderValue";
-
-    public String invokeObsoleteQuickDemo(String endpoint, String jsonPayload);
-    // ====================================================================================================
 }

@@ -1,12 +1,8 @@
 package org.nuxeo.labs.hyland.content.intelligence.service.discovery;
 
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 
 public interface HylandKDService {

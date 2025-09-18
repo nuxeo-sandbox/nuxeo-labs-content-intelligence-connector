@@ -202,7 +202,7 @@ A high level operation that sends a question, waits for the answer, then returns
 * Parameters
   * `question`: String required. The question to ask the agent
   * `agentId`: String, optional. The ID of the agent to ask the question. If not passed, the plugin uses the value of `nuxeo.hyland.cic.discovery.default.agentId`
-  * `contextObjectIdsJsonArrayStr`: String, optional.  A stringified JSON Array of Document UUIDs whoch were sent to the service previously, and will be used for the context of the question.
+  * `contextObjectIdsJsonArrayStr`: String, optional.  A stringified JSON Array of Document UUIDs which were sent to the service previously, and will be used for the context of the question.
   * `extraPayloadJsonStr`: String, optional. A JSON object as string, with extra parameters for the service. Check the Knowledge Discovery docmentation. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload.
   * `extraHeadersJsonStr`: String optional. A JSON object as string, with more headers than the one sent byt the plugin, allowing for extra tuning if needed
   * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
@@ -213,7 +213,7 @@ The plugin sends the question (and the optional `contextObjectIds`) to the servi
 #### Example:
 
 ```javascript
-// In this example, the input is documents, we reveive a list of documents, that were already
+// In this example, the input is documents, we receive a list of documents, that were already
 // sent to CIC and we want to use them as context for the question.
 // input type: documents
 // output type: blob
@@ -232,7 +232,8 @@ function run(input, params) {
   // No custom agent ID (using nuxeo.hyland.cic.discovery.default.agentId), no extraJsonPayload no extraheaders
   result = HylandKnowledgeDiscovery.askQuestionAndGetAnswer(
     null, {
-      "question": "How many contracts are in EMEA for the ACME company?"
+      "question": "How many contracts are in EMEA for the ACME company?",
+      "contextObjectIdsJsonArrayStr": objKeys
     }
   );
   var jsonStr = result.getString();

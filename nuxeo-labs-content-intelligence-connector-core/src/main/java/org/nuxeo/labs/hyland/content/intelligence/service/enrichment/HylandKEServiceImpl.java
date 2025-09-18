@@ -18,14 +18,8 @@ i * (C) Copyright 2025 Hyland (http://hyland.com/) and others.
  */
 package org.nuxeo.labs.hyland.content.intelligence.service.enrichment;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +31,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.CloseableFile;
@@ -48,7 +41,6 @@ import org.nuxeo.labs.hyland.content.intelligence.ContentToProcess;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
-import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.ComponentContext;
 import org.nuxeo.runtime.model.DefaultComponent;
 import org.nuxeo.runtime.model.Extension;
@@ -644,7 +636,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
     // ======================================================================
     // ======================================================================
-    // Handling the component
+    // Service Configuration
     // ======================================================================
     // ======================================================================
     /**
@@ -707,13 +699,24 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     @Override
     public void unregisterExtension(Extension extension) {
         super.unregisterExtension(extension);
-
-        keContribs = null;
-        dcContribs = null;
-    }
-
-    protected void checkConfigAndLogErrors(String service, KEDescriptor desc) {
-
+        
+        if (EXT_POINT_KE.equals(extension.getExtensionPoint())) {
+            Object[] contribs = extension.getContributions();
+            if (contribs != null) {
+                for (Object contrib : contribs) {
+                    KEDescriptor desc = (KEDescriptor) contrib;
+                    keContribs.remove(desc.getName());
+                }
+            }
+        } else if (EXT_POINT_DC.equals(extension.getExtensionPoint())) {
+            Object[] contribs = extension.getContributions();
+            if (contribs != null) {
+                for (Object contrib : contribs) {
+                    DCDescriptor desc = (DCDescriptor) contrib;
+                    dcContribs.remove(desc.getName());
+                }
+            }
+        }
     }
 
     /**
@@ -761,93 +764,10 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
      */
     @Override
     public void stop(ComponentContext context) throws InterruptedException {
-        // do nothing by default. You can remove this method if not used.
-    }
 
-    // ================================================================================
-    // ================================================================================
-    // ================================================================================
-    /*
-     * Used when CIC provided APIs for quick demos, showing work in progress
-     * Not to be used, these APIs and the server will be removed/shutdown at some point.
-     */
-    public String invokeObsoleteQuickDemo(String endpoint, String jsonPayload) {
-
-        String response = null;
-
-        // Get config parameter values for URL to call, authentication, etc.
-        String targetUrl = Framework.getProperty(HylandKEService.CONTENT_INTELL_URL_PARAM);
-        String authenticationHeaderName = Framework.getProperty(HylandKEService.CONTENT_INTELL_HEADER_NAME_PARAM);
-        String authenticationHeaderValue = Framework.getProperty(HylandKEService.CONTENT_INTELL_HEADER_VALUE_PARAM);
-
-        if (!endpoint.startsWith("/")) {
-            targetUrl += "/";
-        }
-        targetUrl += endpoint;
-
-        // For whatever reason I have don't time to explore, using the more modern java.net.http.HttpClient;
-        // fails, the authentication header is not corrcetly received...
-        // So, let's go back to good old HttpURLConnection.
-        HttpURLConnection conn = null;
-        try {
-            // Create the URL object
-            URL url = new URL(targetUrl);
-            conn = (HttpURLConnection) url.openConnection();
-
-            // Set request method to POST
-            conn.setRequestMethod("POST");
-            conn.setDoOutput(true); // Allows sending body content
-
-            // Set headers
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty(authenticationHeaderName, authenticationHeaderValue); // Custom Auth Header
-
-            // Write JSON data to request body
-            try (OutputStream os = conn.getOutputStream()) {
-                byte[] input = jsonPayload.getBytes(StandardCharsets.UTF_8);
-                os.write(input, 0, input.length);
-            }
-
-            // Get response code
-            int responseCode = conn.getResponseCode();
-
-            // Read response
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                    responseCode >= 200 && responseCode < 300 ? conn.getInputStream() : conn.getErrorStream(),
-                    StandardCharsets.UTF_8))) {
-
-                StringBuilder finalResponse = new StringBuilder();
-                String line;
-                while ((line = br.readLine()) != null) {
-                    finalResponse.append(line.trim());
-                }
-
-                response = finalResponse.toString();
-                // System.out.println(response);
-
-                try {
-                    JSONObject responseJson = new JSONObject(response);
-                    responseJson.put("responseCode", responseCode);
-                    responseJson.put("responseMessage", conn.getResponseMessage());
-                    response = responseJson.toString();
-                } catch (JSONException e) {
-                    // Ouch. This is not JSON, let it as it is
-                }
-            }
-
-            // Disconnect the connection
-            conn.disconnect();
-
-        } catch (IOException e) {
-            System.err.println("Error: " + e.getMessage());
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-                conn = null;
-            }
-        }
-
-        return response;
+        keContribs = null;
+        dcContribs = null;
+        
     }
 
 }

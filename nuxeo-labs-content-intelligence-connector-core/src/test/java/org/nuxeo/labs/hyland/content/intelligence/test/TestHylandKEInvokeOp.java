@@ -25,7 +25,7 @@ import static org.junit.Assert.assertNotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -62,7 +62,7 @@ public class TestHylandKEInvokeOp {
         OperationContext ctx = new OperationContext(session);
         Map<String, Object> params = new HashMap<>();
         params.put("httpMethod", "GET");
-        params.put("endpoint", "/api/files/upload/presigned-url?contentType=image%2Fjpeg");
+        params.put("endpoint", "/files/upload/presigned-url?contentType=image%2Fjpeg");
         // No jsonPayload required
 
         Blob result = (Blob) automationService.run(ctx, HylandKEInvokeOp.ID, params);
