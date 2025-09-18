@@ -21,7 +21,6 @@ package org.nuxeo.labs.hyland.content.intelligence.enrichment.automation;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
 import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
 import org.nuxeo.ecm.automation.core.annotations.Param;
@@ -32,7 +31,6 @@ import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.platform.mimetype.interfaces.MimetypeRegistry;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
-import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 import org.nuxeo.runtime.api.Framework;
 
 @Operation(id = HylandKEUploadFileOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Knowledge Enrichement Upload File", description = ""

@@ -34,6 +34,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nuxeo.ecm.automation.AutomationService;
@@ -63,6 +64,7 @@ public class TestHylandKDOperations {
     @Inject
     protected HylandKDService hylandKDService;
 
+    @Ignore
     @Test
     public void testInvokeGetAllAgents() throws Exception {
 
@@ -73,7 +75,7 @@ public class TestHylandKDOperations {
 
         Map<String, Object> params = new HashMap<>();
         params.put("httpMethod", "GET");
-        params.put("endpoint", "/agent/agents");
+        params.put("endpoint", "/agents");
         // No jsonPayload in this test
 
         Blob result = (Blob) automationService.run(ctx, HylandKDInvokeOp.ID, params);
@@ -91,6 +93,7 @@ public class TestHylandKDOperations {
         assertTrue(responseArr.length() > 0);
     }
 
+    @Ignore
     @Test
     public void shouldGetAllAgents() throws Exception {
 

@@ -182,7 +182,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     @Override
     public ServiceCallResult getAllAgents(String configName, Map<String, String> extraHeaders) {
 
-        ServiceCallResult result = invokeDiscovery(configName, "GET", "/agent/agents", null, extraHeaders);
+        ServiceCallResult result = invokeDiscovery(configName, "GET", "/agents", null, extraHeaders);
 
         return result;
     }
@@ -340,8 +340,16 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     @Override
     public void unregisterExtension(Extension extension) {
         super.unregisterExtension(extension);
-
-        kdContribs = null;
+        
+        if (EXT_POINT_KD.equals(extension.getExtensionPoint())) {
+            Object[] contribs = extension.getContributions();
+            if (contribs != null) {
+                for (Object contrib : contribs) {
+                    KDDescriptor desc = (KDDescriptor) contrib;
+                    kdContribs.remove(desc.getName());
+                }
+            }
+        }
     }
 
     /**
@@ -354,7 +362,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
 
         // OK, all extensions loaded, let's initialize the auth. tokens
         if (kdContribs == null) {
-            log.error("No configuration found for Knowledge Enrichement. Calls, if any, will fail.");
+            log.error("No configuration found for Knowledge Discovery. Calls, if any, will fail.");
         } else {
             discoveryAuthTokens = new HashMap<String, AuthenticationToken>();
             for (Map.Entry<String, KDDescriptor> entry : kdContribs.entrySet()) {
@@ -377,6 +385,6 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
      */
     @Override
     public void stop(ComponentContext context) throws InterruptedException {
-        // do nothing by default. You can remove this method if not used.
+        kdContribs = null;
     }
 }
