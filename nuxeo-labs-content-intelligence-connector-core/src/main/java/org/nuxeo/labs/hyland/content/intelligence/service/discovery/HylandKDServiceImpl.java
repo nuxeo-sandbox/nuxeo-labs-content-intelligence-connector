@@ -298,6 +298,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     @Override
     public void activate(ComponentContext context) {
         super.activate(context);
+        //log.warn("activate component");
     }
 
     /**
@@ -310,6 +311,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     @Override
     public void deactivate(ComponentContext context) {
         super.deactivate(context);
+        //log.warn("deactivate component");
     }
 
     /**
@@ -320,6 +322,10 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     @Override
     public void registerExtension(Extension extension) {
         super.registerExtension(extension);
+        
+        if (kdContribs == null) { // May happens during HotReload from Nuxeo Studio
+            kdContribs = new HashMap<String, KDDescriptor>();
+        }
 
         if (EXT_POINT_KD.equals(extension.getExtensionPoint())) {
             Object[] contribs = extension.getContributions();
@@ -341,6 +347,10 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     public void unregisterExtension(Extension extension) {
         super.unregisterExtension(extension);
         
+        if (kdContribs == null) { // May happens during HotReload from Nuxeo Studio
+            return;
+        }
+        
         if (EXT_POINT_KD.equals(extension.getExtensionPoint())) {
             Object[] contribs = extension.getContributions();
             if (contribs != null) {
@@ -359,6 +369,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
      */
     @Override
     public void start(ComponentContext context) {
+        //log.warn("Start component");
 
         // OK, all extensions loaded, let's initialize the auth. tokens
         if (kdContribs == null) {
@@ -385,6 +396,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
      */
     @Override
     public void stop(ComponentContext context) throws InterruptedException {
-        kdContribs = null;
+
+        //log.warn("Stop component");
     }
 }

@@ -28,7 +28,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

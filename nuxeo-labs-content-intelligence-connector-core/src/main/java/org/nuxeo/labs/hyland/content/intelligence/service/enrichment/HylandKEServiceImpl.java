@@ -671,6 +671,14 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     @Override
     public void registerExtension(Extension extension) {
         super.registerExtension(extension);
+        
+        if(keContribs == null) {
+            keContribs = new HashMap<String, KEDescriptor>();
+        }
+        
+        if(dcContribs == null) {
+            dcContribs = new HashMap<String, DCDescriptor>();
+        }
 
         if (EXT_POINT_KE.equals(extension.getExtensionPoint())) {
             Object[] contribs = extension.getContributions();
@@ -701,6 +709,9 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         super.unregisterExtension(extension);
         
         if (EXT_POINT_KE.equals(extension.getExtensionPoint())) {
+            if(keContribs == null) {
+                return;
+            }
             Object[] contribs = extension.getContributions();
             if (contribs != null) {
                 for (Object contrib : contribs) {
@@ -709,6 +720,9 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
                 }
             }
         } else if (EXT_POINT_DC.equals(extension.getExtensionPoint())) {
+            if(dcContribs == null) {
+                return;
+            }
             Object[] contribs = extension.getContributions();
             if (contribs != null) {
                 for (Object contrib : contribs) {
@@ -765,8 +779,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     @Override
     public void stop(ComponentContext context) throws InterruptedException {
 
-        keContribs = null;
-        dcContribs = null;
+        // Nothing for now
         
     }
 
