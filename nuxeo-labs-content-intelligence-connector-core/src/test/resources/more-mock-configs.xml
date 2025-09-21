@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.labs.hyland.content.intelligence.test.customcontribs" version="1.0">
+
+	<extension
+		target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
+		point="knowledgeEnrichment">
+		<knowledgeEnrichment>
+			<name>more-ke-1</name>
+			<authenticationBaseUrl>blah</authenticationBaseUrl>
+			<baseUrl>blah</baseUrl>
+			<clientId>blah</clientId>
+			<clientSecret>blah</clientSecret>
+		</knowledgeEnrichment>
+	</extension>
+
+	<extension
+		target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
+		point="dataCuration">
+		<dataCuration>
+			<name>more-dc-1</name>
+			<authenticationBaseUrl>blah</authenticationBaseUrl>
+			<baseUrl>blah</baseUrl>
+			<clientId>blah</clientId>
+			<clientSecret>blah</clientSecret>
+		</dataCuration>
+	</extension>
+	
+	<extension
+		target="org.nuxeo.labs.hyland.content.intelligence.HylandKDService"
+		point="knowledgeDiscovery">
+		<knowledgeDiscovery>
+			<name>more-kd-1</name>
+			<authenticationBaseUrl>blah</authenticationBaseUrl>
+			<baseUrl>blah</baseUrl>
+			<clientId>blah</clientId>
+			<clientSecret>blah</clientSecret>
+			<environment>blah</environment>
+		</knowledgeDiscovery>
+	</extension>
+
+</component>

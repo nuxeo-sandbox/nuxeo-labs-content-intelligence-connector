@@ -279,5 +279,20 @@ public interface HylandKEService {
      * @since 2023
      */
     public void setPullResultsSettings(int maxTries, int sleepIntervalMS);
+    
+
+    /**
+     * 
+     * @return the list of contributions for KE
+     * @since 2023
+     */
+    public List<String> getKEContribNames();
+    
+    /**
+     * 
+     * @return the list of contributions for DC
+     * @since 2023
+     */
+    public List<String> getDCContribNames();
 
 }

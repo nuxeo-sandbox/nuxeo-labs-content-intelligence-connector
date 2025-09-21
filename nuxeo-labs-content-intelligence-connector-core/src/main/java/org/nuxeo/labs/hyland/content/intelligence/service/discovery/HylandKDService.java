@@ -125,5 +125,12 @@ public interface HylandKDService {
     public ServiceCallResult askQuestionAndGetAnswer(String configName, String agentId, String question,
             List<String> contextObjectIds, String extraPayloadJsonStr, Map<String, String> extraHeaders)
             throws InterruptedException;
+    
+    /**
+     * 
+     * @return the list of contributions
+     * @since 2023
+     */
+    public List<String> getKDContribNames();
 
 }

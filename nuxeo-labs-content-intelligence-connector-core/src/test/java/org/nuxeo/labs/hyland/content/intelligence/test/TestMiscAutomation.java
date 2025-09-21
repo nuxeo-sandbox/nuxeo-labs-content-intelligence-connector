@@ -20,18 +20,23 @@
 package org.nuxeo.labs.hyland.content.intelligence.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nuxeo.ecm.automation.AutomationService;
 import org.nuxeo.ecm.automation.OperationContext;
 import org.nuxeo.ecm.automation.test.AutomationFeature;
+import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.CoreSession;
+import org.nuxeo.labs.hyland.content.intelligence.automation.HylandCIGetContributionNamesOp;
 import org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.ConfigureServiceOp;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl;
@@ -82,6 +87,35 @@ public class TestMiscAutomation {
         automationService.run(ctx, ConfigureServiceOp.ID, params);
         assertEquals(HylandKEServiceImpl.PULL_RESULTS_MAX_TRIES_DEFAULT, impl.getPullResultsMaxTries());
         assertEquals(HylandKEServiceImpl.PULL_RESULTS_SLEEP_INTERVAL_DEFAULT, impl.getPullResultsSleepIntervalMS());
+        
+    }
+    
+    @Test
+    @Deploy("nuxeo-hyland-content-intelligence-connector-core:more-mock-configs.xml")
+    public void shouldgetConfigNames() throws Exception {
+        
+        OperationContext ctx = new OperationContext(session);;
+        
+        Blob resultBlob = (Blob) automationService.run(ctx, HylandCIGetContributionNamesOp.ID);
+        assertNotNull(resultBlob);
+        
+        String resultJsonStr = resultBlob.getString();
+        JSONObject resultJson = new JSONObject(resultJsonStr);
+        
+        JSONArray contribs = resultJson.getJSONArray("knowledgeEnrichment");
+        assertEquals(2, contribs.length());
+        contribs.toList().contains("default");
+        contribs.toList().contains("more-ke-1");
+        
+        contribs = resultJson.getJSONArray("dataCuration");
+        assertEquals(2, contribs.length());
+        contribs.toList().contains("default");
+        contribs.toList().contains("more-dc-1");
+        
+        contribs = resultJson.getJSONArray("knowledgeDiscovery");
+        assertEquals(2, contribs.length());
+        contribs.toList().contains("default");
+        contribs.toList().contains("more-kd-1");
         
     }
 }
