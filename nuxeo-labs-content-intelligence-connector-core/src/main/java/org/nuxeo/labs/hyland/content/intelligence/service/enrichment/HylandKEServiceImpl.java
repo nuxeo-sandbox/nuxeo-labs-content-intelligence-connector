@@ -171,7 +171,8 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         return token.getToken();
     }
 
-    protected KEDescriptor getKEDescriptor(String configName) {
+    // Public for some introspection during tests
+    public KEDescriptor getKEDescriptor(String configName) {
 
         if (StringUtils.isBlank(configName)) {
             configName = CONFIG_DEFAULT;
@@ -191,7 +192,9 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         return token.getToken();
     }
 
-    protected DCDescriptor getDCDescriptor(String configName) {
+
+    // Public for some introspection during tests
+    public DCDescriptor getDCDescriptor(String configName) {
 
         if (StringUtils.isBlank(configName)) {
             configName = CONFIG_DEFAULT;
@@ -639,6 +642,25 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     // Service Configuration
     // ======================================================================
     // ======================================================================
+    public List<String> getKEContribNames() {
+        
+        if (keContribs == null) {
+            keContribs = new HashMap<String, KEDescriptor>();
+        }
+        
+        return new ArrayList<>(keContribs.keySet());
+        
+    }
+    
+    public List<String> getDCContribNames() {
+        
+        if (dcContribs == null) {
+            dcContribs = new HashMap<String, DCDescriptor>();
+        }
+        
+        return new ArrayList<>(dcContribs.keySet());
+        
+    }
     /**
      * Component activated notification.
      * Called when the component is activated. All component dependencies are resolved at that moment.

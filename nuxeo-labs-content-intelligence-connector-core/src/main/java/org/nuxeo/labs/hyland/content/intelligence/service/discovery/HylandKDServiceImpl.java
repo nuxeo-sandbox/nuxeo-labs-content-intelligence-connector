@@ -1,5 +1,6 @@
 package org.nuxeo.labs.hyland.content.intelligence.service.discovery;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -182,7 +183,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     @Override
     public ServiceCallResult getAllAgents(String configName, Map<String, String> extraHeaders) {
 
-        ServiceCallResult result = invokeDiscovery(configName, "GET", "/agents", null, extraHeaders);
+        ServiceCallResult result = invokeDiscovery(configName, "GET", "/agent/agents", null, extraHeaders);
 
         return result;
     }
@@ -288,6 +289,26 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     // Service Configuration
     // ======================================================================
     // ======================================================================
+    public List<String> getKDContribNames() {
+        
+        if (kdContribs == null) {
+            kdContribs = new HashMap<String, KDDescriptor>();
+        }
+        
+        return new ArrayList<>(kdContribs.keySet());
+        
+    }
+    
+    // Public for some introspection during tests
+    public KDDescriptor getKDDescriptor(String configName) {
+        
+        if (StringUtils.isBlank(configName)) {
+            configName = CONFIG_DEFAULT;
+        }
+        
+        return kdContribs.get(configName);
+    }
+    
     /**
      * Component activated notification.
      * Called when the component is activated. All component dependencies are resolved at that moment.
@@ -323,7 +344,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     public void registerExtension(Extension extension) {
         super.registerExtension(extension);
         
-        if (kdContribs == null) { // May happens during HotReload from Nuxeo Studio
+        if (kdContribs == null) {
             kdContribs = new HashMap<String, KDDescriptor>();
         }
 
@@ -347,7 +368,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     public void unregisterExtension(Extension extension) {
         super.unregisterExtension(extension);
         
-        if (kdContribs == null) { // May happens during HotReload from Nuxeo Studio
+        if (kdContribs == null) {
             return;
         }
         

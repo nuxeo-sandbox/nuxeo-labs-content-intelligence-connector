@@ -75,7 +75,7 @@ public class TestHylandKDOperations {
 
         Map<String, Object> params = new HashMap<>();
         params.put("httpMethod", "GET");
-        params.put("endpoint", "/agents");
+        params.put("endpoint", "/agent/agents");
         // No jsonPayload in this test
 
         Blob result = (Blob) automationService.run(ctx, HylandKDInvokeOp.ID, params);
