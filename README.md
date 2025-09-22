@@ -13,6 +13,8 @@ The documentation is split in two parts:
 * One for [Knowledge Enrichment](/README-Enrichment.md),
 * And one for [Knowledge Discovery](/README-Discovery.md).
 
+Some shared automation operations are documented in this README (see "Automation")
+
 <br>
 
 ## Common Usage (Both Enrichment and Discovery)
@@ -75,6 +77,47 @@ For details about each result, please see the corresponding API and schemas. You
 > **You should always check the `responseCode` is a success (200 <= resultCode < 300)** before trying to get other fields.
 
 See examples of Automation Script.
+
+<br>
+
+## Automation
+
+### `HylandContentIntelligence.GetContributionNames`
+
+Returns a JSON string Blob with all the contributions to the misc. extension points: ["knowledgeEnrichment"](/README-Enrichment.md), ["dataCuration"](/README-Enrichment.md) and ["knowledgeDiscovery"](/README-Discovery.md). See the documentation of each service for details.
+
+* Input: `void`
+* Output: `Blob`, a JSON blob
+* Parameters: none
+
+The returned blob holds 3 properties, one per extension point, and for each, an array of contribution names, to be passed to the different operations. For example, if you contributed 3 extra accounts to the "knowledgeDiscovery" point, and let the default ones for KE/DC, the result will be:
+
+```json
+{
+  "knowledgeDiscovery": [
+    "default",
+    "extra_config_1",
+    "extra_config_2",
+    "extra_config_3"
+  ],
+  "knowledgeEnrichment": ["default"],
+  "dataCuration": ["default"]
+}
+```
+
+An example of usage of these is the following: Getting the list of all agents available for an account/ For example:
+
+```javascript
+. . .
+var resultBlob = HylandKnowledgeDiscovery.getAllAgents(null, {'configName': "extra_config_2"});
+var resultJson = JSON.parse(resultBlob.getString());
+if(resultJson.responseCode === 200) {
+    // resultJson.response is an array agent objects (with id, name, description, etc.)
+}
+. . .
+```
+
+
 
 <br>
 
