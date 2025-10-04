@@ -343,23 +343,30 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         // Add the info so that caller can map objectKey and their blob/file
         if (result.callWasSuccesful()) {
             JSONObject response = result.getResponseAsJSONObject();
-            JSONArray results = response.getJSONArray("results");
-            JSONArray mapping = new JSONArray();
-            results.forEach(oneResult -> {
-                String objectKey = ((JSONObject) oneResult).getString("objectKey");
-                ContentToProcess found = contentObjects.stream()
-                                                       .filter(content -> objectKey.equals(content.getObjectKey()))
-                                                       .findFirst()
-                                                       .orElse(null);
-                if (found != null) {
-                    JSONObject obj = new JSONObject();
-                    obj.put("sourceId", found.getSourceId());
-                    obj.put("objectKey", objectKey);
-                    mapping.put(obj);
-                }
-            });
-
-            result.setObjectKeysMapping(mapping);
+            
+            if(!response.has("results")) {
+                // Likely we stopped pulling before getting a result (maxtries reached, typically)
+                String msg = "No \"results\" key in the response. Did we get a final result? Original message: " + result.getResponseMessage();
+                result = new ServiceCallResult(response.toString(), result.getResponseCode(), msg);
+            } else {
+                JSONArray results = response.getJSONArray("results");
+                JSONArray mapping = new JSONArray();
+                results.forEach(oneResult -> {
+                    String objectKey = ((JSONObject) oneResult).getString("objectKey");
+                    ContentToProcess found = contentObjects.stream()
+                                                           .filter(content -> objectKey.equals(content.getObjectKey()))
+                                                           .findFirst()
+                                                           .orElse(null);
+                    if (found != null) {
+                        JSONObject obj = new JSONObject();
+                        obj.put("sourceId", found.getSourceId());
+                        obj.put("objectKey", objectKey);
+                        mapping.put(obj);
+                    }
+                });
+    
+                result.setObjectKeysMapping(mapping);
+            }
         }
 
         return result;
@@ -499,8 +506,10 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
                     e.printStackTrace();
                 }
             }
-
-            if (count > (pullResultsMaxTries / 2)) {
+            
+            if(count == pullResultsMaxTries) {
+                log.warn("Pulling Enrichment results is taking time. This is the last try,  " + count + "/" + pullResultsMaxTries);
+            } else if (count == 5 || (count > 5 && (count - 5) % 2 == 0)) {
                 log.warn("Pulling Enrichment results is taking time. This is the call #" + count + " (max calls: "
                         + pullResultsMaxTries + ")");
             }

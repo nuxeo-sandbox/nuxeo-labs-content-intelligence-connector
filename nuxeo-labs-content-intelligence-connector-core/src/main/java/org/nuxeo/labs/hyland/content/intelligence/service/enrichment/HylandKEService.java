@@ -294,5 +294,12 @@ public interface HylandKEService {
      * @since 2023
      */
     public List<String> getDCContribNames();
+    
+    /**
+     * 
+     * 
+     * @since 2023
+     */
+    public void setStopAllResultPulling(boolean newValue);
 
 }
