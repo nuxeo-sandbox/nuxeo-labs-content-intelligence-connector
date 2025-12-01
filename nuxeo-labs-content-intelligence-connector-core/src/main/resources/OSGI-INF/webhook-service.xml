@@ -1,0 +1,10 @@
+<component name="org.nuxeo.labs.hyland.content.intelligence.service.webhook.WebhookService">
+
+    <implementation
+            class="org.nuxeo.labs.hyland.content.intelligence.service.webhook.WebhookServiceImpl"/>
+
+    <service>
+        <provide interface="org.nuxeo.labs.hyland.content.intelligence.service.webhook.WebhookService"/>
+    </service>
+
+</component>

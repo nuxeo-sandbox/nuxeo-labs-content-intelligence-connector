@@ -19,6 +19,7 @@
         
         <!-- All -->
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.HylandCIGetContributionNamesOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.TriggerWebhookOp"/>
     </extension>
 
 </component>

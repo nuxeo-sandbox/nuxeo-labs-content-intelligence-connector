@@ -9,4 +9,5 @@ Bundle-SymbolicName: nuxeo-hyland-content-intelligence-connector-core;singleton=
 Nuxeo-Component: OSGI-INF/service-enrichment-contrib.xml,
     OSGI-INF/service-discovery-contrib.xml
     OSGI-INF/automation-contrib.xml,
-    OSGI-INF/cache-contrib.xml
+    OSGI-INF/cache-contrib.xml,
+    OSGI-INF/webhook-service.xml

@@ -59,7 +59,8 @@ public class AuthenticationToken {
     
     public enum ServiceType {
         ENRICHMENT,
-        DISCOVERY
+        DISCOVERY,
+        WEBHOOK
     }
     
     ServiceType serviceType;
@@ -122,6 +123,9 @@ public class AuthenticationToken {
             case DISCOVERY:
                 postData += "&scope=" + URLEncoder.encode("hxp hxp.integrations hxp.nucleus.account hxpr hxps", "UTF-8");
                 break;
+
+                case WEBHOOK:
+                    break;
             }
                     
         } catch (UnsupportedEncodingException e) {
