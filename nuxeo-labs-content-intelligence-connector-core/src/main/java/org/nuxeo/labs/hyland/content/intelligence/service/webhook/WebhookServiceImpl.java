@@ -34,7 +34,7 @@ public class WebhookServiceImpl implements WebhookService {
     }
 
     @Override
-    public boolean triggerWebhook(String input) {
+    public boolean triggerWebhook(String docId) {
 
         String token = tokenManager.getToken();
         if (token == null) return false;
@@ -44,7 +44,7 @@ public class WebhookServiceImpl implements WebhookService {
         headers.put("Content-Type", "application/json");
 
         JSONObject body = new JSONObject();
-        body.put("input", input);
+        body.put("docId", docId);
 
         ServiceCallResult result =
                 serviceCall.post(webhookUrl, headers, body.toString());
