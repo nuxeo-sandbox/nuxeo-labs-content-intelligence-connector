@@ -120,7 +120,7 @@ public class AuthenticationToken {
                 break;
                 
             case DISCOVERY:
-                postData += "&scope=" + URLEncoder.encode("hxp hxp.integrations hxp.nucleus.account hxpr hxps", "UTF-8");
+                postData += "&scope=" + URLEncoder.encode("hxp hxp.integrations hxp.nucleus.account hxpr hxps environment_authorization", "UTF-8");
                 break;
             }
                     
