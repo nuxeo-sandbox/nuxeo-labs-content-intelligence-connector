@@ -54,6 +54,10 @@ The plugin provides a `"default"` configuration, that uses the following configu
 
 * `nuxeo.hyland.cic.auth.baseUrl`: The authentication endpoint. The plugin adds the "/connect/token" final path. So your URL is something like `https://auth.etc.etc.hyland.com/idp` (This is the same parameter as for Knowledge Enrichment)
 * `nuxeo.hyland.cic.discovery.baseUrl`: The Discovery base URL.
+* `nuxeo.hyland.cic.discovery.auth.grantType`: The grant type (default `"client_credentials"` in default configuration)
+* `nuxeo.hyland.cic.discovery.auth.scope`: Tge scope when authenticating.
+  * This value changes, sometime abruptly, so check CIC announcment and check this first when your calls start to fail with authentication error.
+  * As default value may often change we don't put it in README, see latest defailt value at `service-discovery-contrib.xml`
 * `nuxeo.hyland.cic.discovery.clientId`: Your Discovery clientId
 * `nuxeo.hyland.cic.discovery.clientSecret`: Your Discovery client secret
 * `nuxeo.hyland.cic.discovery.environment`: The environment
@@ -87,6 +91,8 @@ Here are the two `"default"` contributions for each.
     <name>default</name>
     <authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
     <baseUrl>${nuxeo.hyland.cic.discovery.baseUrl:=}</baseUrl>
+    <tokenGrantType>${nuxeo.hyland.cic.discovery.auth.grantType:=client_credentials}</tokenGrantType>
+    <tokenScope>${nuxeo.hyland.cic.discovery.auth.scope:=hxp hxp.integrations environment_authorization}</tokenScope>
     <clientId>${nuxeo.hyland.cic.discovery.clientId:=}</clientId>
     <clientSecret>${nuxeo.hyland.cic.discovery.clientSecret:=}</clientSecret>
     <environment>${nuxeo.hyland.cic.discovery.environment:=}</environment>
@@ -104,6 +110,8 @@ You could, for example, add more, like:
     <name>myOtherApp</name>
     <authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
     <baseUrl>https://other.app.for.hyland.discovery.com</baseUrl>
+    <tokenGrantType>${nuxeo.hyland.cic.discovery.auth.grantType:=client_credentials}</tokenGrantType>
+    <tokenScope>scope1 scope2 otherNewScope</tokenScope>
     <clientId>456123-abcdef-etc. . .</clientId>
     <clientSecret>765839-rtuklj-etc. . .</clientSecret>
     <environment>someenv-abcdef-123456-etc. . .</environment>
@@ -125,7 +133,7 @@ WARN  [main] [org.nuxeo.labs.hyland.knowledge.enrichment.service.HylandKEService
 
 ## Authentication to the Service
 
-This part is always handled by the plugin, using the different info provided in the configuration parameters (auth. end point + clientId + clientSecret).
+This part is always handled by the plugin, using the different info provided in the configuration parameters (auth. end point + grantType + scope + clientId + clientSecret + environement).
 
 The service returns a token valid a certain time: The plugin handles this timeout (so as to avoid requesting a token at each call, saving some loads)
 
