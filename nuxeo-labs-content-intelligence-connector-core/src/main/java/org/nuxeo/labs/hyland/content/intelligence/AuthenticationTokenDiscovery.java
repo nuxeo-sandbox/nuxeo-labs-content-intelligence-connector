@@ -24,9 +24,9 @@ package org.nuxeo.labs.hyland.content.intelligence;
  * @since 2023
  */
 public class AuthenticationTokenDiscovery extends AuthenticationToken {
-    
-    public AuthenticationTokenDiscovery(String authFullUrl, String clientId, String clientSecret, String environment) {
-        super(ServiceType.DISCOVERY, authFullUrl, clientId, clientSecret, environment);
+
+    public AuthenticationTokenDiscovery(String authFullUrl, AuthenticationTokenParams params) {
+        super(ServiceType.DISCOVERY, authFullUrl, params);
     }
 
 }

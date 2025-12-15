@@ -25,8 +25,8 @@ package org.nuxeo.labs.hyland.content.intelligence;
  */
 public class AuthenticationTokenEnrichment extends AuthenticationToken {
     
-    public AuthenticationTokenEnrichment(String authFullUrl, String clientId, String clientSecret) {
-        super(ServiceType.ENRICHMENT, authFullUrl, clientId, clientSecret);
+    public AuthenticationTokenEnrichment(String authFullUrl, AuthenticationTokenParams params) {
+        super(ServiceType.ENRICHMENT, authFullUrl, params);
     }
 
 }

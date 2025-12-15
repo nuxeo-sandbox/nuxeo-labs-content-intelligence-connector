@@ -132,5 +132,10 @@ public interface HylandKDService {
      * @since 2023
      */
     public List<String> getKDContribNames();
+    
+    /**
+     * Introspection
+     */
+    public KDDescriptor getKDDescriptor(String configName);
 
 }

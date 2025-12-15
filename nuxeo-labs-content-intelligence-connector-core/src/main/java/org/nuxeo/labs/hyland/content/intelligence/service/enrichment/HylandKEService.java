@@ -42,7 +42,6 @@ public interface HylandKEService {
      * For the values to pass in <code>actions</code>, <code>classes</code> and <code>similarmetadata</code>, see
      * the service documentation at
      * {@link https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/ContextEnrichmentAPI}
-     * 
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
@@ -70,7 +69,6 @@ public interface HylandKEService {
      * For the values to pass in <code>actions</code>, <code>classes</code> and <code>similarmetadata</code>, see
      * the service documentation at
      * {@link https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/ContextEnrichmentAPI}
-     * 
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
@@ -94,13 +92,11 @@ public interface HylandKEService {
     /**
      * Send a list of blobs for enrichment. In the response, and if succesful, there will be the job ID to use with
      * getJobIdResult()
-     * 
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
      * 
      * @param configName
-     * 
      * @param contentObjects
      * @param actions
      * @param classes
@@ -117,13 +113,11 @@ public interface HylandKEService {
     /**
      * After calling one of the sendForEnrichment() method, pull the results with getJobIdResult().
      * The HTTP response mayb not be 200. it could be for example 202, "accepted"
-     * 
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
      * 
      * @param configName
-     * 
      * @param jobId
      * @return
      * @throws IOException
@@ -138,13 +132,11 @@ public interface HylandKEService {
      * For the values to pass in <code>actions</code>, <code>classes</code> and <code>similarmetadata</code>, see
      * the service documentation at
      * {@link https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/ContextEnrichmentAPI}
-     * 
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
      * 
      * @param configName
-     * 
      * @param blob
      * @param actions
      * @param classes
@@ -159,7 +151,6 @@ public interface HylandKEService {
     /**
      * See method
      * <code>enrich(Blob blob, List<String> actions, List<String> classes, List<String> similarMetadata)</code>
-     * 
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
@@ -179,7 +170,6 @@ public interface HylandKEService {
 
     /**
      * Enrich a list of blobs
-     * 
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
@@ -206,7 +196,6 @@ public interface HylandKEService {
      * <br>
      * <code>endpoint</code> are documented here:
      * {@link https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/ContextEnrichmentAPI}
-     * 
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
@@ -233,7 +222,6 @@ public interface HylandKEService {
      * "responseMessage": The HTTP response message (like "OK")
      * "response": The response (as JSON string from the service
      * }
-     * 
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
@@ -249,7 +237,6 @@ public interface HylandKEService {
 
     /**
      * (see <code>curate(Blob blob, String jsonOptions)</code>
-     * 
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
@@ -279,21 +266,24 @@ public interface HylandKEService {
      * @since 2023
      */
     public void setPullResultsSettings(int maxTries, int sleepIntervalMS);
-    
 
     /**
-     * 
      * @return the list of contributions for KE
      * @since 2023
      */
     public List<String> getKEContribNames();
-    
+
     /**
-     * 
      * @return the list of contributions for DC
      * @since 2023
      */
     public List<String> getDCContribNames();
 
+    /**
+     * Introspection
+     */
+    public KEDescriptor getKEDescriptor(String configName);
+
+    public DCDescriptor getDCDescriptor(String configName);
 
 }
