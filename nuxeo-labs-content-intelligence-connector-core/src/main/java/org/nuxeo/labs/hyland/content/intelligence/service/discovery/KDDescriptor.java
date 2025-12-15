@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.nuxeo.common.xmap.annotation.XNode;
 import org.nuxeo.common.xmap.annotation.XObject;
+import org.nuxeo.labs.hyland.content.intelligence.AuthenticationTokenParams;
 
 /**
  * @since 2023
@@ -41,6 +42,12 @@ public class KDDescriptor {
     @XNode("baseUrl")
     protected String baseUrl = null;
 
+    @XNode("tokenGrantType")
+    protected String tokenGrantType = null;
+
+    @XNode("tokenScope")
+    protected String tokenScope = null;
+
     @XNode("clientId")
     protected String clientId = null;
 
@@ -49,6 +56,8 @@ public class KDDescriptor {
 
     @XNode("environment")
     protected String environment = null;
+
+    protected AuthenticationTokenParams authTokenParams = null;
 
     public String getName() {
         return name;
@@ -62,42 +71,65 @@ public class KDDescriptor {
         return baseUrl;
     }
 
-    public String getClientId() {
-        return clientId;
-    }
+    public AuthenticationTokenParams getAuthenticationTokenParams() {
+        if (authTokenParams == null) {
+            authTokenParams = new AuthenticationTokenParams(tokenGrantType, tokenScope, clientId, clientSecret,
+                    environment);
+        }
 
-    public String getClientSecret() {
-        return clientSecret;
+        return authTokenParams;
     }
 
     public String getEnvironment() {
-        return environment;
+        return getAuthenticationTokenParams().getEnvironment();
+    }
+
+    public boolean hasAllValues() {
+
+        if (StringUtils.isBlank(authenticationBaseUrl) || StringUtils.isBlank(baseUrl)
+                || StringUtils.isBlank(tokenGrantType) || StringUtils.isBlank(tokenScope)
+                || StringUtils.isBlank(clientId) || StringUtils.isBlank(clientSecret)
+                || StringUtils.isBlank(environment)) {
+            return false;
+        }
+
+        return true;
     }
 
     public void checkConfigAndLogErrors() {
 
         if (StringUtils.isBlank(authenticationBaseUrl)) {
-            log.warn("No CIC Authentication endpoint provided for configuration '" + name
-                    + "', calls to the service will fail.");
+            log.warn("No CIC Authentication endpoint provided in the configuration '" + name
+                    + "', authentication to the service will fail.");
         }
 
         if (StringUtils.isBlank(baseUrl)) {
-            log.warn("No CIC Knonwledge Discovery endpoint provided for configuration '" + name
+            log.warn("No CIC Knonwledge Discovery endpoint provided in the configuration '" + name
                     + "', calls to the service will fail.");
+        }
+
+        if (StringUtils.isBlank(tokenGrantType)) {
+            log.warn("No CIC Knonwledge Discovery tokenGrantType provided in the configuration '" + name
+                    + "', authentication to the service will fail.");
+        }
+
+        if (StringUtils.isBlank(tokenScope)) {
+            log.warn("No CIC Knonwledge Discovery tokenScope provided in the configuration '" + name
+                    + "', authentication to the service will fail.");
         }
 
         if (StringUtils.isBlank(clientId)) {
-            log.warn("No CIC Knonwledge Discovery ClientId provided for configuration '" + name
-                    + "', calls to the service will fail.");
+            log.warn("No CIC Knonwledge Discovery ClientId provided in the configuration '" + name
+                    + "', authentication to the service will fail.");
         }
 
         if (StringUtils.isBlank(clientSecret)) {
-            log.warn("No CIC Knonwledge Discovery clientSecret provided for configuration '" + name
-                    + "', calls to the service will fail.");
+            log.warn("No CIC Knonwledge Discovery clientSecret provided in the configuration '" + name
+                    + "', authentication to the service will fail.");
         }
 
         if (StringUtils.isBlank(environment)) {
-            log.warn("No CIC Knonwledge Discovery environment provided for configuration '" + name
+            log.warn("No CIC Knonwledge Discovery environment provided in the configuration '" + name
                     + "', calls to the service will fail.");
         }
 

@@ -24,7 +24,7 @@ import org.nuxeo.runtime.model.DefaultComponent;
 import org.nuxeo.runtime.model.Extension;
 
 /**
- * This class handles calls to Content Inteligence Knowledge Discovery service
+ * This class handles calls to Content Intelligence Knowledge Discovery service
  * 
  * @since 2023
  */
@@ -289,6 +289,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     // Service Configuration
     // ======================================================================
     // ======================================================================
+    @Override
     public List<String> getKDContribNames() {
         
         if (kdContribs == null) {
@@ -299,7 +300,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
         
     }
     
-    // Public for some introspection during tests
+    @Override
     public KDDescriptor getKDDescriptor(String configName) {
         
         if (StringUtils.isBlank(configName)) {
@@ -400,8 +401,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
             for (Map.Entry<String, KDDescriptor> entry : kdContribs.entrySet()) {
                 KDDescriptor desc = entry.getValue();
                 AuthenticationToken token = new AuthenticationTokenDiscovery(
-                        desc.getAuthenticationBaseUrl() + AUTH_ENDPOINT, desc.getClientId(), desc.getClientSecret(),
-                        desc.getEnvironment());
+                        desc.getAuthenticationBaseUrl() + AUTH_ENDPOINT, desc.getAuthenticationTokenParams());
                 discoveryAuthTokens.put(desc.getName(), token);
 
                 desc.checkConfigAndLogErrors();

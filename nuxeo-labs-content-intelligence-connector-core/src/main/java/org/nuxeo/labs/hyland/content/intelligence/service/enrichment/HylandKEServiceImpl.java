@@ -171,16 +171,6 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         return token.getToken();
     }
 
-    // Public for some introspection during tests
-    public KEDescriptor getKEDescriptor(String configName) {
-
-        if (StringUtils.isBlank(configName)) {
-            configName = CONFIG_DEFAULT;
-        }
-
-        return keContribs.get(configName);
-    }
-
     protected String getDCToken(String configName) {
 
         if (StringUtils.isBlank(configName)) {
@@ -190,17 +180,6 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         AuthenticationToken token = dataCurationAuthTokens.get(configName);
 
         return token.getToken();
-    }
-
-
-    // Public for some introspection during tests
-    public DCDescriptor getDCDescriptor(String configName) {
-
-        if (StringUtils.isBlank(configName)) {
-            configName = CONFIG_DEFAULT;
-        }
-
-        return dcContribs.get(configName);
     }
 
     @Override
@@ -651,6 +630,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     // Service Configuration
     // ======================================================================
     // ======================================================================
+    @Override
     public List<String> getKEContribNames() {
         
         if (keContribs == null) {
@@ -660,7 +640,18 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         return new ArrayList<>(keContribs.keySet());
         
     }
-    
+
+    @Override
+    public KEDescriptor getKEDescriptor(String configName) {
+
+        if (StringUtils.isBlank(configName)) {
+            configName = CONFIG_DEFAULT;
+        }
+
+        return keContribs.get(configName);
+    }
+
+    @Override
     public List<String> getDCContribNames() {
         
         if (dcContribs == null) {
@@ -670,6 +661,17 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         return new ArrayList<>(dcContribs.keySet());
         
     }
+
+    @Override
+    public DCDescriptor getDCDescriptor(String configName) {
+
+        if (StringUtils.isBlank(configName)) {
+            configName = CONFIG_DEFAULT;
+        }
+
+        return dcContribs.get(configName);
+    }
+    
     /**
      * Component activated notification.
      * Called when the component is activated. All component dependencies are resolved at that moment.
@@ -779,7 +781,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
             for (Map.Entry<String, KEDescriptor> entry : keContribs.entrySet()) {
                 KEDescriptor desc = entry.getValue();
                 AuthenticationToken token = new AuthenticationTokenEnrichment(
-                        desc.getAuthenticationBaseUrl() + AUTH_ENDPOINT, desc.getClientId(), desc.getClientSecret());
+                        desc.getAuthenticationBaseUrl() + AUTH_ENDPOINT, desc.getAuthenticationTokenParams());
                 enrichmentAuthTokens.put(desc.getName(), token);
 
                 desc.checkConfigAndLogErrors();
@@ -793,7 +795,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
             for (Map.Entry<String, DCDescriptor> entry : dcContribs.entrySet()) {
                 DCDescriptor desc = entry.getValue();
                 AuthenticationToken token = new AuthenticationTokenEnrichment(
-                        desc.getAuthenticationBaseUrl() + AUTH_ENDPOINT, desc.getClientId(), desc.getClientSecret());
+                        desc.getAuthenticationBaseUrl() + AUTH_ENDPOINT, desc.getAuthenticationTokenParams());
                 dataCurationAuthTokens.put(desc.getName(), token);
 
                 desc.checkConfigAndLogErrors();

@@ -8,6 +8,8 @@
 			<name>more-ke-1</name>
 			<authenticationBaseUrl>blah</authenticationBaseUrl>
 			<baseUrl>blah</baseUrl>
+			<tokenGrantType>blah</tokenGrantType>
+			<tokenScope>blah</tokenScope>
 			<clientId>blah</clientId>
 			<clientSecret>blah</clientSecret>
 		</knowledgeEnrichment>
@@ -20,6 +22,8 @@
 			<name>more-dc-1</name>
 			<authenticationBaseUrl>blah</authenticationBaseUrl>
 			<baseUrl>blah</baseUrl>
+			<tokenGrantType>blah</tokenGrantType>
+			<tokenScope>blah</tokenScope>
 			<clientId>blah</clientId>
 			<clientSecret>blah</clientSecret>
 		</dataCuration>
@@ -32,6 +36,8 @@
 			<name>more-kd-1</name>
 			<authenticationBaseUrl>blah</authenticationBaseUrl>
 			<baseUrl>blah</baseUrl>
+			<tokenGrantType>blah</tokenGrantType>
+			<tokenScope>blah</tokenScope>
 			<clientId>blah</clientId>
 			<clientSecret>blah</clientSecret>
 			<environment>blah</environment>

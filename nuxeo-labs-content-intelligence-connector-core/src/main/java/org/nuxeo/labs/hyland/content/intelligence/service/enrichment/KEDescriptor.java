@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.nuxeo.common.xmap.annotation.XNode;
 import org.nuxeo.common.xmap.annotation.XObject;
+import org.nuxeo.labs.hyland.content.intelligence.AuthenticationTokenParams;
 
 /**
  * @since 2023
@@ -41,11 +42,19 @@ public class KEDescriptor {
     @XNode("baseUrl")
     protected String baseUrl = null;
 
+    @XNode("tokenGrantType")
+    protected String tokenGrantType = null;
+
+    @XNode("tokenScope")
+    protected String tokenScope = null;
+
     @XNode("clientId")
     protected String clientId = null;
 
     @XNode("clientSecret")
     protected String clientSecret = null;
+
+    protected AuthenticationTokenParams authTokenParams = null;
 
     public String getName() {
         return name;
@@ -59,19 +68,30 @@ public class KEDescriptor {
         return baseUrl;
     }
 
-    public String getClientId() {
-        return clientId;
+    public AuthenticationTokenParams getAuthenticationTokenParams() {
+        if (authTokenParams == null) {
+            authTokenParams = new AuthenticationTokenParams(tokenGrantType, tokenScope, clientId, clientSecret, null);
+        }
+
+        return authTokenParams;
     }
 
-    public String getClientSecret() {
-        return clientSecret;
+    public boolean hasAllValues() {
+
+        if (StringUtils.isBlank(authenticationBaseUrl) || StringUtils.isBlank(baseUrl)
+                || StringUtils.isBlank(tokenGrantType) || StringUtils.isBlank(tokenScope)
+                || StringUtils.isBlank(clientId) || StringUtils.isBlank(clientSecret)) {
+            return false;
+        }
+
+        return true;
     }
 
     public void checkConfigAndLogErrors() {
 
         if (StringUtils.isBlank(authenticationBaseUrl)) {
             log.warn("No CIC Authentication endpoint provided for configuration '" + name
-                    + "', calls to the service will fail.");
+                    + "', authentication to the service will fail.");
         }
 
         if (StringUtils.isBlank(baseUrl)) {
@@ -79,14 +99,24 @@ public class KEDescriptor {
                     + "', calls to the service will fail.");
         }
 
+        if (StringUtils.isBlank(tokenGrantType)) {
+            log.warn("No CIC Enrichment tokenGrantType provided in the configuration '" + name
+                    + "', authentication to the service will fail.");
+        }
+
+        if (StringUtils.isBlank(tokenScope)) {
+            log.warn("No CIC Enrichment tokenScope provided in the configuration '" + name
+                    + "', authentication to the service will fail.");
+        }
+
         if (StringUtils.isBlank(clientId)) {
             log.warn("No CIC Enrichment ClientId provided for configuration '" + name
-                    + "', calls to the service will fail.");
+                    + "', authentication to the service will fail.");
         }
 
         if (StringUtils.isBlank(clientSecret)) {
             log.warn("No CIC Enrichment clientSecret provided for configuration '" + name
-                    + "', calls to the service will fail.");
+                    + "', authentication to the service will fail.");
         }
 
     }

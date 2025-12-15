@@ -28,6 +28,8 @@
 			<name>default</name>
 			<authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
 			<baseUrl>${nuxeo.hyland.cic.contextEnrichment.baseUrl:=}</baseUrl>
+			<tokenGrantType>${nuxeo.hyland.cic.enrichment.auth.grantType:=client_credentials}</tokenGrantType>
+			<tokenScope>${nuxeo.hyland.cic.enrichment.auth.scope:=environment_authorization}</tokenScope>
 			<clientId>${nuxeo.hyland.cic.enrichment.clientId:=}</clientId>
 			<clientSecret>${nuxeo.hyland.cic.enrichment.clientSecret:=}</clientSecret>
 		</knowledgeEnrichment>
@@ -40,6 +42,8 @@
 			<name>default</name>
 			<authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
 			<baseUrl>${nuxeo.hyland.cic.dataCuration.baseUrl:=}</baseUrl>
+			<tokenGrantType>${nuxeo.hyland.cic.dataCuration.auth.grantType:=client_credentials}</tokenGrantType>
+			<tokenScope>${nuxeo.hyland.cic.dataCuration.auth.scope:=environment_authorization}</tokenScope>
 			<clientId>${nuxeo.hyland.cic.datacuration.clientId:=}</clientId>
 			<clientSecret>${nuxeo.hyland.cic.datacuration.clientSecret:=}</clientSecret>
 		</dataCuration>

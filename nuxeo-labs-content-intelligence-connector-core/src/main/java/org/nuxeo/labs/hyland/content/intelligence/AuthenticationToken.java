@@ -36,55 +36,37 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
  * This class handles authentication tokens and their lifespan. If a token was requested before expiration, it is
  * returned as is. Else, a new token is fetched.
  * 
- * 
  * @since 2023
  */
 public class AuthenticationToken {
-    
+
     private static final Logger log = LogManager.getLogger(AuthenticationToken.class);
-    
+
     protected String token = null;
-    
+
     protected Instant tokenExpiration = null;
-    
+
     protected String authFullUrl;
-    
-    protected String clientId;
-    
-    protected String clientSecret;
-    
-    protected String environment;
+
+    protected AuthenticationTokenParams tokenParams;
 
     protected ServiceCall serviceCall = new ServiceCall();
-    
+
     public enum ServiceType {
-        ENRICHMENT,
-        DISCOVERY
+        ENRICHMENT, DISCOVERY
     }
-    
+
     ServiceType serviceType;
-    
-    public AuthenticationToken(ServiceType serviceType, String authFullUrl, String clientId, String clientSecret) {
-        
+
+    public AuthenticationToken(ServiceType serviceType, String authFullUrl, AuthenticationTokenParams params) {
+
         this.serviceType = serviceType;
 
         this.authFullUrl = authFullUrl;
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
-        
-    }
-    
-    public AuthenticationToken(ServiceType serviceType, String authFullUrl, String clientId, String clientSecret, String environment) {
-        
-        this.serviceType = serviceType;
+        this.tokenParams = params;
 
-        this.authFullUrl = authFullUrl;
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
-        this.environment = environment;
-        
     }
-    
+
     /**
      * Will fetch a new token only if the current token is null or expired.
      * 
@@ -95,16 +77,16 @@ public class AuthenticationToken {
      * @since 2023
      */
     public String getToken() {
-        
+
         if (StringUtils.isNotBlank(token) && !Instant.now().isAfter(tokenExpiration)) {
             return token;
         }
-        
+
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Accept", "*/*");
         headers.put("Accept-Encoding", "gzip, deflate, br");
-        if(serviceType == ServiceType.DISCOVERY) {
-            headers.put("hxp-environment", environment);
+        if (serviceType == ServiceType.DISCOVERY) {
+            headers.put("hxp-environment", tokenParams.getEnvironment());
         }
         // Not JSON...
         headers.put("Content-Type", "application/x-www-form-urlencoded");
@@ -112,18 +94,11 @@ public class AuthenticationToken {
         // Request body
         String postData;
         try {
-            postData = "client_id=" + URLEncoder.encode(clientId, "UTF-8") + "&client_secret="
-                    + URLEncoder.encode(clientSecret, "UTF-8") + "&grant_type=client_credentials";
-            switch(serviceType) {
-            case ENRICHMENT:
-                postData += "&scope=environment_authorization";
-                break;
-                
-            case DISCOVERY:
-                postData += "&scope=" + URLEncoder.encode("hxp hxp.integrations hxp.nucleus.account hxpr hxps environment_authorization", "UTF-8");
-                break;
-            }
-                    
+            postData = "client_id=" + URLEncoder.encode(tokenParams.getClientId(), "UTF-8");
+            postData += "&client_secret=" + URLEncoder.encode(tokenParams.getClientSecret(), "UTF-8");
+            postData += "&grant_type=" + tokenParams.getGrantType();
+            postData += "&scope=" + URLEncoder.encode(tokenParams.grantScope, "UTF-8");
+
         } catch (UnsupportedEncodingException e) {
             throw new NuxeoException("Failed to encode the request", e);
         }
@@ -148,7 +123,7 @@ public class AuthenticationToken {
             log.error("Error getting an auth token:\n" + result.toJsonString(2));
             token = null;
         }
-        
+
         return token;
 
     }

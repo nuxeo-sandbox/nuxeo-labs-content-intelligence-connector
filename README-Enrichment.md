@@ -45,12 +45,22 @@ The plugin provides a `"default"` configuration, that uses the following configu
 #### Configuration Parameters
 
 * `nuxeo.hyland.cic.auth.baseUrl`: The authentication endpoint. The plugin adds the "/connect/token" final path. So your URL is something like `https://auth.etc.etc.hyland.com/idp` (This is the same parameter as for Knowledge Enrichment)
-* `nuxeo.hyland.cic.contextEnrichment.baseUrl`: The enrichment base URL (endpoints, like `"/content/process"` will be added to this URL).
-* `nuxeo.hyland.cic.dataCuration.baseUrl`: The Data Curation base URL
-* `nuxeo.hyland.cic.enrichment.clientId`: Your enrichment clientId
-* `nuxeo.hyland.cic.enrichment.clientSecret`: Your enrichment client secret
-* `nuxeo.hyland.cic.datacuration.clientId`: Your data curation clientId
-* `nuxeo.hyland.cic.datacuration.clientSecret`: Your data curation client secret
+* For Knowledge Enrichment:
+  * `nuxeo.hyland.cic.contextEnrichment.baseUrl`: The enrichment base URL (endpoints, like `"/content/process"` will be added to this URL).
+  * `nuxeo.hyland.cic.enrichment.auth.grantType`: The grant type (default `"client_credentials"` in default configuration)
+  * `nuxeo.hyland.cic.enrichment.auth.scope`: Tge scope when authenticating.
+  * This value changes, sometime abruptly, so check CIC announcment and check this first when your calls start to fail with authentication error.
+  * As default value may often change we don't put it in README, see latest defailt value at `service-enrichment-contrib.xml`
+  * `nuxeo.hyland.cic.enrichment.clientId`: Your enrichment clientId
+  * `nuxeo.hyland.cic.enrichment.clientSecret`: Your enrichment client secret
+* For Data Curation:
+  * `nuxeo.hyland.cic.dataCuration.baseUrl`: The Data Curation base URL
+  * `nuxeo.hyland.cic.dataCuration.auth.grantType`: The grant type (default `"client_credentials"` in default configuration)
+  * `nuxeo.hyland.cic.dataCuration.auth.scope`: Tge scope when authenticating.
+  * This value changes, sometime abruptly, so check CIC announcment and check this first when your calls start to fail with authentication error.
+  * As default value may often change we don't put it in README, see latest defailt value at `service-dataCuration-contrib.xml`
+  * `nuxeo.hyland.cic.datacuration.clientId`: Your data curation clientId
+  * `nuxeo.hyland.cic.datacuration.clientSecret`: Your data curation client secret
 
 Other parameters are used to tune the behavior (independant to the service configuration):
 * As of now, getting the results is asynchronous and we need to poll and check if they are ready. The following parameters are used in a loop, where if the service does not return a "success" HTTP Code, the thread sleeps a certain time then tries again, until a certain number of tries:
@@ -77,6 +87,8 @@ Here are the two `"default"` contributions for each.
     <name>default</name>
     <authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
     <baseUrl>${nuxeo.hyland.cic.contextEnrichment.baseUrl:=}</baseUrl>
+    <tokenGrantType>${nuxeo.hyland.cic.enrichment.auth.grantType:=client_credentials}</tokenGrantType>
+    <tokenScope>${nuxeo.hyland.cic.enrichment.auth.scope:=environment_authorization}</tokenScope>
     <clientId>${nuxeo.hyland.cic.enrichment.clientId:=}</clientId>
     <clientSecret>${nuxeo.hyland.cic.enrichment.clientSecret:=}</clientSecret>
   </knowledgeEnrichment>
@@ -89,6 +101,8 @@ Here are the two `"default"` contributions for each.
     <name>default</name>
     <authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
     <baseUrl>${nnuxeo.hyland.cic.dataCuration.baseUrl:=}</baseUrl>
+    <tokenGrantType>${nuxeo.hyland.cic.dataCuration.auth.grantType:=client_credentials}</tokenGrantType>
+    <tokenScope>${nuxeo.hyland.cic.dataCuration.auth.scope:=environment_authorization}</tokenScope>
     <clientId>${nuxeo.hyland.cic.datacuration.clientId:=}</clientId>
     <clientSecret>${nuxeo.hyland.cic.datacuration.clientSecret:=}</clientSecret>
   </dataCuration>
@@ -105,6 +119,8 @@ You could, for example, add more, like:
     <name>otherEnrichmentApp</name>
     <authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
     <baseUrl>https://some.other.enrichment.base.url.com</baseUrl>
+    <tokenGrantType>${nuxeo.hyland.cic.enrichment.auth.grantType:=client_credentials}</tokenGrantType>
+    <tokenScope>${nuxeo.hyland.cic.enrichment.auth.scope:=environment_authorization}</tokenScope>
     <clientId>123456-abcdef-890-...</clientId>
     <clientSecret>098765-jhgfds-etc.</clientSecret>
   </knowledgeEnrichment>
@@ -117,6 +133,8 @@ You could, for example, add more, like:
     <name>otherDCApp</name>
     <authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
     <baseUrl>https://yet-another-baseUrl-app.com</baseUrl>
+    <tokenGrantType>${nuxeo.hyland.cic.dataCuration.auth.grantType:=client_credentials}</tokenGrantType>
+    <tokenScope>${nuxeo.hyland.cic.dataCuration.auth.scope:=environment_authorization}</tokenScope>
     <clientId>another-client-id-here . . .. . .</clientId>
     <clientSecret>another-secret-here. . .</clientSecret>
   </dataCuration>
@@ -139,7 +157,7 @@ WARN  [main] [org.nuxeo.labs.hyland.knowledge.service.enrichment.KEDescriptor] N
 
 ## Authentication to the Service
 
-This part is always handled by the plugin, using the different info provided in the configuration parameters (auth. end point + clientId + clientSecret).
+This part is always handled by the plugin, using the different info provided in the configuration parameters (auth. end point + grantType + scope + clientId + clientSecret).
 
 The service returns a token valid a certain time: The plugin handles this timeout (so as to avoid requesting a token at each call, saving some loads)
 

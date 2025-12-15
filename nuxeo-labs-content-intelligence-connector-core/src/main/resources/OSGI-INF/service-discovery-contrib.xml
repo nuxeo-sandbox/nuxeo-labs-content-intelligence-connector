@@ -1,17 +1,19 @@
 <?xml version="1.0"?>
 <component name="org.nuxeo.labs.hyland.content.intelligence.HylandKDService">
-  <!-- Discovery -->-->
-  <implementation class="org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDServiceImpl" />
+	<!-- Discovery -->--> <implementation
+		class="org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDServiceImpl" />
 
   <service>
-    <provide interface="org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService" />
-  </service>
+		<provide
+			interface="org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService" />
+	</service>
 
-	<extension-point name="knowledgeDiscovery">
+	<extension-point
+		name="knowledgeDiscovery">
 		<object
 			class="org.nuxeo.labs.hyland.content.intelligence.service.discovery.KDDescriptor" />
 	</extension-point>
-	
+
 	<!-- Default contributions use configuration parameters -->
 	<extension
 		target="org.nuxeo.labs.hyland.content.intelligence.HylandKDService"
@@ -20,10 +22,12 @@
 			<name>default</name>
 			<authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
 			<baseUrl>${nuxeo.hyland.cic.discovery.baseUrl:=}</baseUrl>
+			<tokenGrantType>${nuxeo.hyland.cic.discovery.auth.grantType:=client_credentials}</tokenGrantType>
+			<tokenScope>${nuxeo.hyland.cic.discovery.auth.scope:=hxp hxp.integrations environment_authorization}</tokenScope>
 			<clientId>${nuxeo.hyland.cic.discovery.clientId:=}</clientId>
 			<clientSecret>${nuxeo.hyland.cic.discovery.clientSecret:=}</clientSecret>
 			<environment>${nuxeo.hyland.cic.discovery.environment:=}</environment>
 		</knowledgeDiscovery>
 	</extension>
-	
+
 </component>
