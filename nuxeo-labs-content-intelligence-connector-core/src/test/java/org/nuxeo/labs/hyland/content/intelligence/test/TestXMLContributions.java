@@ -19,25 +19,15 @@
 package org.nuxeo.labs.hyland.content.intelligence.test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import jakarta.inject.Inject;
-
-import org.apache.commons.lang3.StringUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.junit.Assume;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nuxeo.ecm.platform.test.PlatformFeature;
-import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService;
-import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDServiceImpl;
 import org.nuxeo.labs.hyland.content.intelligence.service.discovery.KDDescriptor;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.DCDescriptor;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
@@ -45,6 +35,8 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.KEDescripto
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
+
+import jakarta.inject.Inject;
 
 @RunWith(FeaturesRunner.class)
 @Features({ PlatformFeature.class, ConfigCheckerFeature.class })
@@ -109,5 +101,4 @@ public class TestXMLContributions {
         assertTrue(dcDesc.hasAllValues());
     }
     
-
 }

@@ -50,8 +50,6 @@ public class ServicesUtils {
 
         JSONObject jsonObject = new JSONObject(jsonObjectStr);
 
-        // Unfortunately, jsonObject.toMap() returns a Map<String, Object> that would require extra conversion.
-        // We need to loop.
         Map<String, String> map = new HashMap<String, String>();
         Iterator<String> keys = jsonObject.keys();
         while (keys.hasNext()) {
@@ -62,8 +60,6 @@ public class ServicesUtils {
         return map;
 
     }
-    
-
 
     public static int configParamToInt(String param, int defaultValue) {
 
