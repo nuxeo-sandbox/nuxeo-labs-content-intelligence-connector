@@ -18,120 +18,40 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.service.discovery;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.nuxeo.common.xmap.annotation.XNode;
 import org.nuxeo.common.xmap.annotation.XObject;
-import org.nuxeo.labs.hyland.content.intelligence.AuthenticationTokenParams;
+import org.nuxeo.labs.hyland.content.intelligence.service.AbstractServiceDescriptor;
 
 /**
  * @since 2023
  */
 @XObject("knowledgeDiscovery")
-public class KDDescriptor {
+public class KDDescriptor extends AbstractServiceDescriptor {
 
-    private static final Logger log = LogManager.getLogger(KDDescriptor.class);
-
-    @XNode("name")
-    protected String name = null;
-
-    @XNode("authenticationBaseUrl")
-    protected String authenticationBaseUrl = null;
-
-    @XNode("baseUrl")
-    protected String baseUrl = null;
-
-    @XNode("tokenGrantType")
-    protected String tokenGrantType = null;
-
-    @XNode("tokenScope")
-    protected String tokenScope = null;
-
-    @XNode("clientId")
-    protected String clientId = null;
-
-    @XNode("clientSecret")
-    protected String clientSecret = null;
+    private static final Logger LOG = LogManager.getLogger(KDDescriptor.class);
 
     @XNode("environment")
-    protected String environment = null;
+    protected String environment;
 
-    protected AuthenticationTokenParams authTokenParams = null;
-
-    public String getName() {
-        return name;
+    @Override
+    protected Logger log() {
+        return LOG;
     }
 
-    public String getAuthenticationBaseUrl() {
-        return authenticationBaseUrl;
+    @Override
+    protected String serviceLabel() {
+        return "Knowledge Discovery";
+    }
+    
+    @Override
+    protected boolean requiresEnvironment() {
+        return false;
     }
 
-    public String getBaseUrl() {
-        return baseUrl;
-    }
-
-    public AuthenticationTokenParams getAuthenticationTokenParams() {
-        if (authTokenParams == null) {
-            authTokenParams = new AuthenticationTokenParams(tokenGrantType, tokenScope, clientId, clientSecret,
-                    environment);
-        }
-
-        return authTokenParams;
-    }
-
+    @Override
     public String getEnvironment() {
-        return getAuthenticationTokenParams().getEnvironment();
-    }
-
-    public boolean hasAllValues() {
-
-        if (StringUtils.isBlank(authenticationBaseUrl) || StringUtils.isBlank(baseUrl)
-                || StringUtils.isBlank(tokenGrantType) || StringUtils.isBlank(tokenScope)
-                || StringUtils.isBlank(clientId) || StringUtils.isBlank(clientSecret)
-                || StringUtils.isBlank(environment)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public void checkConfigAndLogErrors() {
-
-        if (StringUtils.isBlank(authenticationBaseUrl)) {
-            log.warn("No CIC Authentication endpoint provided in the configuration '" + name
-                    + "', authentication to the service will fail.");
-        }
-
-        if (StringUtils.isBlank(baseUrl)) {
-            log.warn("No CIC Knonwledge Discovery endpoint provided in the configuration '" + name
-                    + "', calls to the service will fail.");
-        }
-
-        if (StringUtils.isBlank(tokenGrantType)) {
-            log.warn("No CIC Knonwledge Discovery tokenGrantType provided in the configuration '" + name
-                    + "', authentication to the service will fail.");
-        }
-
-        if (StringUtils.isBlank(tokenScope)) {
-            log.warn("No CIC Knonwledge Discovery tokenScope provided in the configuration '" + name
-                    + "', authentication to the service will fail.");
-        }
-
-        if (StringUtils.isBlank(clientId)) {
-            log.warn("No CIC Knonwledge Discovery ClientId provided in the configuration '" + name
-                    + "', authentication to the service will fail.");
-        }
-
-        if (StringUtils.isBlank(clientSecret)) {
-            log.warn("No CIC Knonwledge Discovery clientSecret provided in the configuration '" + name
-                    + "', authentication to the service will fail.");
-        }
-
-        if (StringUtils.isBlank(environment)) {
-            log.warn("No CIC Knonwledge Discovery environment provided in the configuration '" + name
-                    + "', calls to the service will fail.");
-        }
-
+        return environment;
     }
 }

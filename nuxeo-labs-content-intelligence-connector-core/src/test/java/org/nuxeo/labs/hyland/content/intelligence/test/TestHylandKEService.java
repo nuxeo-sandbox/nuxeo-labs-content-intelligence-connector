@@ -25,9 +25,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assume;
@@ -42,6 +41,8 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
+
+import javax.inject.Inject;
 
 @RunWith(FeaturesRunner.class)
 @Features({ PlatformFeature.class, ConfigCheckerFeature.class })
@@ -392,7 +393,7 @@ public class TestHylandKEService {
         for (int i = 0; i < array.length(); i++) {
             JSONObject obj = array.getJSONObject(i);
             String value = obj.getString(key);
-            if (StringUtils.equals(searchStr, value)) {
+            if (Strings.CS.equals(searchStr, value)) {
                 return true;
             }
         }

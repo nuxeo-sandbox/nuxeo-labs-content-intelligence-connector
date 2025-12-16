@@ -18,107 +18,37 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.service.enrichment;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.nuxeo.common.xmap.annotation.XNode;
 import org.nuxeo.common.xmap.annotation.XObject;
-import org.nuxeo.labs.hyland.content.intelligence.AuthenticationTokenParams;
+import org.nuxeo.labs.hyland.content.intelligence.service.AbstractServiceDescriptor;
 
 /**
  * @since 2023
  */
 @XObject("dataCuration")
-public class DCDescriptor {
+public class DCDescriptor extends AbstractServiceDescriptor {
 
-    private static final Logger log = LogManager.getLogger(DCDescriptor.class);
+    private static final Logger LOG = LogManager.getLogger(DCDescriptor.class);
 
-    @XNode("name")
-    protected String name = null;
-
-    @XNode("authenticationBaseUrl")
-    protected String authenticationBaseUrl = null;
-
-    @XNode("baseUrl")
-    protected String baseUrl = null;
-
-    @XNode("tokenGrantType")
-    protected String tokenGrantType = null;
-
-    @XNode("tokenScope")
-    protected String tokenScope = null;
-
-    @XNode("clientId")
-    protected String clientId = null;
-
-    @XNode("clientSecret")
-    protected String clientSecret = null;
-
-    protected AuthenticationTokenParams authTokenParams = null;
-
-    public String getName() {
-        return name;
+    @Override
+    protected Logger log() {
+        return LOG;
     }
 
-    public String getAuthenticationBaseUrl() {
-        return authenticationBaseUrl;
+    @Override
+    protected String serviceLabel() {
+        return "Data Curation";
     }
-
-    public String getBaseUrl() {
-        return baseUrl;
+    
+    @Override
+    protected boolean requiresEnvironment() {
+        return false;
     }
-
-    public AuthenticationTokenParams getAuthenticationTokenParams() {
-        if (authTokenParams == null) {
-            authTokenParams = new AuthenticationTokenParams(tokenGrantType, tokenScope, clientId, clientSecret, null);
-        }
-
-        return authTokenParams;
-    }
-
-    public boolean hasAllValues() {
-
-        if (StringUtils.isBlank(authenticationBaseUrl) || StringUtils.isBlank(baseUrl)
-                || StringUtils.isBlank(tokenGrantType) || StringUtils.isBlank(tokenScope)
-                || StringUtils.isBlank(clientId) || StringUtils.isBlank(clientSecret)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public void checkConfigAndLogErrors() {
-
-        if (StringUtils.isBlank(authenticationBaseUrl)) {
-            log.warn("No CIC Authentication endpoint provided for configuration '" + name
-                    + "', authentication to the service will fail.");
-        }
-
-        if (StringUtils.isBlank(baseUrl)) {
-            log.warn("No CIC Data Curation endpoint provided for configuration '" + name
-                    + "', calls to the service will fail.");
-        }
-
-        if (StringUtils.isBlank(tokenGrantType)) {
-            log.warn("No CIC Data Curation tokenGrantType provided in the configuration '" + name
-                    + "', authentication to the service will fail.");
-        }
-
-        if (StringUtils.isBlank(tokenScope)) {
-            log.warn("No CIC Data Curation tokenScope provided in the configuration '" + name
-                    + "', authentication to the service will fail.");
-        }
-
-        if (StringUtils.isBlank(clientId)) {
-            log.warn("No CIC Data Curation ClientId provided for configuration '" + name
-                    + "', authentication to the service will fail.");
-        }
-
-        if (StringUtils.isBlank(clientSecret)) {
-            log.warn("No CIC Data Curation clientSecret provided for configuration '" + name
-                    + "', authentication to the service will fail.");
-        }
-
+    
+    @Override
+    public String getEnvironment() {
+        return null;
     }
 
 }
