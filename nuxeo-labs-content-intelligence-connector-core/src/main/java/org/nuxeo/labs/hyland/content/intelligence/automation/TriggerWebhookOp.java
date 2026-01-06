@@ -6,7 +6,6 @@ import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.labs.hyland.content.intelligence.service.webhook.WebhookService;
-import org.nuxeo.runtime.api.Framework;
 
 @Operation(
         id = TriggerWebhookOp.ID,

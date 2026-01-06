@@ -1,5 +1,7 @@
 package org.nuxeo.labs.hyland.content.intelligence.service.webhook;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.nuxeo.labs.hyland.content.intelligence.AuthenticationToken;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
@@ -11,6 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class WebhookServiceImpl implements WebhookService {
+
+    private static final Logger log = LogManager.getLogger(WebhookServiceImpl.class);
     protected AuthenticationToken tokenManager;
     protected ServiceCall serviceCall = new ServiceCall();
 
@@ -37,7 +41,10 @@ public class WebhookServiceImpl implements WebhookService {
     public boolean triggerWebhook(String docId) {
 
         String token = tokenManager.getToken();
-        if (token == null) return false;
+        if (token == null) {
+            log.error("Webhook trigger failed: token is null");
+            return false;
+        }
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Bearer " + token);
@@ -49,6 +56,11 @@ public class WebhookServiceImpl implements WebhookService {
         ServiceCallResult result =
                 serviceCall.post(webhookUrl, headers, body.toString());
 
-        return result.getResponseCode() == 201;
+        int code = result.getResponseCode();
+        log.info("Webhook response code: {}", code);
+
+        return code >= 200 && code < 300;
+
+        //return result.getResponseCode() == 201;
     }
 }
