@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.labs.hyland.content.intelligence.HylandAgentsService">
+  <implementation
+		class="org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsServiceImpl" />
+
+  <service>
+		<provide
+			interface="org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService" />
+	</service>
+
+	<extension-point
+		name="agent">
+		<object
+			class="org.nuxeo.labs.hyland.content.intelligence.service.agents.AgentDescriptor" />
+	</extension-point>
+
+	<!-- Default contributions use configuration parameters -->
+	<extension
+		target="org.nuxeo.labs.hyland.content.intelligence.HylandAgentsService"
+		point="agent">
+		<agent>
+			<name>default</name>
+			<authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
+			<baseUrl>${nuxeo.hyland.cic.agents.baseUrl:=}</baseUrl>
+			<tokenGrantType>${nuxeo.hyland.cic.agents.auth.grantType:=client_credentials}</tokenGrantType>
+			<tokenScope>${nuxeo.hyland.cic.agents.auth.scope:=hxp hxp.integrations environment_authorization}</tokenScope>
+			<clientId>${nuxeo.hyland.cic.agents.clientId:=}</clientId>
+			<clientSecret>${nuxeo.hyland.cic.agents.clientSecret:=}</clientSecret>
+		</agent>
+	</extension>
+
+</component>

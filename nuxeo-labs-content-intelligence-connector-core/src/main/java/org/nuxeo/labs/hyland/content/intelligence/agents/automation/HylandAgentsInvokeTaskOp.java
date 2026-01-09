@@ -16,7 +16,7 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence.discovery.automation;
+package org.nuxeo.labs.hyland.content.intelligence.agents.automation;
 
 import java.util.Map;
 
@@ -28,37 +28,44 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
-import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService;
+import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService;
 
 /**
  * 
  * @since TODO
  */
-@Operation(id = HylandKDGetAllAgentsOp.ID, category = "Hyland Knowledge Discovery", label = "Get All KD Agents", description = ""
-        + "Returns a JSON blob holding  the result of the call. Call its getString() method then JSON.parse()."
-        + " See documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
-        + " and the array of KD agents is in the 'response' property."
+@Operation(id = HylandAgentsInvokeTaskOp.ID, category = "Hyland Agent Builder", label = "Invoke Task", description = ""
+        + "Returns a JSON blob holding the result of the call. Call its getString() method then JSON.parse()."
+        + " See CIC documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
+        + " and the response of the agent in the 'response' object."
+        + " jsonPayloadStr is the expected JSON input (as string) for the agent."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
         + " configName is the name of the XML configuration to use (if not passed, using 'default')")
-public class HylandKDGetAllAgentsOp {
+public class HylandAgentsInvokeTaskOp {
     
-    public static final String ID = "HylandKnowledgeDiscovery.getAllAgents";
+    public static final String ID = "HylandAgents.InvokeTask";
     
     @Context
-    protected HylandKDService kdService;
-
-    @Param(name = "extraHeadersJsonStr", required = false)
-    protected String extraHeadersJsonStr;
+    protected HylandAgentsService agentsService;
 
     @Param(name = "configName", required = false)
     protected String configName;
+
+    @Param(name = "agentId", required = true)
+    protected String agentId;
+
+    @Param(name = "jsonPayloadStr", required = false)
+    protected String jsonPayloadStr;
+
+    @Param(name = "extraHeadersJsonStr", required = false)
+    protected String extraHeadersJsonStr;
     
     @OperationMethod
     public Blob run() {
         
         Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
         
-        ServiceCallResult result = kdService.getAllAgents(configName, extraHeaders);
+        ServiceCallResult result = agentsService.invokeTask(configName, agentId, jsonPayloadStr, extraHeaders);
         
         return Blobs.createJSONBlob(result.toJsonString());
     }

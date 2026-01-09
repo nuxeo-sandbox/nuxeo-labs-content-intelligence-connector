@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <component name="org.nuxeo.labs.hyland.content.intelligence.HylandKEService">
 
-	<!-- Enrichment -->
 	<implementation
 		class="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl" />
 

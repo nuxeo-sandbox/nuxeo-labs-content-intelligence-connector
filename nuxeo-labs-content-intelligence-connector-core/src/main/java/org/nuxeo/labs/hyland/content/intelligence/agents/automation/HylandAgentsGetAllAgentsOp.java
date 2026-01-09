@@ -16,7 +16,7 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence.discovery.automation;
+package org.nuxeo.labs.hyland.content.intelligence.agents.automation;
 
 import java.util.Map;
 
@@ -28,24 +28,24 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
-import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService;
+import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService;
 
 /**
  * 
  * @since TODO
  */
-@Operation(id = HylandKDGetAllAgentsOp.ID, category = "Hyland Knowledge Discovery", label = "Get All KD Agents", description = ""
+@Operation(id = HylandAgentsGetAllAgentsOp.ID, category = "Hyland Agent Builder", label = "Get All Agents", description = ""
         + "Returns a JSON blob holding  the result of the call. Call its getString() method then JSON.parse()."
-        + " See documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
-        + " and the array of KD agents is in the 'response' property."
+        + " See CIC documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
+        + " and the array of agents is in the 'response' property."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
         + " configName is the name of the XML configuration to use (if not passed, using 'default')")
-public class HylandKDGetAllAgentsOp {
+public class HylandAgentsGetAllAgentsOp {
     
-    public static final String ID = "HylandKnowledgeDiscovery.getAllAgents";
+    public static final String ID = "HylandAgents.getAllAgents";
     
     @Context
-    protected HylandKDService kdService;
+    protected HylandAgentsService agentsService;
 
     @Param(name = "extraHeadersJsonStr", required = false)
     protected String extraHeadersJsonStr;
@@ -58,7 +58,7 @@ public class HylandKDGetAllAgentsOp {
         
         Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
         
-        ServiceCallResult result = kdService.getAllAgents(configName, extraHeaders);
+        ServiceCallResult result = agentsService.getAllAgents(configName, extraHeaders);
         
         return Blobs.createJSONBlob(result.toJsonString());
     }

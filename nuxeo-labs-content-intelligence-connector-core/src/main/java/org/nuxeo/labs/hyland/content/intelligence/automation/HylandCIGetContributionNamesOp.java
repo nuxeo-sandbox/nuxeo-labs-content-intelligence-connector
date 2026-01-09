@@ -27,6 +27,7 @@ import org.nuxeo.ecm.automation.core.annotations.Operation;
 import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
+import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService;
 import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 
@@ -45,6 +46,9 @@ public class HylandCIGetContributionNamesOp {
     
     @Context
     protected HylandKDService kdService;
+    
+    @Context
+    protected HylandAgentsService agentsService;
     
     @OperationMethod
     public Blob run() {
@@ -65,6 +69,10 @@ public class HylandCIGetContributionNamesOp {
         contribs = kdService.getKDContribNames();
         contribsJson = new JSONArray(contribs);
         result.put("knowledgeDiscovery", contribsJson);
+        
+        contribs = agentsService.getAgentContribNames();
+        contribsJson = new JSONArray(contribs);
+        result.put("agents", contribsJson);
         
         return Blobs.createJSONBlob(result.toString());
     }

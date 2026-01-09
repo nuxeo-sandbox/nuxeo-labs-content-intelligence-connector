@@ -8,18 +8,19 @@ The plugin connects [Nuxeo](https://www.hyland.com/solutions/products/nuxeo-plat
 > A connector to [Knowledge Enrichment](https://github.com/nuxeo-sandbox/nuxeo-labs-knowledge-enrichment-connector) only was written previously, and should not be used anymore (already obsolete :-))
 > All its code has been moved here, and the operations will keep the same IDs so you will not have to change your configuration once you switch to `nuxeo-labs-content-intelligence-connector`. Just make sure you don't deploy both plugins.
 
-The documentation is split in two parts:
+The documentation is split in 3 parts:
 
 * One for [Knowledge Enrichment](/README-Enrichment.md),
-* And one for [Knowledge Discovery](/README-Discovery.md).
+* One for [Knowledge Discovery](/README-Discovery.md).
+* And one for [Agents](/README-agents.md).
 
 Some shared automation operations are documented in this README (see "Automation")
 
 <br>
 
-## Common Usage (Both Enrichment and Discovery)
+## Common/Shared Usage
 
-1. Have a valid application on Content Intelligence Cloud/Content Innovation Cloud. Also look at its documentation. You need valid endpoints (authentication, content intelligence, data curation, knowledge discovery), and valid clientId and clientSecret for each service.
+1. Have a valid application on Content Innovation Cloud. Also look at its documentation. You need valid endpoints (authentication, content intelligence, data curation, knowledge discovery, agent builder), and valid clientId and clientSecret for each service.
 2. Setup the configuration parameters required by the plugin
 
 > [!TIP]
@@ -84,13 +85,13 @@ See examples of Automation Script.
 
 ### `HylandContentIntelligence.GetContributionNames`
 
-Returns a JSON string Blob with all the contributions to the misc. extension points: ["knowledgeEnrichment"](/README-Enrichment.md), ["dataCuration"](/README-Enrichment.md) and ["knowledgeDiscovery"](/README-Discovery.md). See the documentation of each service for details.
+Returns a JSON string Blob with all the contributions to the misc. extension points: ["knowledgeEnrichment"](/README-Enrichment.md), ["dataCuration"](/README-Enrichment.md), ["knowledgeDiscovery"](/README-Discovery.md) and ["Agents"](/README-Agents.md). See the documentation of each service for details.
 
 * Input: `void`
 * Output: `Blob`, a JSON blob
 * Parameters: none
 
-The returned blob holds 3 properties, one per extension point, and for each, an array of contribution names, to be passed to the different operations. For example, if you contributed 3 extra accounts to the "knowledgeDiscovery" point, and let the default ones for KE/DC, the result will be:
+The returned blob holds 3 properties, one per extension point, and for each, an array of contribution names, to be passed to the different operations. For example, if you contributed 3 extra accounts to the "knowledgeDiscovery" point, and let the default for KE/DC/Agents, the result will be:
 
 ```json
 {
@@ -101,11 +102,12 @@ The returned blob holds 3 properties, one per extension point, and for each, an 
     "extra_config_3"
   ],
   "knowledgeEnrichment": ["default"],
-  "dataCuration": ["default"]
+  "dataCuration": ["default"],
+  "agents": ["default"]
 }
 ```
 
-An example of usage of these is the following: Getting the list of all agents available for an account/ For example:
+An example of usage of these is the following: Getting the list of all agents available for aa KDn account/ For example:
 
 ```javascript
 . . .

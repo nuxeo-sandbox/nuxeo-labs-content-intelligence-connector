@@ -11,13 +11,13 @@ It provides two kinds of operations handling the calls to the service (see detai
 >In all cases, the plugin handles authentication, you never need to handle it (see below).
 
 > [!TIP]
-> Examples of Nuxeo JavaScript Automation using the misc. operations describeb below can be found in the [JS Automation Examples](/README-Enrichment-JS-Automation-Examples.md) file.
+> Examples of Nuxeo JavaScript Automation using the misc. operations described below can be found in the [JS Automation Examples](/README-Enrichment-JS-Automation-Examples.md) file.
 
 <br>
 
 ## Usage
 
-See `Common Usage (Both Enrichment and Discovery)` in the main [README](/README.md).
+See `Common/Shared Usage` in the main [README](/README.md).
 
 To summarize, every call returns a Blob, stringified JSON object that has at least 3 fields:
 
@@ -50,7 +50,7 @@ The plugin provides a `"default"` configuration, that uses the following configu
   * `nuxeo.hyland.cic.enrichment.auth.grantType`: The grant type (default `"client_credentials"` in default configuration)
   * `nuxeo.hyland.cic.enrichment.auth.scope`: Tge scope when authenticating.
   * This value changes, sometime abruptly, so check CIC announcment and check this first when your calls start to fail with authentication error.
-  * As default value may often change we don't put it in README, see latest defailt value at `service-enrichment-contrib.xml`
+  * As default value may often change we don't put it in README, see latest default values at `service-enrichment-contrib.xml`
   * `nuxeo.hyland.cic.enrichment.clientId`: Your enrichment clientId
   * `nuxeo.hyland.cic.enrichment.clientSecret`: Your enrichment client secret
 * For Data Curation:
@@ -74,7 +74,7 @@ Other parameters are used to tune the behavior (independant to the service confi
 You can contribute the `"knowledgeEnrichment"` or the `"dataCuration"` points of the `"org.nuxeo.labs.hyland.content.intelligence.HylandKEService"` service.
 
 > [!TIP]
-> If you plan to use only one CIC app, youdon't need to contribute XML, you just set the nuxeo.conf paramerets values
+> If you plan to use only one CIC app, you don't need to contribute XML, you just set the nuxeo.conf parameters values
 
 Here are the two `"default"` contributions for each.
 
@@ -150,7 +150,7 @@ Now, when calling one of the misc.operations, you can pass "otherEnrichmentApp" 
 At startup, if some parameters are missing, the plugin logs a WARN. For example, if you do not provide an Enrichment clientId:
 
 ```
-WARN  [main] [org.nuxeo.labs.hyland.knowledge.service.enrichment.KEDescriptor] No CIC Enrichment ClientId provided for configuration 'default', calls to the service will fail.
+No configuration found for Data Curation. Calls, if any, will fail.
 ```
 
 <br>
