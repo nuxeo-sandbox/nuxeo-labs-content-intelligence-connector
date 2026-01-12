@@ -16,6 +16,10 @@
         <operation class="org.nuxeo.labs.hyland.content.intelligence.discovery.automation.HylandKDInvokeOp"/>
         <operation class="org.nuxeo.labs.hyland.content.intelligence.discovery.automation.HylandKDGetAllAgentsOp"/>
         <operation class="org.nuxeo.labs.hyland.content.intelligence.discovery.automation.HylandKDAskQuestionAndGetAnswerOp"/>
+
+        <!-- Agents -->
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.agents.automation.HylandAgentsGetAllAgentsOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.agents.automation.HylandAgentsInvokeTaskOp"/>
         
         <!-- All -->
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.HylandCIGetContributionNamesOp"/>

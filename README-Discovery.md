@@ -14,7 +14,7 @@ It provides two kinds of operations handling the calls to the service (see detai
 
 ## Usage
 
-See `Common Usage (Both Enrichment and Discovery)` in the main [README](/README.md).
+See `Common/Shared Usage` in the main [README](/README.md).
 
 To summarize, every call returns a Blob, stringified JSON object that has at least 3 fields:
 
@@ -57,7 +57,7 @@ The plugin provides a `"default"` configuration, that uses the following configu
 * `nuxeo.hyland.cic.discovery.auth.grantType`: The grant type (default `"client_credentials"` in default configuration)
 * `nuxeo.hyland.cic.discovery.auth.scope`: Tge scope when authenticating.
   * This value changes, sometime abruptly, so check CIC announcment and check this first when your calls start to fail with authentication error.
-  * As default value may often change we don't put it in README, see latest defailt value at `service-discovery-contrib.xml`
+  * As default value may often change we don't put it in README, see latest default values at `service-discovery-contrib.xml`
 * `nuxeo.hyland.cic.discovery.clientId`: Your Discovery clientId
 * `nuxeo.hyland.cic.discovery.clientSecret`: Your Discovery client secret
 * `nuxeo.hyland.cic.discovery.environment`: The environment
@@ -75,12 +75,12 @@ Other parameters are used to tune the behavior:
 
 #### XML Contribution
 
-You can contribute the `"knowledgeEnrichment"` or the `"dataCuration"` points of the `"org.nuxeo.labs.hyland.content.intelligence.HylandKEService"` service.
+You can contribute the `"knowledgeDiscovery"` point of the `"org.nuxeo.labs.hyland.content.intelligence.HylandKDService"` service.
 
 > [!TIP]
-> If you plan to use only one CIC app, youdon't need to contribute XML, you just set the nuxeo.conf paramerets values
+> If you plan to use only one CIC app, you don't need to contribute XML, you just set the nuxeo.conf parameters values
 
-Here are the two `"default"` contributions for each.
+Here is the `"default"` contribution.
 
 ```xml
 <!-- Default contributions use configuration parameters -->
@@ -125,10 +125,10 @@ Now, when calling one of the misc.operations, you can pass "myOtherApp" in the `
 
 
 #### Error-Check
-At startup, if some key parameters are missing (client ID, base URL, …), the plugin logs a WARN. For example, if you do not provide a Data Curation clientId:
+At startup, if some key parameters are missing (client ID, base URL, …), the plugin logs a WARN. For example, if you do not provide a Knowledge Discovery clientId:
 
 ```
-WARN  [main] [org.nuxeo.labs.hyland.knowledge.enrichment.service.HylandKEServiceImpl] No CIC Data Curation ClientId provided (nuxeo.hyland.cic.datacuration.clientId), calls to the service will fail.
+No configuration found for Knowledge Discovery. Calls, if any, will fail.
 ```
 
 ## Authentication to the Service
@@ -159,7 +159,7 @@ A high level operation that gets a list of all agents
   * `extraHeadersJsonStr`: String optional. A JSON object as string, with more headers than the one sent byt the plugin, allowing for extra tuning if needed
   * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
 
-The operation calls the service and returns a JSON Blob, that contains the object described in `Common Usage (Both Enrichment and Discovery)` in the main [README](/README.md)
+The operation calls the service and returns a JSON Blob, that contains the object described in `Common/Shared Usage` in the main [README](/README.md)
 
 > [!NOTE]
 > Reminder: To get the JSON string from this blob, you must call its `getString()` method (see example below). Then you can `JSON.parse` this string
