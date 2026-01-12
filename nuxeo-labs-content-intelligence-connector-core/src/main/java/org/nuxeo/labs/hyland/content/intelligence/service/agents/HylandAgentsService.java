@@ -42,16 +42,36 @@ public interface HylandAgentsService {
     public ServiceCallResult getAllAgents(String configName, Map<String, String> extraHeaders);
     
     /**
+     * returns the full JSON after calling the service.
+     * 
+     * If versionId is null or empty, the latest version is returned.
+     * 
+     * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
+     * by the plugin and using config. parameters)
+     * 
+     * @param configName
+     * @param agentId
+     * @param versionId
+     * @param extraHeaders
+     * @return
+     * @since TODO
+     */
+    public ServiceCallResult lookupAgent(String configName, String agentId, String versionId, Map<String, String> extraHeaders);
+    
+    /**
      * Invoke the task agent agentId. Pass in payloadJsonStr the expected input for the agent.
+     * 
+     * If versionId is null or empty, the latest version is invoked.
      * 
      * @param configName, optional
      * @param agentId, required
+     * @param versionId, optional
      * @param payloadJsonStr, required
      * @param extraHeaders, optional
      * @return
      * @since TODO
      */
-    public ServiceCallResult invokeTask(String configName, String agentId, String payloadJsonStr, Map<String, String> extraHeaders);
+    public ServiceCallResult invokeTask(String configName, String agentId, String versionId, String payloadJsonStr, Map<String, String> extraHeaders);
 
     /**
      * 

@@ -33,17 +33,16 @@ import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsSer
 /**
  * @since TODO
  */
-@Operation(id = HylandAgentsInvokeTaskOp.ID, category = "Hyland Agent Builder", label = "Invoke Task", description = ""
+@Operation(id = HylandAgentsLookupAgentOp.ID, category = "Hyland Agent Builder", label = "Lookup Agent", description = ""
         + "Returns a JSON blob holding the result of the call. Call its getString() method then JSON.parse()."
         + " See CIC documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
         + " and the response of the agent in the 'response' object."
         + " agentVersion is optional. If not used, latest version is invoked."
-        + " jsonPayloadStr is the expected JSON input (as string) for the agent."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
         + " configName is the name of the XML configuration to use (if not passed, using 'default')")
-public class HylandAgentsInvokeTaskOp {
+public class HylandAgentsLookupAgentOp {
 
-    public static final String ID = "HylandAgents.InvokeTask";
+    public static final String ID = "HylandAgents.LookupAgent";
 
     @Context
     protected HylandAgentsService agentsService;
@@ -57,9 +56,6 @@ public class HylandAgentsInvokeTaskOp {
     @Param(name = "agentVersion", required = true)
     protected String agentVersion;
 
-    @Param(name = "jsonPayloadStr", required = false)
-    protected String jsonPayloadStr;
-
     @Param(name = "extraHeadersJsonStr", required = false)
     protected String extraHeadersJsonStr;
 
@@ -68,8 +64,7 @@ public class HylandAgentsInvokeTaskOp {
 
         Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
 
-        ServiceCallResult result = agentsService.invokeTask(configName, agentId, agentVersion, jsonPayloadStr,
-                extraHeaders);
+        ServiceCallResult result = agentsService.lookupAgent(configName, agentId, agentVersion, extraHeaders);
 
         return Blobs.createJSONBlob(result.toJsonString());
     }

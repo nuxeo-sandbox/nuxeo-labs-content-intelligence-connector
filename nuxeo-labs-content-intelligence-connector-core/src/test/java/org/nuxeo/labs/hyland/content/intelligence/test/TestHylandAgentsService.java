@@ -75,6 +75,54 @@ public class TestHylandAgentsService {
     }
 
     @Test
+    public void shouldLookupTheTestAgentLatestVersion() {
+
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasAgentsClientInfo());
+
+        String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_AGENT_FOR_UNIT_TEST);
+        ServiceCallResult result = hylandAgentsService.lookupAgent(null, agentId, null, null);
+
+        assertTrue(result.callResponseOK());
+
+        JSONObject responseJson = result.getResponseAsJSONObject();
+
+        assertTrue(responseJson.has("agent"));
+        JSONObject obj = responseJson.getJSONObject(("agent"));
+        assertEquals(agentId, obj.getString(("id")));
+
+        // See a JSON return for the call for details.
+        // We don't assert a lot: if a value is not ther, an error will be throwned jy org.json
+        assertTrue(responseJson.has("version"));
+        JSONObject version = responseJson.getJSONObject(("version"));
+        JSONObject config = version.getJSONObject("config");
+
+        // String model = config.getString("llmModelId");
+        JSONObject inputSchema = config.getJSONObject(("inputSchema"));
+        /*
+         * For now, our agent is:
+         * "inputSchema": {
+         * "type": "object",
+         * "properties": {
+         * "text": {
+         * "type": "string",
+         * "description": "The input text"
+         * }
+         * },
+         * "required": [
+         * "text"
+         * ]
+         * }
+         */
+        JSONObject properties = inputSchema.getJSONObject(("properties"));
+
+        JSONArray tools = config.getJSONArray("tools");
+        JSONObject tool1 = tools.getJSONObject(0);
+        JSONObject outputSchema = tool1.getJSONObject(("outputSchema"));
+
+    }
+
+    @Test
     public void shouldCallTheTestAgent() {
 
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
@@ -90,44 +138,45 @@ public class TestHylandAgentsService {
                 }
                 """;
 
-        ServiceCallResult result = hylandAgentsService.invokeTask(null, agentId, jsonPayloadStr, null);
+        ServiceCallResult result = hylandAgentsService.invokeTask(null, agentId, null, jsonPayloadStr, null);
         assertNotNull(result);
-        
-        if(!result.callResponseOK()) {
+
+        if (!result.callResponseOK()) {
             // Ignore if server not available or whatever.
             return;
         }
-        
-       /* Response is:
-        {
-            "createdAt": 1767964905,
-            "model": "anthropic.claude-3-haiku-20240307-v1:0",
-            "object": "response",
-            "output": [
-                {
-                    "type": "message",
-                    "status": "completed",
-                    "content": [
-                        {
-                            "type": "output_text",
-                            "text": "{\"result\": \"DONE\"}"
-                        }
-                    ],
-                    "role": "assistant"
-                }
-            ]
-        }
-        */
-        
+
+        /*
+         * Response is:
+         * {
+         * "createdAt": 1767964905,
+         * "model": "anthropic.claude-3-haiku-20240307-v1:0",
+         * "object": "response",
+         * "output": [
+         * {
+         * "type": "message",
+         * "status": "completed",
+         * "content": [
+         * {
+         * "type": "output_text",
+         * "text": "{\"result\": \"DONE\"}"
+         * }
+         * ],
+         * "role": "assistant"
+         * }
+         * ]
+         * }
+         */
+
         JSONObject responseJson = result.getResponseAsJSONObject();
         assertTrue(responseJson.has("output"));
         JSONArray output = responseJson.getJSONArray("output");
         assertTrue(output.length() > 0);
-        
+
         // Let's get all in one call, will fail if values are not there
         String agentFinalResult = output.getJSONObject(0).getJSONArray("content").getJSONObject(0).getString("text");
         JSONObject theRealResultAtLast = new JSONObject(agentFinalResult);
-        
+
         assertEquals("DONE", theRealResultAtLast.getString("result"));
 
     }
