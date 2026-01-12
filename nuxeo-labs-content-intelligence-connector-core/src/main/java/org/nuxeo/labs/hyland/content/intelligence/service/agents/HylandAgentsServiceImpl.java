@@ -103,7 +103,7 @@ public class HylandAgentsServiceImpl extends DefaultComponent implements HylandA
     }
 
     @Override
-    public ServiceCallResult invokeTask(String configName, String agentId, String payloadJsonStr,
+    public ServiceCallResult lookupAgent(String configName, String agentId, String versionId,
             Map<String, String> extraHeaders) {
 
         ServiceCallResult result = null;
@@ -114,9 +114,13 @@ public class HylandAgentsServiceImpl extends DefaultComponent implements HylandA
             throw new NuxeoException("No authentication info for calling the Agents Builder service.");
         }
 
+        if (StringUtils.isBlank(versionId)) {
+            versionId = "latest";
+        }
+
         AgentDescriptor config = getDescriptor(configName);
         String targetUrl = config.getBaseUrl();
-        targetUrl += "/v1/agents/" + agentId + "/versions/latest/invoke-task";
+        targetUrl += "/v1/agents/" + agentId + "/versions/" + versionId;
 
         // Headers
         Map<String, String> headers = new HashMap<String, String>();
@@ -130,7 +134,46 @@ public class HylandAgentsServiceImpl extends DefaultComponent implements HylandA
                 headers.put(headerName, extraHeaders.get(headerName));
             }
         }
-        
+
+        result = serviceCall.get(targetUrl, headers);
+
+        return result;
+
+    }
+
+    @Override
+    public ServiceCallResult invokeTask(String configName, String agentId, String versionId, String payloadJsonStr,
+            Map<String, String> extraHeaders) {
+
+        ServiceCallResult result = null;
+
+        // Get auth token
+        String bearer = getToken(configName);
+        if (StringUtils.isBlank(bearer)) {
+            throw new NuxeoException("No authentication info for calling the Agents Builder service.");
+        }
+
+        if (StringUtils.isBlank(versionId)) {
+            versionId = "latest";
+        }
+
+        AgentDescriptor config = getDescriptor(configName);
+        String targetUrl = config.getBaseUrl();
+        targetUrl += "/v1/agents/" + agentId + "/versions/" + versionId + "/invoke-task";
+
+        // Headers
+        Map<String, String> headers = new HashMap<String, String>();
+        headers.put("Accept", "*/*");
+        headers.put("Authorization", "Bearer " + bearer);
+        headers.put("Content-Type", "application/json");
+
+        // Extra headers
+        if (extraHeaders != null && extraHeaders.size() > 0) {
+            for (String headerName : extraHeaders.keySet()) {
+                headers.put(headerName, extraHeaders.get(headerName));
+            }
+        }
+
         result = serviceCall.post(targetUrl, headers, payloadJsonStr);
 
         return result;
