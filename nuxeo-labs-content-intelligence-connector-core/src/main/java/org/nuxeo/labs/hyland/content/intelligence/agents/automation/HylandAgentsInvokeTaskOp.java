@@ -54,7 +54,7 @@ public class HylandAgentsInvokeTaskOp {
     @Param(name = "agentId", required = true)
     protected String agentId;
 
-    @Param(name = "agentVersion", required = true)
+    @Param(name = "agentVersion", required = false)
     protected String agentVersion;
 
     @Param(name = "jsonPayloadStr", required = false)
