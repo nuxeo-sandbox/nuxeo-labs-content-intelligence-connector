@@ -113,6 +113,7 @@ The service returns a token valid a certain time: The plugin handles this timeou
 > Check the CIC Agent Builder documentation what is the expected JSON input of the agent, and what it returns in the result.
 
 * `HylandAgents.getAllAgents`
+* `HylandAgents.LookupAgent`
 * `HylandAgents.InvokeTask`
 
 
@@ -182,7 +183,40 @@ function run(input, params) {
 }
 ```
 
-### `HylandKnowledgeDiscovery.InvokeTask`
+### `HylandAgents.LookupAgent`
+
+Returns all the info available for an agent.
+
+* Input: `void`
+* Output: `Blob`, a JSON blob
+* Parameters
+  * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
+  * `agentId`: String, required. The ID of the agent to invoke.
+  * `agentVersion`, String, optional. If not used, latest version is looked up.
+  * `extraHeadersJsonStr`: String optional. A JSON object as string, with more headers than the one sent byt the plugin, allowing for extra tuning if needed
+
+See CIC documentation for the detailed results. The JSON returned (in the `reponse` object of the returned blob) will change depending on the agent. It contains information like the ID, the description, the llm model used etc. It also contains informaiton about the expected input(s) and the output(s).
+
+We recommand calling this operation and loging the full result to check all the available fields:
+
+```javascript
+// input type: void
+// output type: blob
+function run(input, params) {
+  var result = HylandAgents.LookupAgent(null, {
+    "agentId": "12345678-here-the-agent-id"
+  });
+  var jsonStr = result.getString();
+  var json = JSON.parse(jsonStr);
+  if(json.responseCode === 200) {
+    Console.log(JSON.stringify(json, null, 2));
+  }
+}
+```
+
+
+
+### `HylandAgents.InvokeTask`
 
 A high level operation that runs an agent and returns the result.
 
