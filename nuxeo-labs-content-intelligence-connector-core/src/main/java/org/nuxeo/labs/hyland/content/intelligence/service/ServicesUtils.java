@@ -75,4 +75,19 @@ public class ServicesUtils {
 
         return value;
     }
+
+    public static boolean configParamToBoolean(String param, boolean defaultValue) {
+
+        boolean value;
+
+        String paramValue = Framework.getProperty(param, "" + defaultValue);
+        try {
+            value = Boolean.parseBoolean(paramValue);
+        } catch (NumberFormatException e) {
+            log.error("Parameter <" + param + "> is not a valid boolean. Using default value");
+            value = defaultValue;
+        }
+
+        return value;
+    }
 }

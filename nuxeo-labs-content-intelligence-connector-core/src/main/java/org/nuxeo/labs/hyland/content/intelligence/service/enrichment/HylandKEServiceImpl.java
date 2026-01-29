@@ -49,6 +49,12 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
     private static final Logger log = LogManager.getLogger(HylandKEServiceImpl.class);
 
+    public static final String KE_USE_V2_PARAM = "nuxeo.hyland.cic.enrichment.v2";
+
+    public static final String KE_INSTRUCTIONS_OBJ_IN_EXTRA_PAYLOAD = "instructions";
+
+    public static final String KE_MAX_WORD_COUNT_PROPERTY = "maxWordCount";
+
     public static final String ENRICHMENT_CLIENT_ID_PARAM = "nuxeo.hyland.cic.enrichment.clientId";
 
     public static final String ENRICHMENT_CLIENT_SECRET_PARAM = "nuxeo.hyland.cic.enrichment.clientSecret";
@@ -90,6 +96,8 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
     protected static ServiceCall serviceCall = new ServiceCall();
 
+    protected static boolean useKEV2 = false;
+
     // ====================> Extensions points
     protected static final String EXT_POINT_KE = "knowledgeEnrichment";
 
@@ -101,10 +109,78 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
     public static final String CONFIG_DEFAULT = "default";
 
+    // ======================================================================
+    // ======================================================================
+    // Utils and Setup
+    // ======================================================================
+    // ======================================================================
+
     public HylandKEServiceImpl() {
         initialize();
     }
 
+    public int getPullResultsMaxTries() {
+        return pullResultsMaxTries;
+    }
+
+    public int getPullResultsSleepIntervalMS() {
+        return pullResultsSleepIntervalMS;
+    }
+
+    protected String getCustomUUID() {
+        String uuid = UUID.randomUUID().toString();
+        return CUSTOM_ID_PREFIX + uuid.substring(CUSTOM_ID_PREFIX.length());
+    }
+
+    protected void initialize() {
+
+        pullResultsMaxTries = ServicesUtils.configParamToInt(PULL_RESULTS_MAX_TRIES_PARAM,
+                PULL_RESULTS_MAX_TRIES_DEFAULT);
+
+        pullResultsSleepIntervalMS = ServicesUtils.configParamToInt(PULL_RESULTS_SLEEP_INTERVAL_PARAM,
+                PULL_RESULTS_SLEEP_INTERVAL_DEFAULT);
+
+        useKEV2 = ServicesUtils.configParamToBoolean(KE_USE_V2_PARAM, false);
+    }
+
+    protected String getKEToken(String configName) {
+
+        if (StringUtils.isBlank(configName)) {
+            configName = CONFIG_DEFAULT;
+        }
+
+        AuthenticationToken token = enrichmentAuthTokens.get(configName);
+
+        return token.getToken();
+    }
+
+    protected String getDCToken(String configName) {
+
+        if (StringUtils.isBlank(configName)) {
+            configName = CONFIG_DEFAULT;
+        }
+
+        AuthenticationToken token = dataCurationAuthTokens.get(configName);
+
+        return token.getToken();
+    }
+
+    // ======================================================================
+    // ======================================================================
+    // Service Implementation
+    // ======================================================================
+    // ======================================================================
+    @Override
+    public void setUseKEV2(boolean value) {
+        useKEV2 = value;
+    }
+
+    @Override
+    public boolean getUseKEV2() {
+        return useKEV2;
+    }
+
+    @Override
     public void setPullResultsSettings(int maxTries, int sleepIntervalMS) {
 
         switch (maxTries) {
@@ -137,49 +213,6 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
             pullResultsSleepIntervalMS = sleepIntervalMS;
             break;
         }
-    }
-
-    public int getPullResultsMaxTries() {
-        return pullResultsMaxTries;
-    }
-
-    public int getPullResultsSleepIntervalMS() {
-        return pullResultsSleepIntervalMS;
-    }
-
-    protected String getCustomUUID() {
-        String uuid = UUID.randomUUID().toString();
-        return CUSTOM_ID_PREFIX + uuid.substring(CUSTOM_ID_PREFIX.length());
-    }
-
-    protected void initialize() {
-
-        pullResultsMaxTries = ServicesUtils.configParamToInt(PULL_RESULTS_MAX_TRIES_PARAM,
-                PULL_RESULTS_MAX_TRIES_DEFAULT);
-        pullResultsSleepIntervalMS = ServicesUtils.configParamToInt(PULL_RESULTS_SLEEP_INTERVAL_PARAM,
-                PULL_RESULTS_SLEEP_INTERVAL_DEFAULT);
-    }
-
-    protected String getKEToken(String configName) {
-
-        if (StringUtils.isBlank(configName)) {
-            configName = CONFIG_DEFAULT;
-        }
-
-        AuthenticationToken token = enrichmentAuthTokens.get(configName);
-
-        return token.getToken();
-    }
-
-    protected String getDCToken(String configName) {
-
-        if (StringUtils.isBlank(configName)) {
-            configName = CONFIG_DEFAULT;
-        }
-
-        AuthenticationToken token = dataCurationAuthTokens.get(configName);
-
-        return token.getToken();
     }
 
     @Override
@@ -322,10 +355,11 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         // Add the info so that caller can map objectKey and their blob/file
         if (result.callWasSuccesful()) {
             JSONObject response = result.getResponseAsJSONObject();
-            
-            if(!response.has("results")) {
+
+            if (!response.has("results")) {
                 // Likely we stopped pulling before getting a result (maxtries reached, typically)
-                String msg = "No \"results\" key in the response. Did we get a final result? Original message: " + result.getResponseMessage();
+                String msg = "No \"results\" key in the response. Did we get a final result? Original message: "
+                        + result.getResponseMessage();
                 result = new ServiceCallResult(response.toString(), result.getResponseCode(), msg);
             } else {
                 JSONArray results = response.getJSONArray("results");
@@ -343,7 +377,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
                         mapping.put(obj);
                     }
                 });
-    
+
                 result.setObjectKeysMapping(mapping);
             }
         }
@@ -372,23 +406,82 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
             String similarMetadataJsonArrayStr, String extraJsonPayloadStr) {
 
         JSONObject payload = new JSONObject();
-        payload.put("objectKeys", new JSONArray(objectKeys));
-        payload.put("actions", new JSONArray(actions));
-        if (similarMetadataJsonArrayStr == null) {
-            payload.put("kSimilarMetadata", new JSONArray());
-        } else {
-            payload.put("kSimilarMetadata", new JSONArray(similarMetadataJsonArrayStr));
-        }
-        if (classes == null) {
-            payload.put("classes", new JSONArray());
-        } else {
-            payload.put("classes", new JSONArray(classes));
+
+        JSONObject extraJsonPayload = new JSONObject();
+        if (StringUtils.isNotBlank(extraJsonPayloadStr)) {
+            extraJsonPayload = new JSONObject(extraJsonPayloadStr);
         }
 
-        if (StringUtils.isNoneBlank(extraJsonPayloadStr)) {
-            JSONObject extraJsonPayload = new JSONObject(extraJsonPayloadStr);
+        Integer maxWordCount = extraJsonPayload.optIntegerObject("extraJsonPayload", null);
+
+        if (useKEV2) {
+            payload.put("version", "context.api/v2");
+            JSONArray objKeysV2 = new JSONArray();
+            for (String oneKey : objectKeys) {
+                JSONObject oneKeyObj = new JSONObject();
+                oneKeyObj.put("path", oneKey);
+                objKeysV2.put(oneKeyObj);
+            }
+            payload.put("objectKeys", objKeysV2);
+
+            JSONObject instructions = extraJsonPayload.optJSONObject(KE_INSTRUCTIONS_OBJ_IN_EXTRA_PAYLOAD,
+                    new JSONObject());
+
+            JSONObject actionsObj = new JSONObject();
+            for (String oneAction : actions) {
+                JSONObject oneActionObj = new JSONObject();
+                switch (oneAction) {
+                case "textClassification":
+                case "imageClassification":
+                    oneActionObj.put("Classes", new JSONArray(classes));
+                    break;
+
+                case "imageMetadataGeneration":
+                case "textMetadataGeneration":
+                    oneActionObj.put("kSimilarMetadata", new JSONArray(similarMetadataJsonArrayStr));
+                    break;
+
+                case "imageDescription":
+                case "textSummarization":
+                    if (maxWordCount != null) {
+                        oneActionObj.put("maxWordCount", maxWordCount);
+                    }
+                    break;
+
+                default:
+                    break;
+                }
+
+                JSONObject oneActionInstructions = instructions.optJSONObject(oneAction);
+                if (oneActionInstructions != null) {
+                    oneActionObj.put("instructions", oneActionInstructions);
+                }
+
+                actionsObj.put(oneAction, oneActionObj);
+            }
+
+            payload.put("actions", actionsObj);
+
+        } else {
+            payload.put("objectKeys", new JSONArray(objectKeys));
+            payload.put("actions", new JSONArray(actions));
+            if (similarMetadataJsonArrayStr == null) {
+                payload.put("kSimilarMetadata", new JSONArray());
+            } else {
+                payload.put("kSimilarMetadata", new JSONArray(similarMetadataJsonArrayStr));
+            }
+            if (classes == null) {
+                payload.put("classes", new JSONArray());
+            } else {
+                payload.put("classes", new JSONArray(classes));
+            }
+        }
+
+        if (!extraJsonPayload.isEmpty()) {
             for (String key : JSONObject.getNames(extraJsonPayload)) {
-                payload.put(key, extraJsonPayload.get(key));
+                if (!useKEV2 || !KE_INSTRUCTIONS_OBJ_IN_EXTRA_PAYLOAD.equals(key)) {
+                    payload.put(key, extraJsonPayload.get(key));
+                }
             }
         }
 
@@ -485,9 +578,10 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
                     e.printStackTrace();
                 }
             }
-            
-            if(count == pullResultsMaxTries) {
-                log.warn("Pulling Enrichment results is taking time. This is the last try,  " + count + "/" + pullResultsMaxTries);
+
+            if (count == pullResultsMaxTries) {
+                log.warn("Pulling Enrichment results is taking time. This is the last try,  " + count + "/"
+                        + pullResultsMaxTries);
             } else if (count == 5 || (count > 5 && (count - 5) % 2 == 0)) {
                 log.warn("Pulling Enrichment results is taking time. This is the call #" + count + " (max calls: "
                         + pullResultsMaxTries + ")");
@@ -632,13 +726,13 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     // ======================================================================
     @Override
     public List<String> getKEContribNames() {
-        
+
         if (keContribs == null) {
             keContribs = new HashMap<String, KEDescriptor>();
         }
-        
+
         return new ArrayList<>(keContribs.keySet());
-        
+
     }
 
     @Override
@@ -653,13 +747,13 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
     @Override
     public List<String> getDCContribNames() {
-        
+
         if (dcContribs == null) {
             dcContribs = new HashMap<String, DCDescriptor>();
         }
-        
+
         return new ArrayList<>(dcContribs.keySet());
-        
+
     }
 
     @Override
@@ -671,7 +765,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
         return dcContribs.get(configName);
     }
-    
+
     /**
      * Component activated notification.
      * Called when the component is activated. All component dependencies are resolved at that moment.
@@ -704,12 +798,12 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     @Override
     public void registerExtension(Extension extension) {
         super.registerExtension(extension);
-        
-        if(keContribs == null) {
+
+        if (keContribs == null) {
             keContribs = new HashMap<String, KEDescriptor>();
         }
-        
-        if(dcContribs == null) {
+
+        if (dcContribs == null) {
             dcContribs = new HashMap<String, DCDescriptor>();
         }
 
@@ -740,9 +834,9 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     @Override
     public void unregisterExtension(Extension extension) {
         super.unregisterExtension(extension);
-        
+
         if (EXT_POINT_KE.equals(extension.getExtensionPoint())) {
-            if(keContribs == null) {
+            if (keContribs == null) {
                 return;
             }
             Object[] contribs = extension.getContributions();
@@ -753,7 +847,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
                 }
             }
         } else if (EXT_POINT_DC.equals(extension.getExtensionPoint())) {
-            if(dcContribs == null) {
+            if (dcContribs == null) {
                 return;
             }
             Object[] contribs = extension.getContributions();
@@ -813,7 +907,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     public void stop(ComponentContext context) throws InterruptedException {
 
         // Nothing for now
-        
+
     }
 
 }

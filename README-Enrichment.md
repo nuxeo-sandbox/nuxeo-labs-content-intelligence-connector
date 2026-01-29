@@ -7,8 +7,10 @@ It provides two kinds of operations handling the calls to the service (see detai
 * For Enrichment and Data Curation, high-level operations (`HylandKnowledgeEnrichment.Enrich` and `HylandKnowledgeEnrichment.Curate`) that perform all the different individual calls required to get the enrichement/curation for a blob: Get a presigned URL, then upload the file, etc. This makes it easy to call the service.
 * For Enrichment only, a low-level operation, `HylandKnowledgeEnrichment.Invoke`, that calls the service and returns the JSON response without adding any logic. This is for flexibility: When/if Hyland Content Intelligence adds new endpoints, and/or adds/changes endpoint expected payload, no need to wait for a new version the plugin, just modify the caller (in most of our usages, Nuxeo Studio project and JavaScript Automation).
 
+
 > [!NOTE]
 >In all cases, the plugin handles authentication, you never need to handle it (see below).
+
 
 > [!TIP]
 > Examples of Nuxeo JavaScript Automation using the misc. operations described below can be found in the [JS Automation Examples](/README-Enrichment-JS-Automation-Examples.md) file.
@@ -27,6 +29,17 @@ To summarize, every call returns a Blob, stringified JSON object that has at lea
 
 > [!TIP]
 > To get this JSON string, you must first call the getString() method on the returned blob.
+
+<br>
+
+## About Knowledge Enrichment V2
+
+Since versions 2025.9/2023.12, the plugin supports the new API V2 of Knowledge Enrichment, allowing for passing/using "instructions". As this requests to send the json payload in a [different format](https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/Reference/Context%20API/migration-guide-v1-to-v2), the plugin uses the following to decide between v1 or v2 format:
+
+* By default, it sues the v1, original, format
+* To use V2 you need to explicitely tell it to do so:
+  * Set the `nuxeo.hyland.cic.enrichment.v2` Nuxeo configuration parameter to `true`: `nuxeo.hyland.cic.enrichment.v2=true`. This will make the plugin use V2 for every call.
+  * Use the `HylandKnowledgeEnrichment.Configure` operation and set the `useKEV2` parameter to `true`. (see its doc. below)
 
 <br>
 
@@ -68,6 +81,8 @@ Other parameters are used to tune the behavior (independant to the service confi
   * `nuxeo.hyland.cic.pullResultsSleepInterval`: an integer, the sleep value in milliseconds. Default value is 3000
   
   So, with these default values, the code will try maximum 10 times and it will take about 30s max.
+
+* `nuxeo.hyland.cic.enrichment.v2`, a boolean that tells the plugin to use the Knowledge Enrichment v2 format for the JSON paylod of all requests. Default is `false`.
 
 #### XML Contribution
 
@@ -176,6 +191,31 @@ The service returns a token valid a certain time: The plugin handles this timeou
 * `HylandKnowledgeEnrichment.Invoke`
 * `HylandKnowledgeEnrichment.Curate`
 * `HylandKnowledgeEnrichment.Configure`
+
+
+## About the "instructions" property of Knowledge Enrichment V2
+
+Since V2, the format of the JSON payload has changed and now an "instructions" field can be passed along with every action (except embeddings). If you want to use this new property:
+
+* It must be in the `"instructions"` property of the `extraJsonPayloadStr` parameter
+* It is an object of objects, one per action
+
+For example, when requesting `textClassification` and `textSummarization`, then `extraJsonPayloadStr` could be:
+
+```
+ {
+   "instructions": {
+     "textClassification": {
+       "context": "legal documents",
+       . . . more instructions . . .
+     },
+     "textSummarization: {
+       "tone": "professional",
+       . . . more instructions . . .
+     }
+  }
+}
+```
 
 
 ### `HylandKnowledgeEnrichment.Enrich`
@@ -414,6 +454,7 @@ See _Nuxeo Configuration Parameters_ above for explanation on the values.
     * If 0 => reset to configuration parameter. If no config. param is set, use default value.
     * If -1 => Do not change (same effect as not passing the parameter)
     * Other values set the parameter (make sure you don't pass a negative value)
+  * `useKEV2`: Boolean, optional. Allows for setting the format/behavior when calling KE (it can also be set with the `nuxeo.hyland.cic.enrichment.v2` configuraiton parameter). Once set, it is used for all and every calls (no need to call this operation before calling other operations)
 
 <br>
 

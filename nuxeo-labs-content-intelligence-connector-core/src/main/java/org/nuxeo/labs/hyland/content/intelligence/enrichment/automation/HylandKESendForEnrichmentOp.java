@@ -35,13 +35,15 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
 
 @Operation(id = HylandKESendForEnrichmentOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Knowledge Enrichement Send Blob", description = ""
         + "Invoke the Hyland Knowledge Enrichment (KE) API to send the blob for enrichment. actions is a list of actions to process"
-        + " (image-description, image-embeddings, …), classes a list of values to be used for classification,"
+        + " (image-description, image-embeddings, …, or imageDescription, imageEmbeddings, … for KE v2), classes a list of values to be used for classification,"
         + " and similarValues is used for metadata endpoint. It must be passed as a. (See KE documentation for details, limitation, etc.)"
         + " The result is a JSON as string. If succesful, its response object will have a processingId property,"
         + " it is the value to pass to the HylandKnowledgeEnrichment.GetEnrichmentResults operation to actually get the results."
         + " sourceId is optional, it makes it possible to bind the result jobId to a document, for example, so you can get the"
         + " document when calling HylandKnowledgeEnrichment.GetEnrichmentResults."
-        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use (if not passed, using 'default')"
+        + " For KE V2 compatibility, if you want to pass the 'instructions' object, pass it in the extraJsonPayloadStr,"
+        + " as an object of objects, one per action (if instructions are requested). See plugin doc.")
 public class HylandKESendForEnrichmentOp {
 
     public static final String ID = "HylandKnowledgeEnrichment.SendForEnrichment";
@@ -79,8 +81,8 @@ public class HylandKESendForEnrichmentOp {
 
         ServiceCallResult result;
         try {
-            result = keService.sendForEnrichment(configName, blob, sourceId, theActions, theClasses, similarMetadataJsonArrayStr,
-                    extraJsonPayloadStr);
+            result = keService.sendForEnrichment(configName, blob, sourceId, theActions, theClasses,
+                    similarMetadataJsonArrayStr, extraJsonPayloadStr);
         } catch (IOException e) {
             throw new NuxeoException(e);
         }

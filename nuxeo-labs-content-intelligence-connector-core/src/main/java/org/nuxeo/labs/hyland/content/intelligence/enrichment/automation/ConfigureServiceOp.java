@@ -23,27 +23,37 @@ import org.nuxeo.ecm.automation.core.annotations.Operation;
 import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
 import org.nuxeo.ecm.automation.core.annotations.Param;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
+import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl;
 
 @Operation(id = ConfigureServiceOp.ID, category = "Hyland Knowledge Enrichment", label = "Configure Calls to Service", description = ""
         + "Allows fordynamically changing some settings when calling the service."
-        + " if a value is 0 => reset to configuration or default value. If -1 (or not passed) => do not change")
+        + " maxTries and sleepIntervalMS: if a value is 0 => reset to configuration or default value. If -1 (or not passed) => do not change."
+        + " useKEV2 allows for setting the format/behavior when calling KE (it can also be set with the "
+        + HylandKEServiceImpl.KE_USE_V2_PARAM + " config. param)")
 public class ConfigureServiceOp {
 
     public static final String ID = "HylandKnowledgeEnrichment.Configure";
+
+    @Context
+    protected HylandKEService keService;
 
     @Param(name = "maxTries", required = false)
     protected Integer maxTries = null;
 
     @Param(name = "sleepIntervalMS", required = false)
     protected Integer sleepIntervalMS = null;
-
-    @Context
-    protected HylandKEService keService;
+    
+    @Param(name = "useKEV2", required = false)
+    protected Boolean useKEV2 = null;
 
     @OperationMethod
     public void run() {
-        
+                
         keService.setPullResultsSettings(maxTries == null ? 1 : maxTries, sleepIntervalMS == null ? -1 : sleepIntervalMS);
+        
+        if(useKEV2 != null) {
+            keService.setUseKEV2(useKEV2.booleanValue());
+        }
         
     }
 
