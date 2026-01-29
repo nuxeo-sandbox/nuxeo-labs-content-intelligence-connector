@@ -41,12 +41,14 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
 @Operation(id = HylandKEEnrichSeveralOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Knowledge Enrichement on Blobs or documents", description = ""
         + "Invoke the Hyland Knowledge Enrichment (KE) API to enrich the input documents/blobs. actions is a list of actions to process"
         + " (image-description, image-embeddings, …), classes a list of values to be used for classification,"
-        + " and similarValues is used for metadata endpoint. It must be passed as a. (See KE documentation for details, limitation, etc.)"
+        + " and similarValues is used for metadata endpoint. (See KE documentation for details, limitation, etc.)"
         + " If input is Documents, use xpath to tell the operation where to find the blobs."
         + " To map the 'objectKey' returned by the service with your blobs, use the sourceIds param (comma separated list of unique valued)."
         + " If input is a list od Documents and sourceIds is not passed, then we use the document UUIDs as 'sourceId'. "
         + " See the documentation for details."
-        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use (if not passed, using 'default')."
+        + " For KE V2 compatibility, if you want to pass the 'instructions' object, pass it in the extraJsonPayloadStr,"
+        + " as an object of objects, one per action (if instructions are requested). See plugin doc.")
 public class HylandKEEnrichSeveralOp {
 
     public static final String ID = "HylandKnowledgeEnrichment.EnrichSeveral";

@@ -5,9 +5,25 @@ These examples are referenced from the [README](/README-Enrichment.md) of the pl
 > [!IMPORTANT]
 > All the examples assume Nuxeo was correctly configured to access Hyland CIC Knowledge Enrichment service. See [README](/README-Enrichment.md) > Nuxeo Configuration Parameters
 
+## About Examples and Knowledge Enrichment V1/V2
+
+> [!IMPORTANT]
+> **All examples assume using V2**
+> (But by default, the plugin uses v1 for backward compatibility when v2 is not explicitely requested - see below)
+
+This means:
+
+* Either you set the `nuxeo.hyland.cic.enrichment.v2` configuration parameter to `true` (``nuxeo.hyland.cic.enrichment.v2=true`)
+* Or you called `HylandKnowledgeEnrichment.Configure` with its `useKEV2` parameter set to `true` (This makes all and every calls to use v2)
+
+See [Knowledge Enrichment documentation](https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/Reference/Context%20API/migration-guide-v1-to-v2) for the changes between the versions. In short:
+
+* Actions are now lowerCamelCase instead of using dashes (`textSummarization` instead of `text-summarization`)
+* `"instructions"` can be passed in the `extraJsonPayloadStr` parameter
+
 ## Examples Using `HylandKnowledgeEnrichment.Enrich`
 
-### Get an image Description, store in `dc:description`
+### Get an image Description, store in `dc:description`, using default CIC Instructions
 
 In the example, we check the input document behaves as a `Picture`, and we send its jpeg rendition (we don't want to send the main file, which could be a 300MB Photoshop file)
 
@@ -34,7 +50,7 @@ function run(input, params) {
   // Call the service
   result = HylandKnowledgeEnrichment.Enrich(
     jpeg, {
-      'actions': "image-description",
+      'actions': "imageDescription",
       // "classes": not used here. Could be passed "" or null,
       // "similarMetadata": not used here Could be passed "" or null
     }
@@ -75,6 +91,40 @@ function run(input, params) {
 }
 ```
 
+### Add maxWordCount and Special Instructions (using V2)
+
+```javascript
+// input: document, output: document
+function run(input, params) {
+  // ... same code as above for getting the blob ...
+
+  // Prepare special details with v2
+  var jsonPayLoad = {
+    "maxWordCount": 200,
+    "instructions": {
+      "imageDescription": {. // Same as the action, lowerCamelCase
+        "details": "In the description of the image, explicitely list the 3 main colors found in a single, simple phrase like 'The three main colors are ...'.",
+        "style": "Use a very serious, professional style."
+        //. . . more instructions here . . .
+      }
+    }
+  };
+  // Call the service
+  result = HylandKnowledgeEnrichment.Enrich(
+    jpeg, {
+      'actions': "imageDescription",
+      'extraJsonPayloadStr': JSON.stringify(jsonPayLoad)
+      // "classes": not used here. Could be passed "" or null,
+      // "similarMetadata": not used here Could be passed "" or null
+    }
+  );
+
+  // ... same code as above for getting the results
+}
+```
+
+
+
 ### Get an image Description + and image Embeddings, store in `dc:description` and in a custom `embeddings:image` field
 
 ```javascript
@@ -99,7 +149,7 @@ function run(input, params) {
   // Call the service
   result = HylandKnowledgeEnrichment.Enrich(
     jpeg, {
-      'actions': "image-description,image-embeddings",
+      'actions': "imageDescription,imageEmbeddings",
       // "classes": not used here. Could be passed "" or null,
       // "similarMetadata": not used here Could be passed "" or null
     }
@@ -183,7 +233,7 @@ function run(input, params) {
   // With "text-classification", we must pass at least 2 values in "classes"
   result = HylandKnowledgeEnrichment.Enrich(
     blob, {
-      'actions': "text-classification",
+      'actions': "textClassification",
       "classes": "Contract, Invoice, Report, Policy, Resume"
       // "similarMetadata": not used here Could be passed "" or null
     }
@@ -223,9 +273,9 @@ function run(input, params) {
 
 ## Example(s) Using `HylandKnowledgeEnrichment.EnrichSeveral`
 
-### getting Image Description of several Picture Documents
+### Getting Image Description of several Picture Documents
 
-Say we have a list of Picture, for example, after a query. We want the image-description for each of them, calling in a batch.
+Say we have a list of Picture, for example, after a query. We want the imageDescription for each of them, calling in a batch. We also want a short description (`maxWordCount`)
 
 ```javascript
 function run(input, params) {
@@ -251,10 +301,12 @@ function run(input, params) {
   // Initialize result
   resultDocs = [];
   
-  // Call operation
+  // Call operation, with max 150 words for each description
+  var jsonPayload = { "maxWordCount": 150};
   result = HylandKnowledgeEnrichment.EnrichSeveral(
     blobs, {
-      'actions': "image-description",
+      'actions': "imageDescription",
+      'extraJsonPayloadStr': JSON.stringify(jsonPayload),
       // "classes": not used here. Could be passed "" or null,
       // "similarMetadataJsonArrayStr": not used here Could be passed "" or null
       'sourceIds': sourceIds.join(),

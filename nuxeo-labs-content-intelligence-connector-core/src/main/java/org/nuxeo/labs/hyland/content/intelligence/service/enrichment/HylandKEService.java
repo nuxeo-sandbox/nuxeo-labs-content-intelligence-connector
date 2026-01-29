@@ -26,12 +26,66 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.labs.hyland.content.intelligence.ContentToProcess;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 
+/**
+ * For compatibility KE v1-v2, the extra optional "instructions" KE-V2 are to be passed in the extraJsonPayloadStr
+ * parameter of the misc. methods:
+ * <ul>
+ * <li>It must be in the "instructions" property of extraJsonPayloadStr
+ * <li>It is an object of objects, one per action
+ * </ul>
+ * For example, when requesting textClassification and textSummarization, extraJsonPayloadStr could be:
+ * 
+ * <pre>
+ * {
+ *   "instructions": {
+ *     "textClassification": {
+ *       "context": "legal documents",
+ *       . . .
+ *     },
+ *     "textSummarization: {
+ *       "tone": "professional",
+ *       . . .
+ *     }
+ *   }
+ * }
+ * </pre>
+ * 
+ * Also, actions that accept a maxWordCount => must be passed in extraJsonPayloadStr too. As this property is used only
+ * for textSummarization and imageDescription, and a blob can't be both, it can be passed as a single value:
+ * 
+ * <pre>
+ * {
+ *   "instructions": {
+ *     . . .
+ *   },
+ *   "maxWordCount": 200,
+ *   . . .
+ * }
+ * </pre>
+ * 
+ * @since TODO
+ */
 @SuppressWarnings("rawtypes")
 public interface HylandKEService {
 
     enum EnrichmentServiceType {
         ENRICHMENT, DATA_CURATION
     }
+
+    /**
+     * Using KE v2 is global to every call. It is not possible to use v2 for a call, then v1 for another, etc.
+     * It can be set at startup with the HylandKEServiceImpl#KE_USE_V2_PARAM configuration parameter
+     * 
+     * @param value
+     * @since TODO
+     */
+    public void setUseKEV2(boolean value);
+
+    /**
+     * @return the value of current setting.
+     * @since TODO
+     */
+    public boolean getUseKEV2();
 
     /**
      * Send the blob for enrichment. In the response, and if succesful, there will be the job ID to use with
