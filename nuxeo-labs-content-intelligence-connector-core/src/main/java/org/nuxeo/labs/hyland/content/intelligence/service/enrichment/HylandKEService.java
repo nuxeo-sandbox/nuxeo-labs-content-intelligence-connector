@@ -27,6 +27,9 @@ import org.nuxeo.labs.hyland.content.intelligence.ContentToProcess;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 
 /**
+ * ==================================================
+ * JAN 2026: About KE v1->v2 compatibility and format
+ * ==================================================
  * For compatibility KE v1-v2, the extra optional "instructions" KE-V2 are to be passed in the extraJsonPayloadStr
  * parameter of the misc. methods:
  * <ul>

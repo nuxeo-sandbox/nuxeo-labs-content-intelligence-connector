@@ -30,6 +30,7 @@ import java.util.Map;
 
 import jakarta.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -52,6 +53,12 @@ import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
 
+
+/**
+ * Important: Calls to the service assert the response code is 200, but it could fiail if the service,
+ * for example, is not available, or takes a lot of time to process the request.
+ * => This maybe should be changed to a simple test + log.
+ */
 @RunWith(FeaturesRunner.class)
 @Features({ AutomationFeature.class, ConfigCheckerFeature.class })
 @Deploy("nuxeo-hyland-content-intelligence-connector-core")
@@ -67,7 +74,7 @@ public class TestHylandKEEnrichOp {
     protected HylandKEService hylandKEService;
 
     @Test
-    public void shouldEnrichBlob() throws Exception {
+    public void shouldEnrichBlobV1() throws Exception {
 
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
@@ -120,15 +127,147 @@ public class TestHylandKEEnrichOp {
         JSONObject classificationJson = theResult.getJSONObject("imageClassification");
         if (classificationJson.getBoolean("isSuccess")) {
             String classification = classificationJson.getString("result");
-            // So far the service returns the value lowercase anyway (which is a problem if the list of values are from
-            // a
-            // vocabulary)
             assertEquals("disney", classification.toLowerCase());
         }
     }
 
     @Test
-    public void shouldEnrichSeveralBlobs() throws Exception {
+    public void shouldEnrichBlobV2WithInstructions() throws Exception {
+
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasEnrichmentClientInfo());
+
+        hylandKEService.setUseKEV2(true);
+        hylandKEService.setPullResultsSettings(20, 0);
+
+        OperationContext ctx = new OperationContext(session);
+
+        File f = FileUtils.getResourceFileFromContext(TestHylandKEService.TEST_IMAGE_PATH);
+        Blob blob = new FileBlob(f);
+        blob.setMimeType(TestHylandKEService.TEST_IMAGE_MIMETYPE);
+        blob.setFilename(f.getName());
+
+        // Set operation params and input
+        ctx.setInput(blob);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("actions", "imageDescription,imageClassification");
+        params.put("classes", "Disney,DC Comics,Marvel,Special");
+
+        JSONObject instructions = new JSONObject();
+        JSONObject descriptionInstructions = new JSONObject();
+        descriptionInstructions.put("requirement",
+                "Always end the description with the exact words '(Done for unit test)'");
+        instructions.put("imageDescription", descriptionInstructions);
+        JSONObject classificationInstructions = new JSONObject();
+        classificationInstructions.put("requirement",
+                "Carefully examine the colors in the image. If you find at least one Disney character, then set the class to 'Special'");
+        instructions.put("imageClassification", classificationInstructions);
+        params.put("instructionsV2JsonStr", instructions.toString());
+
+        // Run
+        Blob result = (Blob) automationService.run(ctx, HylandKEEnrichOp.ID, params);
+        Assert.assertNotNull(result);
+
+        JSONObject resultJson = new JSONObject(result.getString());
+        // Chekc HTTP call
+        int responseCode = resultJson.getInt("responseCode");
+        assertEquals(200, responseCode);
+
+        // Now check service results
+        JSONObject response = resultJson.getJSONObject("response");
+        String status = response.getString("status");
+        assertNotEquals("FAILURE", status); // We accept PARTIAL_FAILURE
+
+        JSONArray results = response.getJSONArray("results");
+        JSONObject theResult = results.getJSONObject(0);
+
+        // ==========> Description
+        JSONObject descriptionJson = theResult.getJSONObject("imageDescription");
+        if (descriptionJson.getBoolean("isSuccess")) {
+            String description = descriptionJson.getString("result");
+            // We should have at least "Mickey"
+            assertTrue(description.toLowerCase().indexOf("mickey") > -1);
+
+            // Instructions followed
+            assertTrue(description.indexOf("(Done for unit test)") > -1);
+        }
+
+        // ==========> Classification
+        JSONObject classificationJson = theResult.getJSONObject("imageClassification");
+        if (classificationJson.getBoolean("isSuccess")) {
+            String classification = classificationJson.getString("result");
+            assertEquals("special", classification.toLowerCase());
+        }
+    }
+
+    @Test
+    public void shouldEnrichBlobV2WithInstructionsAndMaxWords() throws Exception {
+
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasEnrichmentClientInfo());
+
+        hylandKEService.setUseKEV2(true);
+        hylandKEService.setPullResultsSettings(20, 0);
+
+        OperationContext ctx = new OperationContext(session);
+
+        File f = FileUtils.getResourceFileFromContext(TestHylandKEService.TEST_IMAGE_PATH);
+        Blob blob = new FileBlob(f);
+        blob.setMimeType(TestHylandKEService.TEST_IMAGE_MIMETYPE);
+        blob.setFilename(f.getName());
+
+        // Set operation params and input
+        ctx.setInput(blob);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("actions", "imageDescription");
+
+        JSONObject instructions = new JSONObject();
+        JSONObject descriptionInstructions = new JSONObject();
+        descriptionInstructions.put("requirement",
+                "Carefully examine the colors in the image. If you find any amount of black color, then add to the description the exact words '(Black in there)'");
+        instructions.put("imageDescription", descriptionInstructions);
+        params.put("instructionsV2JsonStr", instructions.toString());
+
+        JSONObject extraPayload = new JSONObject();
+        extraPayload.put("maxWordCount", 100);
+        params.put("extraJsonPayloadStr", extraPayload.toString());
+
+        // Run
+        Blob result = (Blob) automationService.run(ctx, HylandKEEnrichOp.ID, params);
+        Assert.assertNotNull(result);
+
+        JSONObject resultJson = new JSONObject(result.getString());
+        // Chekc HTTP call
+        int responseCode = resultJson.getInt("responseCode");
+        assertEquals(200, responseCode);
+
+        // Now check service results
+        JSONObject response = resultJson.getJSONObject("response");
+        String status = response.getString("status");
+        assertNotEquals("FAILURE", status); // We accept PARTIAL_FAILURE
+
+        JSONArray results = response.getJSONArray("results");
+        JSONObject theResult = results.getJSONObject(0);
+
+        // ==========> Description
+        JSONObject descriptionJson = theResult.getJSONObject("imageDescription");
+        if (descriptionJson.getBoolean("isSuccess")) {
+            String description = descriptionJson.getString("result");
+            // We should have at least "Mickey"
+            assertTrue(description.toLowerCase().indexOf("mickey") > -1);
+            assertTrue(description.indexOf("(Black in there)") > -1);
+            
+            // Apache split words.
+            // Assume a 30% margin in number of words
+            assertTrue(StringUtils.split(description).length < 130);
+        }
+
+    }
+
+    @Test
+    public void shouldEnrichSeveralBlobsV1() throws Exception {
 
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasEnrichmentClientInfo());

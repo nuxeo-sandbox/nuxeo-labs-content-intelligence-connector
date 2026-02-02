@@ -412,7 +412,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
             extraJsonPayload = new JSONObject(extraJsonPayloadStr);
         }
 
-        Integer maxWordCount = extraJsonPayload.optIntegerObject("extraJsonPayload", null);
+        Integer maxWordCount = extraJsonPayload.optIntegerObject("maxWordCount", null);
 
         if (useKEV2) {
             payload.put("version", "context.api/v2");
