@@ -26,7 +26,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl;
 
 @Operation(id = ConfigureServiceOp.ID, category = "Hyland Knowledge Enrichment", label = "Configure Calls to Service", description = ""
-        + "Allows fordynamically changing some settings when calling the service."
+        + "Allows for dynamically changing some settings when calling the service."
         + " maxTries and sleepIntervalMS: if a value is 0 => reset to configuration or default value. If -1 (or not passed) => do not change."
         + " useKEV2 allows for setting the format/behavior when calling KE (it can also be set with the "
         + HylandKEServiceImpl.KE_USE_V2_PARAM + " config. param)")

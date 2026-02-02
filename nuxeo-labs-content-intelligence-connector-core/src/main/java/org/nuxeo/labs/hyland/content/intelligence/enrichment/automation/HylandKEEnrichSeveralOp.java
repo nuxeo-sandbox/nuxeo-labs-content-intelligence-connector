@@ -36,6 +36,7 @@ import org.nuxeo.ecm.core.api.DocumentModelList;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.labs.hyland.content.intelligence.ContentToProcess;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 
 @Operation(id = HylandKEEnrichSeveralOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Knowledge Enrichement on Blobs or documents", description = ""
@@ -47,8 +48,8 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
         + " If input is a list od Documents and sourceIds is not passed, then we use the document UUIDs as 'sourceId'. "
         + " See the documentation for details."
         + " configName is the name of the XML configuration to use (if not passed, using 'default')."
-        + " For KE V2 compatibility, if you want to pass the 'instructions' object, pass it in the extraJsonPayloadStr,"
-        + " as an object of objects, one per action (if instructions are requested). See plugin doc.")
+        + " Since KE V2, you can pass instructions as an object of objects, one per action "
+        + " (see plugin doc for details.)")
 public class HylandKEEnrichSeveralOp {
 
     public static final String ID = "HylandKnowledgeEnrichment.EnrichSeveral";
@@ -67,6 +68,9 @@ public class HylandKEEnrichSeveralOp {
 
     @Param(name = "extraJsonPayloadStr", required = false)
     protected String extraJsonPayloadStr = null;
+
+    @Param(name = "instructionsV2JsonStr", required = false)
+    protected String instructionsV2JsonStr = null;
 
     @Param(name = "xpath", required = false)
     protected String xpath = "file:content";
@@ -124,6 +128,8 @@ public class HylandKEEnrichSeveralOp {
         if (StringUtils.isNotBlank(classes)) {
             theClasses = Arrays.stream(classes.split(",")).map(String::trim).toList();
         }
+
+        extraJsonPayloadStr = ServicesUtils.addInstructionsToExtraPayload(instructionsV2JsonStr, extraJsonPayloadStr);
 
         ServiceCallResult result;
         try {

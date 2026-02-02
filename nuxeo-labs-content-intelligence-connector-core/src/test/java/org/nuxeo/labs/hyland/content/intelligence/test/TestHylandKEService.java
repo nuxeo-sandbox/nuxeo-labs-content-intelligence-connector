@@ -44,6 +44,11 @@ import org.nuxeo.runtime.test.runner.FeaturesRunner;
 
 import javax.inject.Inject;
 
+/**
+ * Important: Calls to the service assert the response code is 200, but it could fiail if the service,
+ * for example, is not available, or takes a lot of time to process the request.
+ * => This maybe should be changed to a simple test + log.
+ */
 @RunWith(FeaturesRunner.class)
 @Features({ PlatformFeature.class, ConfigCheckerFeature.class })
 @Deploy("nuxeo-hyland-content-intelligence-connector-core")
@@ -367,8 +372,6 @@ public class TestHylandKEService {
         assertTrue(classificationJson.getBoolean("isSuccess"));
 
         String classification = classificationJson.getString("result");
-        // So far the service returns the value lowercase anyway (which is a problem if the list of values are from a
-        // vocabulary)
         assertEquals("disney", classification.toLowerCase());
     }
 

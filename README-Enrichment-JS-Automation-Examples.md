@@ -13,13 +13,15 @@ These examples are referenced from the [README](/README-Enrichment.md) of the pl
 
 This means:
 
-* Either you set the `nuxeo.hyland.cic.enrichment.v2` configuration parameter to `true` (``nuxeo.hyland.cic.enrichment.v2=true`)
-* Or you called `HylandKnowledgeEnrichment.Configure` with its `useKEV2` parameter set to `true` (This makes all and every calls to use v2)
+* Either you set the `nuxeo.hyland.cic.enrichment.v2` configuration parameter to `true` (`nuxeo.hyland.cic.enrichment.v2=true`)
+* Or you called `HylandKnowledgeEnrichment.Configure` with its `useKEV2` parameter set to `true`
+
+In both cases, it makes all and every calls to use v2 or v1 (it cannot be tuned per call, which anyway would not really make sense)
 
 See [Knowledge Enrichment documentation](https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/Reference/Context%20API/migration-guide-v1-to-v2) for the changes between the versions. In short:
 
-* Actions are now lowerCamelCase instead of using dashes (`textSummarization` instead of `text-summarization`)
-* `"instructions"` can be passed in the `extraJsonPayloadStr` parameter
+* Actions are now `lowerCamelCase` instead of using dashes (`textSummarization` instead of `text-summarization`)
+* `"instructions"` can be passed in the `instructionsV2JsonStr` parameter
 
 ## Examples Using `HylandKnowledgeEnrichment.Enrich`
 
@@ -48,13 +50,7 @@ function run(input, params) {
   }
   
   // Call the service
-  result = HylandKnowledgeEnrichment.Enrich(
-    jpeg, {
-      'actions': "imageDescription",
-      // "classes": not used here. Could be passed "" or null,
-      // "similarMetadata": not used here Could be passed "" or null
-    }
-  );
+  result = HylandKnowledgeEnrichment.Enrich(jpeg, {'actions': "imageDescription"});
   
   // Do not forget to use the getString() method :-)
   resultJson = JSON.parse(result.getString());
@@ -99,21 +95,21 @@ function run(input, params) {
   // ... same code as above for getting the blob ...
 
   // Prepare special details with v2
-  var jsonPayLoad = {
-    "maxWordCount": 200,
-    "instructions": {
-      "imageDescription": {. // Same as the action, lowerCamelCase
-        "details": "In the description of the image, explicitely list the 3 main colors found in a single, simple phrase like 'The three main colors are ...'.",
-        "style": "Use a very serious, professional style."
-        //. . . more instructions here . . .
-      }
+  var jsonPayload = {"maxWordCount": 200 };
+
+  var instructions = {
+    "imageDescription": { // Same as the action, lowerCamelCase
+      "details": "In the description of the image, explicitely list the 3 main colors found in a single, simple phrase like 'The three main colors are ...'.",
+      "style": "Use a very serious, professional style."
+      //. . . more instructions here . . .
     }
   };
   // Call the service
   result = HylandKnowledgeEnrichment.Enrich(
     jpeg, {
       'actions': "imageDescription",
-      'extraJsonPayloadStr': JSON.stringify(jsonPayLoad)
+      'instructionsV2JsonStr': JSON.stringify(instructions),
+      'extraJsonPayloadStr': JSON.stringify(jsonPayload)
       // "classes": not used here. Could be passed "" or null,
       // "similarMetadata": not used here Could be passed "" or null
     }
