@@ -585,6 +585,10 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
             } else if (count == 5 || (count > 5 && (count - 5) % 2 == 0)) {
                 log.warn("Pulling Enrichment results is taking time. This is the call #" + count + " (max calls: "
                         + pullResultsMaxTries + ")");
+                if(count == 5) {
+                    KEDescriptor config = getKEDescriptor(configName);
+                    log.warn("(Pulling job ID '" + resultId + "', configuration '" + config.getName() + "')");
+                }
             }
 
             result = getJobIdResult(configName, resultId);
