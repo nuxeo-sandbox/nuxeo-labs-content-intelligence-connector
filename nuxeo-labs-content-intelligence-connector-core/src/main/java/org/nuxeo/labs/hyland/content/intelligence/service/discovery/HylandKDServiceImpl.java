@@ -136,6 +136,17 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
             targetUrl += "/";
         }
         targetUrl += endpoint;
+        
+        if (log.isInfoEnabled()) {
+            StringBuilder sb = new StringBuilder("HylandKDServiceImpl#invokeDiscovery:");
+            sb.append("\n  configName: ").append(StringUtils.isBlank(configName) ? "default" : configName);
+            sb.append("\n  httpMethod: ").append(httpMethod);
+            sb.append("\n  targetUrl: ").append(targetUrl);
+            sb.append("\n  jsonPayload: ").append(jsonPayload);
+            sb.append("\n  extraHeaders: ").append(extraHeaders);
+
+            log.info(sb.toString());
+        }
 
         // Headers
         Map<String, String> headers = new HashMap<String, String>();
@@ -237,7 +248,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
         do {
             count += 1;
             if (count > 2) {
-                log.info("getAnswer(), trying to get an answer to question ID " + questionId + ", call " + count + "/"
+                log.warn("getAnswer(), trying to get an answer to question ID " + questionId + ", call " + count + "/"
                         + pullResultsMaxTries + ".");
             } else if (count > 9) {
                 log.warn("getAnswer(), trying to get an answer to question ID " + questionId + ", call " + count + "/"
