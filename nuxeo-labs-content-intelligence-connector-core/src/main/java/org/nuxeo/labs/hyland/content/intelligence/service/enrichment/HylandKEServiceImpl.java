@@ -342,6 +342,22 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         ServiceCallResult result = null;
         JSONObject serviceResponse;
 
+        if (log.isInfoEnabled()) {
+            StringBuilder sb = new StringBuilder("HylandKEServiceImpl#enrich:");
+            sb.append("\n  configName: ").append(StringUtils.isBlank(configName) ? "default" : configName);
+            // We can assume contentObjects has at least one file.
+            sb.append("\n  contentObjects: ")
+              .append(contentObjects.stream()
+                                    .map(c -> c != null && c.getFile() != null ? c.getFile().getName() : "null")
+                                    .toList());
+            sb.append("\n  actions: ").append(actions);
+            sb.append("\n  classes: ").append(classes);
+            sb.append("\n  similarMetadataJsonArrayStr: ").append(similarMetadataJsonArrayStr);
+            sb.append("\n  extraJsonPayloadStr: ").append(extraJsonPayloadStr);
+
+            log.info(sb.toString());
+        }
+
         result = sendForEnrichment(configName, contentObjects, actions, classes, similarMetadataJsonArrayStr,
                 extraJsonPayloadStr);
         if (result.callFailed()) {
@@ -570,6 +586,8 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         ServiceCallResult result;
         int count = 1;
 
+        log.info("pullEnrichmentResults for Job ID '" + resultId + "'.");
+
         do {
             if (count > 1) {
                 try {
@@ -585,7 +603,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
             } else if (count == 5 || (count > 5 && (count - 5) % 2 == 0)) {
                 log.warn("Pulling Enrichment results is taking time. This is the call #" + count + " (max calls: "
                         + pullResultsMaxTries + ")");
-                if(count == 5) {
+                if (count == 5) {
                     KEDescriptor config = getKEDescriptor(configName);
                     log.warn("(Pulling job ID '" + resultId + "', configuration '" + config.getName() + "')");
                 }
