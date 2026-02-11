@@ -308,7 +308,7 @@ public interface HylandKEService {
     public ServiceCallResult curate(String configName, File file, String jsonOptions) throws IOException;
 
     /**
-     * maxRetries and sleepinterval are configuration parametere, they can be tuned with this method.
+     * maxRetries and sleepinterval are configuration s, they can be tuned with this method.
      * <br>
      * The value is used for all and every calls until they change again.
      * <br>

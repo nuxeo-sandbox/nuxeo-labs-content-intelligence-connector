@@ -24,7 +24,7 @@
 			<authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
 			<baseUrl>${nuxeo.hyland.cic.discovery.baseUrl:=}</baseUrl>
 			<tokenGrantType>${nuxeo.hyland.cic.discovery.auth.grantType:=client_credentials}</tokenGrantType>
-			<tokenScope>${nuxeo.hyland.cic.discovery.auth.scope:=hxp hxp.integrations environment_authorization}</tokenScope>
+			<tokenScope>${nuxeo.hyland.cic.discovery.auth.scope:=hxp hxp.integrations environment_authorization iam.jti-capture}</tokenScope>
 			<clientId>${nuxeo.hyland.cic.discovery.clientId:=}</clientId>
 			<clientSecret>${nuxeo.hyland.cic.discovery.clientSecret:=}</clientSecret>
 			<environment>${nuxeo.hyland.cic.discovery.environment:=}</environment>
