@@ -114,7 +114,10 @@ The service returns a token valid a certain time: The plugin handles this timeou
 
 * `HylandAgents.getAllAgents`
 * `HylandAgents.LookupAgent`
-* `HylandAgents.InvokeTask`
+* `HylandAgents.InvokeTaskAgent`
+* `HylandAgents.InvokeRagAgent`
+* `HylandAgents.InvokeToolAgent`
+* `HylandAgents.AskKDQuestionViaRAGAgent`
 
 
 ### `HylandAgents.getAllAgents`
@@ -183,6 +186,8 @@ function run(input, params) {
 }
 ```
 
+<br>
+
 ### `HylandAgents.LookupAgent`
 
 Returns all the info available for an agent.
@@ -214,16 +219,17 @@ function run(input, params) {
 }
 ```
 
+<br>
 
+### `HylandAgents.InvokeTaskAgent`
 
-### `HylandAgents.InvokeTask`
-
-A high level operation that runs an agent and returns the result.
+A high level operation that runs a _task_ agent and returns the result.
 
 * Input: `void`
 * Output: `Blob`, a JSON blob
 * Parameters
   * `agentId`: String, required. The ID of the agent to invoke.
+  * `agentVersion`, String, optional. If not used, latest version is used.
   * `jsonPayloadStr`: String, required. A JSON object as string, holding the input for the agent.
   * `extraHeadersJsonStr`: String optional. A JSON object as string, with more headers than the one sent byt the plugin, allowing for extra tuning if needed
   * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
@@ -289,6 +295,56 @@ function run(input, params) {
 
 <br>
 
+### `HylandAgents.InvokeRagAgent`
+
+A high level operation that runs a _rag_ agent and returns the result.
+
+Syntax is the same as `HylandAgents.InvokeTaskAgent` (only internally, the endpoint changes)
+
+<br>
+
+### `HylandAgents.InvokeToolAgent`
+
+A high level operation that runs a _tool_ agent and returns the result.
+
+Syntax is the same as `HylandAgents.InvokeTaskAgent` (only internally, the endpoint changes)
+
+<br>
+
+### `HylandAgents.AskKDQuestionViaRAGAgent`
+
+A high level operation that runs a _rag_ agent asking question to Knowledge Discovery.
+This is using Agent Builder instead of direct calls to KD, which allows for more features, like the ability to set guardrails to use. The answer will be about the same (maybe with a different phrasing) than calling `HylandKnowledgeDiscovery.askQuestionAndGetAnswer`.
+
+> [!TIP]
+> Remember the agent ID is an agentic agent ID, not a KD agent ID.
+
+* Input: `void`
+* Output: `Blob`, a JSON blob
+* Parameters
+  * `agentId`: String, required. The ID of the `RAG` agent to invoke. It must be linked to KD.
+  * `agentVersion`, String, optional. If not used, latest version is looked up.
+  * `question`: String required. The question to ask the agent.
+  * `contextObjectIdsJsonArrayStr`: String, optional.  A stringified JSON Array of Document UUIDs which were sent to the service previously, and will be used for the context of the question.
+  * `guardrailsJsonArrayStr`: String, optional.  A stringified JSON Array of guardrails to apply.
+  * `extraPayloadJsonStr`: String, optional. A JSON object as string, with extra parameters for the service. Check the Agent Builder docmentation. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload.
+  * `extraHeadersJsonStr`: String optional. A JSON object as string, with more headers than the one sent byt the plugin, allowing for extra tuning if needed
+  * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
+
+The plugin sends the question (and the optional `contextObjectIds`) to the service and wait for the answer.
+
+> [!NOTE]
+> Compared to calling `HylandKnowledgeDiscovery.askQuestionAndGetAnswer`, there is not loop for pulling the results, so, it is less consuming and more reliable.
+
+> [!NOTE]
+> Reminder: To get the JSON string from this blob, you must call its `getString()` method (see example below). Then you can `JSON.parse` this string and find the full response form the service in the `response` property.
+
+> [!TIP]
+> See CIC Agent Builder/KD documentation about the expected format of this JSON input.
+
+
+
+<br>
 
 ## Support
 **These features are not part of the Nuxeo Production platform.**

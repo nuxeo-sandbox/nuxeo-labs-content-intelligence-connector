@@ -34,7 +34,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsSer
 /**
  * @since TODO
  */
-@Operation(id = HylandAgentsInvokeTaskOp.ID, category = "Hyland Agent Builder", label = "Invoke Task Agent", description = ""
+@Operation(id = HylandAgentsInvokeRagOp.ID, category = "Hyland Agent Builder", label = "Invoke RAG Agent", description = ""
         + "Returns a JSON blob holding the result of the call. Call its getString() method then JSON.parse()."
         + " See CIC documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
         + " and the response of the agent in the 'response' object."
@@ -42,9 +42,9 @@ import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsSer
         + " jsonPayloadStr is required: the expected JSON input (as string) for the agent."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
         + " configName is the name of the XML configuration to use (if not passed, using 'default')")
-public class HylandAgentsInvokeTaskOp {
+public class HylandAgentsInvokeRagOp {
 
-    public static final String ID = "HylandAgents.InvokeTaskAgent";
+    public static final String ID = "HylandAgents.InvokeRagAgent";
 
     @Context
     protected HylandAgentsService agentsService;
@@ -69,7 +69,7 @@ public class HylandAgentsInvokeTaskOp {
 
         Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
 
-        ServiceCallResult result = agentsService.invokeAgent(AgentType.TASK, configName, agentId, agentVersion, jsonPayloadStr,
+        ServiceCallResult result = agentsService.invokeAgent(AgentType.RAG, configName, agentId, agentVersion, jsonPayloadStr,
                 extraHeaders);
 
         return Blobs.createJSONBlob(result.toJsonString());

@@ -208,7 +208,7 @@ A high level operation that sends a question, waits for the answer, then returns
 * Input: `void`
 * Output: `Blob`, a JSON blob
 * Parameters
-  * `question`: String required. The question to ask the agent
+  * `question`: String required. The question to ask the agent. If not passed, agentId is read from `nuxeo.hyland.cic.discovery.default.agentId`.
   * `agentId`: String, optional. The ID of the agent to ask the question. If not passed, the plugin uses the value of `nuxeo.hyland.cic.discovery.default.agentId`
   * `contextObjectIdsJsonArrayStr`: String, optional.  A stringified JSON Array of Document UUIDs which were sent to the service previously, and will be used for the context of the question.
   * `extraPayloadJsonStr`: String, optional. A JSON object as string, with extra parameters for the service. Check the Knowledge Discovery docmentation. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload.

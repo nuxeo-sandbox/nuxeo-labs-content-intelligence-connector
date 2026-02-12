@@ -57,11 +57,11 @@ public class ServiceCallResult {
         this.responseMessage = responseMessage;
         this.objectKeysMapping = objectKeysMapping;
     }
-    
+
     // M%ainly used in unit tests.
     public ServiceCallResult(String jsonStr) {
         JSONObject obj = new JSONObject(jsonStr);
-        
+
         response = obj.getJSONObject("response").toString();
         responseCode = obj.getInt("responseCode");
         responseMessage = obj.getString("responseMessage");
@@ -76,14 +76,14 @@ public class ServiceCallResult {
 
         JSONObject obj = new JSONObject();
 
-        if(StringUtils.isNotBlank(response)) {
-            if(response.startsWith("[")) {
+        if (StringUtils.isNotBlank(response)) {
+            if (response.startsWith("[")) {
                 obj.put("response", new JSONArray(response));
             } else {
                 obj.put("response", new JSONObject(response));
             }
         } else {
-            if(isHttpSuccess(responseCode)) {
+            if (isHttpSuccess(responseCode)) {
                 obj.put("response", new JSONObject("{\"errorMessage\": \"Empty string as response\"}"));
             } else {
                 obj.put("response", new JSONObject("{}"));
@@ -107,7 +107,6 @@ public class ServiceCallResult {
 
     public String toJsonString(int indentFactor) {
 
-        
         JSONObject obj = toJsonObject();
         return obj.toString(indentFactor);
     }
@@ -117,12 +116,27 @@ public class ServiceCallResult {
      * And it even may be quoted/double quoted in the response.
      * 
      * @return the response. If it started and ended with ", these are removed.
-     * @since And it may be quoted in the response.
+     * @since 2023
      */
     public String getResponse() {
-        String result = StringUtils.removeStart(response, "\"");
-        result = StringUtils.removeEnd(result, "\"");
-        return result;
+
+        if (StringUtils.isBlank(response)) {
+            return response;
+        }
+
+        if (response.startsWith("\"")) {
+            // We assume if starts with ", it ends with "
+            return response.substring(1, response.length() - 1);
+        }
+
+        return response;
+
+        /*
+         * StringUtils.removeStart deprecated in Java 21
+         * String result = StringUtils.removeStart(response, "\"");
+         * result = StringUtils.removeEnd(result, "\"");
+         * return result;
+         */
     }
 
     /**
@@ -182,7 +196,7 @@ public class ServiceCallResult {
     public void setObjectKeysMapping(JSONArray mapping) {
         this.objectKeysMapping = mapping;
     }
-    
+
     public JSONArray getObjectKeysMapping() {
         return objectKeysMapping;
     }

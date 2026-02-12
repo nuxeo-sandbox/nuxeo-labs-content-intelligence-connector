@@ -142,8 +142,8 @@ public class HylandAgentsServiceImpl extends DefaultComponent implements HylandA
     }
 
     @Override
-    public ServiceCallResult invokeTask(String configName, String agentId, String versionId, String payloadJsonStr,
-            Map<String, String> extraHeaders) {
+    public ServiceCallResult invokeAgent(AgentType agentType, String configName, String agentId, String versionId,
+            String payloadJsonStr, Map<String, String> extraHeaders) {
 
         ServiceCallResult result = null;
 
@@ -159,7 +159,19 @@ public class HylandAgentsServiceImpl extends DefaultComponent implements HylandA
 
         AgentDescriptor config = getDescriptor(configName);
         String targetUrl = config.getBaseUrl();
-        targetUrl += "/v1/agents/" + agentId + "/versions/" + versionId + "/invoke-task";
+        switch (agentType) {
+        case RAG:
+            targetUrl += "/v1/agents/" + agentId + "/versions/" + versionId + "/invoke";
+            break;
+
+        case TASK:
+            targetUrl += "/v1/agents/" + agentId + "/versions/" + versionId + "/invoke-task";
+            break;
+
+        case TOOL:
+            targetUrl += "/v1/agents/" + agentId + "/versions/" + versionId + "/invoke";
+            break;
+        }
 
         // Headers
         Map<String, String> headers = new HashMap<String, String>();

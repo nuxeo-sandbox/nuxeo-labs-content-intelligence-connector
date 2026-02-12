@@ -56,6 +56,7 @@ import org.nuxeo.runtime.test.runner.RunnerFeature;
  * CIC_DISCOVERY_UNIT_TEST_AGENT_ID
  * CIC_DISCOVERY_UNIT_TEST_REPO_SOURCE
  * CIC_AGENT_FOR_UNIT_TEST
+ * CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID
  * 
  * @since 2023
  */
@@ -100,6 +101,8 @@ public class ConfigCheckerFeature implements RunnerFeature {
     public static final String ENV_CIC_DISCOVERY_UNIT_TEST_REPO_SOURCE = "CIC_DISCOVERY_UNIT_TEST_REPO_SOURCE";
 
     public static final String ENV_CIC_AGENT_FOR_UNIT_TEST = "CIC_AGENT_FOR_UNIT_TEST";
+    
+    public static final String CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID = "CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID";
 
     // ==========
     protected static boolean hasEnrichmentClientInfo = false;

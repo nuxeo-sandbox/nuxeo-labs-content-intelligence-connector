@@ -26,6 +26,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -57,7 +59,7 @@ public class ServiceCall {
         HttpURLConnection connection = null;
         try {
             // Create the URL object
-            URL theUrl = new URL(url);
+            URL theUrl = new URI(url).toURL();
             connection = (HttpURLConnection) theUrl.openConnection();
             connection.setRequestMethod("GET");
 
@@ -67,9 +69,9 @@ public class ServiceCall {
 
             result = readResponse(connection);
 
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             log.error("Error: " + e.getMessage());
-            result = new ServiceCallResult("{}", -1, "IOException: " + e.getMessage());
+            result = new ServiceCallResult("{}", -1, e.getClass().getSimpleName() + ": " + e.getMessage());
         } finally {
             if (connection != null) {
                 connection.disconnect();
@@ -91,7 +93,7 @@ public class ServiceCall {
         HttpURLConnection connection = null;
         try {
             // Create the URL object
-            URL theUrl = new URL(url);
+            URL theUrl = new URI(url).toURL();
             connection = (HttpURLConnection) theUrl.openConnection();
             // POST or PUT
             connection.setRequestMethod(httpMethod);
@@ -110,9 +112,9 @@ public class ServiceCall {
 
             result = readResponse(connection);
 
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             log.error("Error: " + e.getMessage());
-            result = new ServiceCallResult("{}", -1, "IOException: " + e.getMessage());
+            result = new ServiceCallResult("{}", -1, e.getClass().getSimpleName() + ": " + e.getMessage());
         } finally {
             if (connection != null) {
                 connection.disconnect();
@@ -147,36 +149,46 @@ public class ServiceCall {
      * @throws IOException
      * @since 2023
      */
-    public ServiceCallResult uploadFileWithPut(File file, String targetUrl, String contentType) throws IOException {
+    public ServiceCallResult uploadFileWithPut(File file, String targetUrl, String contentType) {
 
         if (!file.exists() || !file.isFile()) {
             throw new IllegalArgumentException("Invalid file: " + file.getAbsolutePath());
         }
 
-        HttpURLConnection connection = (HttpURLConnection) new URL(targetUrl).openConnection();
-        connection.setDoOutput(true);
-        connection.setRequestMethod("PUT");
-        connection.setRequestProperty("Content-Type", contentType);
-        connection.setFixedLengthStreamingMode(file.length());
-
         ServiceCallResult result;
-        try (OutputStream out = connection.getOutputStream(); InputStream in = new FileInputStream(file)) {
 
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            while ((bytesRead = in.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
+        try {
+            HttpURLConnection connection = (HttpURLConnection) new URI(targetUrl).toURL().openConnection();
+            connection.setDoOutput(true);
+            connection.setRequestMethod("PUT");
+            connection.setRequestProperty("Content-Type", contentType);
+            connection.setFixedLengthStreamingMode(file.length());
+
+            try (OutputStream out = connection.getOutputStream(); InputStream in = new FileInputStream(file)) {
+
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+                out.flush();
+
+                result = new ServiceCallResult("{}", connection.getResponseCode(), connection.getResponseMessage());
+
+            } catch (IOException e) {
+                log.error("Error uploading file with PUT", e);
+                result = new ServiceCallResult("{}", -1, e.getMessage());
             }
-            out.flush();
 
-            result = new ServiceCallResult("{}", connection.getResponseCode(), connection.getResponseMessage());
+            return result;
 
-        } catch (IOException e) {
-            log.error("Error uploading file with PUT", e);
-            result = new ServiceCallResult("{}", -1, e.getMessage());
+        } catch (IOException  | URISyntaxException e) {
+            log.error("Error uploading file with PUT", e.getClass().getSimpleName() + ": " + e);
+            result = new ServiceCallResult("{}", -1, e.getClass().getSimpleName() + ": " + e.getMessage());
         }
 
         return result;
+
     }
 
     /**
