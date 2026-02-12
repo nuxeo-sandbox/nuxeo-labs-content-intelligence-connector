@@ -92,7 +92,7 @@ public class TestMiscAutomation {
     
     @Test
     @Deploy("nuxeo-hyland-content-intelligence-connector-core:more-mock-configs.xml")
-    public void shouldgetConfigNames() throws Exception {
+    public void shouldGetConfigNames() throws Exception {
         
         OperationContext ctx = new OperationContext(session);;
         

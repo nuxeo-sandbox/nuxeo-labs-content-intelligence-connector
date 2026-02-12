@@ -107,8 +107,8 @@ public interface HylandKDService {
 
     /**
      * Only question is required:
-     * - agentId can be read from configiration
-     * - contextObjectIds cabn be empty (or null)
+     * - agentId can be read from configuration
+     * - contextObjectIds can be empty (or null)
      * - Extraheaders: Will override any header previously set. Can be empty/null
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed

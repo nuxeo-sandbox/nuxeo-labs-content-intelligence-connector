@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.nuxeo.ecm.platform.test.PlatformFeature;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService;
+import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService.AgentType;
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
@@ -138,7 +139,7 @@ public class TestHylandAgentsService {
                 }
                 """;
 
-        ServiceCallResult result = hylandAgentsService.invokeTask(null, agentId, null, jsonPayloadStr, null);
+        ServiceCallResult result = hylandAgentsService.invokeAgent(AgentType.TASK, null, agentId, null, jsonPayloadStr, null);
         assertNotNull(result);
 
         if (!result.callResponseOK()) {

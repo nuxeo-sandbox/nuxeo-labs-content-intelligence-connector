@@ -18,6 +18,7 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl;
+import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.KEDescriptor;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.ComponentContext;
 import org.nuxeo.runtime.model.DefaultComponent;
@@ -136,7 +137,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
             targetUrl += "/";
         }
         targetUrl += endpoint;
-        
+
         if (log.isInfoEnabled()) {
             StringBuilder sb = new StringBuilder("HylandKDServiceImpl#invokeDiscovery:");
             sb.append("\n  configName: ").append(StringUtils.isBlank(configName) ? "default" : configName);
@@ -245,25 +246,34 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
         int count = 0;
         JSONObject response;
         boolean gotIt = false;
+        int lastResponseCode = 0;
         do {
             count += 1;
-            if (count > 2) {
-                log.warn("getAnswer(), trying to get an answer to question ID " + questionId + ", call " + count + "/"
-                        + pullResultsMaxTries + ".");
-            } else if (count > 9) {
-                log.warn("getAnswer(), trying to get an answer to question ID " + questionId + ", call " + count + "/"
-                        + pullResultsMaxTries + ".");
+
+            if (count == pullResultsMaxTries) {
+                log.warn("getAnswer() for question " + questionId + " is taking time. This is the last try, " + count
+                        + "/" + pullResultsMaxTries + " (Last responseCode " + lastResponseCode + ").");
+            } else if (count == 5 || (count > 5 && (count - 5) % 2 == 0)) {
+                log.warn("getAnswer() for question " + questionId + ", call " + count + "/" + pullResultsMaxTries
+                        + " (Last responseCode " + lastResponseCode + ").");
             }
 
             result = invokeDiscovery(configName, "GET", endPoint, null, extraHeaders);
+            lastResponseCode = result.getResponseCode();
             if (!result.callResponseOK()) {
-                Thread.sleep(pullResultsSleepIntervalMS);
+                if (result.callFailed()) {
+                    // Force ending the thing if we are not in 200-299
+                    gotIt = true;
+                } else {
+                    Thread.sleep(pullResultsSleepIntervalMS);
+                }
             } else {
                 response = result.getResponseAsJSONObject();
-                // Wheh asked too quickly, we can get a 200 OK with a null answer.
+                // When asked too quickly, we can get a 200 OK with a null answer.
                 // In this case, response.getString("answer") throws an error
                 String answer = response.optString("answer", null);
-                gotIt = StringUtils.isNoneBlank(answer);
+                String responseCompleteness = response.optString("responseCompleteness", "");
+                gotIt = StringUtils.isNotBlank(answer) && responseCompleteness.toLowerCase().equals("complete");
                 if (!gotIt) {
                     Thread.sleep(pullResultsSleepIntervalMS);
                 }
@@ -302,25 +312,25 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     // ======================================================================
     @Override
     public List<String> getKDContribNames() {
-        
+
         if (kdContribs == null) {
             kdContribs = new HashMap<String, KDDescriptor>();
         }
-        
+
         return new ArrayList<>(kdContribs.keySet());
-        
+
     }
-    
+
     @Override
     public KDDescriptor getKDDescriptor(String configName) {
-        
+
         if (StringUtils.isBlank(configName)) {
             configName = CONFIG_DEFAULT;
         }
-        
+
         return kdContribs.get(configName);
     }
-    
+
     /**
      * Component activated notification.
      * Called when the component is activated. All component dependencies are resolved at that moment.
@@ -331,7 +341,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     @Override
     public void activate(ComponentContext context) {
         super.activate(context);
-        //log.warn("activate component");
+        // log.warn("activate component");
     }
 
     /**
@@ -344,7 +354,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     @Override
     public void deactivate(ComponentContext context) {
         super.deactivate(context);
-        //log.warn("deactivate component");
+        // log.warn("deactivate component");
     }
 
     /**
@@ -355,7 +365,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     @Override
     public void registerExtension(Extension extension) {
         super.registerExtension(extension);
-        
+
         if (kdContribs == null) {
             kdContribs = new HashMap<String, KDDescriptor>();
         }
@@ -379,11 +389,11 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     @Override
     public void unregisterExtension(Extension extension) {
         super.unregisterExtension(extension);
-        
+
         if (kdContribs == null) {
             return;
         }
-        
+
         if (EXT_POINT_KD.equals(extension.getExtensionPoint())) {
             Object[] contribs = extension.getContributions();
             if (contribs != null) {
@@ -402,7 +412,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
      */
     @Override
     public void start(ComponentContext context) {
-        //log.warn("Start component");
+        // log.warn("Start component");
 
         // OK, all extensions loaded, let's initialize the auth. tokens
         if (kdContribs == null) {
@@ -429,6 +439,6 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     @Override
     public void stop(ComponentContext context) throws InterruptedException {
 
-        //log.warn("Stop component");
+        // log.warn("Stop component");
     }
 }

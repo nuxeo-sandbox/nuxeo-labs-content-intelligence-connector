@@ -21,6 +21,9 @@
         <operation class="org.nuxeo.labs.hyland.content.intelligence.agents.automation.HylandAgentsGetAllAgentsOp"/>
         <operation class="org.nuxeo.labs.hyland.content.intelligence.agents.automation.HylandAgentsLookupAgentOp"/>
         <operation class="org.nuxeo.labs.hyland.content.intelligence.agents.automation.HylandAgentsInvokeTaskOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.agents.automation.HylandAgentsInvokeRagOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.agents.automation.HylandAgentsInvokeToolOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.agents.automation.HylandAgentsAskKDQuestionViaRagOp"/>
         
         <!-- All -->
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.HylandCIGetContributionNamesOp"/>

@@ -20,6 +20,7 @@ package org.nuxeo.labs.hyland.content.intelligence.agents.automation;
 
 import java.util.Map;
 
+import org.json.JSONObject;
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
 import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
@@ -32,19 +33,23 @@ import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsSer
 import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService.AgentType;
 
 /**
+ * 
  * @since TODO
  */
-@Operation(id = HylandAgentsInvokeTaskOp.ID, category = "Hyland Agent Builder", label = "Invoke Task Agent", description = ""
-        + "Returns a JSON blob holding the result of the call. Call its getString() method then JSON.parse()."
+@Operation(id = HylandAgentsAskKDQuestionViaRagOp.ID, category = "Hyland Agent Builder", label = "Ask question to KD via RAG Agent", description = ""
+        + "Ask a question to KD using a RAG agent."
+        + " Returns a JSON blob holding the result of the call. Call its getString() method then JSON.parse()."
         + " See CIC documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
         + " and the response of the agent in the 'response' object."
         + " agentVersion is optional. If not used, latest version is invoked."
-        + " jsonPayloadStr is required: the expected JSON input (as string) for the agent."
+        + " contextObjectIdsJsonArrayStr is a stringified JSON array of object Ids (doc UUIDs in Nuxeo) to be used for the context."
+        + " guardrailsJsonArrayStr is optional. A JSON array of guardrails to apply."
+        + " extraPayloadJsonStr is a stringified JSON Object, to be merged to the payload built by the service (if you need extra parameters)."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
         + " configName is the name of the XML configuration to use (if not passed, using 'default')")
-public class HylandAgentsInvokeTaskOp {
+public class HylandAgentsAskKDQuestionViaRagOp {
 
-    public static final String ID = "HylandAgents.InvokeTaskAgent";
+    public static final String ID = "HylandAgents.AskKDQuestionViaRAGAgent";
 
     @Context
     protected HylandAgentsService agentsService;
@@ -58,8 +63,17 @@ public class HylandAgentsInvokeTaskOp {
     @Param(name = "agentVersion", required = false)
     protected String agentVersion;
 
-    @Param(name = "jsonPayloadStr", required = true)
-    protected String jsonPayloadStr;
+    @Param(name = "question", required = true)
+    protected String question;
+
+    @Param(name = "contextObjectIdsJsonArrayStr", required = false)
+    protected String contextObjectIdsJsonArrayStr;
+
+    @Param(name = "guardrailsJsonArrayStr", required = false)
+    protected String guardrailsJsonArrayStr;
+
+    @Param(name = "extraPayloadJsonStr", required = false)
+    protected String extraPayloadJsonStr;
 
     @Param(name = "extraHeadersJsonStr", required = false)
     protected String extraHeadersJsonStr;
@@ -69,8 +83,11 @@ public class HylandAgentsInvokeTaskOp {
 
         Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
 
-        ServiceCallResult result = agentsService.invokeAgent(AgentType.TASK, configName, agentId, agentVersion, jsonPayloadStr,
-                extraHeaders);
+        JSONObject payload = HylandAgentsService.formatJsonPayloadForKDQuestion(question, contextObjectIdsJsonArrayStr,
+                guardrailsJsonArrayStr);
+
+        ServiceCallResult result = agentsService.invokeAgent(AgentType.RAG, configName, agentId, agentVersion,
+                payload.toString(), extraHeaders);
 
         return Blobs.createJSONBlob(result.toJsonString());
     }
