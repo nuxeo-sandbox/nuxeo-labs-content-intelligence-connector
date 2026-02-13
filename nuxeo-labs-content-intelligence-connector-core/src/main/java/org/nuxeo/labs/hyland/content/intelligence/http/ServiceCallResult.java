@@ -24,12 +24,7 @@ import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.NuxeoException;
 
 /**
- * Class handling the result of a HTTP call to the service. It encapsulates 3 values:
- * <ul>
- * <li>responseCode: The HTTP status (200, 401, 404, etc.), as returned by the service</li>
- * <li>responseMessage: The response message, as returned by the service ("OK" for example)</li>
- * <li>response: The response as returned by the service</li>
- * </ul
+ * Class handling the result of a HTTP call to the service.
  * 
  * @since 2023
  */
@@ -137,6 +132,16 @@ public class ServiceCallResult {
          * result = StringUtils.removeEnd(result, "\"");
          * return result;
          */
+    }
+    
+    /**
+     * Set the response. SHould eb JSON string.
+     * 
+     * @param response
+     * @since TODO
+     */
+    public void setResponse(String response) {
+        this.response = response;
     }
 
     /**
