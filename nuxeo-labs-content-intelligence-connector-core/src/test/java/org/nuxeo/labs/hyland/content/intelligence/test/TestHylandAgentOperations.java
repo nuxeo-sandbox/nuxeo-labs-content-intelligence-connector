@@ -216,5 +216,56 @@ public class TestHylandAgentOperations {
             System.out.print("Service answered, but not what we expected.\nAnswered...\n" + agentFinalResult + "\n...we expected \"Empty Response\".");
         }
     }
+    
+    @Test
+    public void shouldInvoqueKDViaRAGSimplifiedResponse() throws Exception {
+
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasDiscoveryClientInfo());
+        
+        String agentId = System.getenv(ConfigCheckerFeature.CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
+        if(StringUtils.isBlank(agentId)) {
+            System.out.println("Missing the " + ConfigCheckerFeature.CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID + " env. variable => ignoring the test.");
+            return;
+        }
+
+        OperationContext ctx = new OperationContext(session);
+
+        Map<String, Object> params = new HashMap<>();        
+        params.put("agentId", agentId);
+        params.put("question", "How many documents do we have in this repository? If your are not totally sure of the response, then return \"I don't know.\".");
+        // No context object IDs
+        params.put("returnSimplifiedJson", true);
+        
+        Blob result = (Blob) automationService.run(ctx, HylandAgentsAskKDQuestionViaRagOp.ID, params);
+        Assert.assertNotNull(result);
+
+        JSONObject resultJson = new JSONObject(result.getString());
+        // Chekc HTTP call
+        int responseCode = resultJson.getInt("responseCode");
+        assertEquals(200, responseCode);
+
+        // See HylandAgentsService#simplifyResponse for the JSON format of the response.
+        JSONObject responseJson = resultJson.getJSONObject("response");
+        assertTrue(responseJson.has("simplifiedProcessingSuccess"));
+        assertTrue(responseJson.getBoolean("simplifiedProcessingSuccess"));
+        
+        assertTrue(responseJson.has("text"));
+        String answer = responseJson.getString("text");
+        
+        assertTrue(responseJson.has("sources"));
+        JSONArray sources = responseJson.getJSONArray("sources");
+        if(sources.length() > 0) {
+            JSONObject oneSource = sources.getJSONObject(0);
+            assertTrue(oneSource.has("objectId"));
+            assertTrue(oneSource.has("score"));
+        }
+        
+        // Should we assert? This is not a plugin error, it is smeting that changes in the service.
+        if(answer.toLowerCase().indexOf("i don't know") < 0) {
+            System.out.print("Service abnswered, but not what we expected.\nAnswered...\n" + answer + "\n...we expected \"I don't know\".");
+        }
+
+    }
 
 }

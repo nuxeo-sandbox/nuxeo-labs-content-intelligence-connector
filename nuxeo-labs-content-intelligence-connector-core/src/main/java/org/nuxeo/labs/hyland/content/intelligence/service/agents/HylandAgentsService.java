@@ -157,4 +157,149 @@ public interface HylandAgentsService {
         return payload;
     }
 
+    /**
+     * Return a simplified response with only sopme fields.
+     * If it fails building the simplified response, it returns the original object in "originalResponse" and adds
+     * "simplifiedProcessingSuccess": false.
+     * <br>
+     * Even if there are several "output" and inside an output, several "content", we return only the first one.
+     * If there are several outputs or several content in first answer, "moreResults" is set to true, and
+     * "originalResponse" is, well, the original response, unchanged.
+     * <br>
+     * Example #1:
+     * 
+     * <pre>{@code
+     * {
+     *   "simplifiedProcessingSuccess": true,
+     *   "text": "the first answer",
+     *   "sources": [
+     *     {
+     *       "objectId": "abc-def-etc.",
+     *       "score": 0.67
+     *     },
+     *     {
+     *       "objectId": "123-456-etc.",
+     *       "score": 0.83
+     *     },
+     *     . . .
+     *   ],
+     *   "moreResult": false
+     * }
+     * }</pre>
+     * 
+     * Example #2, more resilts available.
+     * 
+     * <pre>{@code
+     * {
+     *   "simplifiedProcessingSuccess": true,
+     *   "text": "the first answer",
+     *   "sources": [
+     *     {
+     *       "objectId": "abc-def-etc.",
+     *       "score": 0.67
+     *     },
+     *     {
+     *       "objectId": "123-456-etc.",
+     *       "score": 0.83
+     *     },
+     *     . . .
+     *   ],
+     *   "moreResult": true,
+     *   "originalResponse": the original response
+     * }
+     * }</pre>
+     * 
+     * As of FEB 2026, result from the service is:
+     * 
+     * <pre>{@code
+     * {
+     *   "createdAt": 1770917608,
+     *    "model": "meta.llama4-scout-17b-instruct-v1:0",
+     *    "object": "response",
+     *    "output": [
+     *      {
+     *        "type": "message",
+     *        "status": "completed",
+     *        "content": [
+     *          {
+     *            "type": "output_text",
+     *            "text": "#### I don't have enough information to answer this question"
+     *          }
+     *        ],
+     *        "role": "assistant"
+     *      }
+     *    ],
+     *    "customOutputs": {  ==> OPTIONAL
+     *      "sourceNodes": [
+     *        {
+     *          "docId": "094f72b1-1762-4995-ba2f-2fd3804c29b2__a47aa670-27d7-4b3b-8b8f-74f96849c38b",
+     *          "chunkId": "581ff1a2-a0be-41b4-9bd7-57f22046e020",
+     *          "score": 0.032786883,
+     *          "text": "Here text found by the suste to return the answer."
+     *        },
+     *        . . . more nodes . . .
+     *      ],
+     *      "ragMode": "normal"
+     *    }
+     * }
+     * }</pre>
+     * 
+     * objectId is the 2 part of the "docId" (and usually is the Nuxeo doc UUID)
+     * 
+     * @param response
+     * @return
+     * @since TODO
+     */
+    static JSONObject simplifyResponse(JSONObject response) {
+
+        JSONObject simplified;
+        boolean hasMoreResults = false;
+        try {
+            // Get the answer
+            JSONArray output = response.getJSONArray("output");
+            hasMoreResults = output.length() > 1;
+            JSONObject firstOutput = output.getJSONObject(0);
+            JSONArray content = firstOutput.getJSONArray("content");
+            hasMoreResults = hasMoreResults || content.length() > 1;
+            String text = content.getJSONObject(0).getString("text");
+
+            simplified = new JSONObject();
+            simplified.put("text", text);
+
+            // Get the sources
+            JSONArray sources = new JSONArray();
+            if (response.has("customOutputs")) {
+                JSONObject customOutputs = response.getJSONObject("customOutputs");
+                JSONArray sourceNodes = customOutputs.getJSONArray("sourceNodes");
+
+                for (int i = 0; i < sourceNodes.length(); i++) {
+
+                    JSONObject value = sourceNodes.getJSONObject(i);
+
+                    JSONObject oneSource = new JSONObject();
+                    String objectId = value.getString("docId");
+                    int index = objectId.indexOf("__");
+                    if (index != -1 && index + 2 < objectId.length()) {
+                        objectId = objectId.substring(index + 2);
+                    }
+                    oneSource.put("objectId", objectId);
+                    oneSource.put("score", value.getDouble("score"));
+                    sources.put(oneSource);
+                }
+            }
+            simplified.put("sources", sources);
+            simplified.put("simplifiedProcessingSuccess", true);
+            simplified.put("moreResults", hasMoreResults);
+            if (hasMoreResults) {
+                simplified.put("originalResponse", response);
+            }
+
+        } catch (Exception e) {
+            simplified = new JSONObject();
+            simplified.put("simplifiedProcessingSuccess", false);
+            simplified.put("originalResponse", response);
+        }
+        return simplified;
+    }
+
 }

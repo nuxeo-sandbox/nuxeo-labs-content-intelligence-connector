@@ -33,12 +33,12 @@ import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsSer
 import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService.AgentType;
 
 /**
- * 
  * @since TODO
  */
 @Operation(id = HylandAgentsAskKDQuestionViaRagOp.ID, category = "Hyland Agent Builder", label = "Ask question to KD via RAG Agent", description = ""
         + "Ask a question to KD using a RAG agent."
         + " Returns a JSON blob holding the result of the call. Call its getString() method then JSON.parse()."
+        + " If resturnSimplifiedJson is passed and true, the returned JSON is simpler than the original: See plugin documentation."
         + " See CIC documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
         + " and the response of the agent in the 'response' object."
         + " agentVersion is optional. If not used, latest version is invoked."
@@ -78,6 +78,9 @@ public class HylandAgentsAskKDQuestionViaRagOp {
     @Param(name = "extraHeadersJsonStr", required = false)
     protected String extraHeadersJsonStr;
 
+    @Param(name = "returnSimplifiedJson", required = false)
+    protected Boolean returnSimplifiedJson = false;
+
     @OperationMethod
     public Blob run() {
 
@@ -88,6 +91,11 @@ public class HylandAgentsAskKDQuestionViaRagOp {
 
         ServiceCallResult result = agentsService.invokeAgent(AgentType.RAG, configName, agentId, agentVersion,
                 payload.toString(), extraHeaders);
+
+        if (returnSimplifiedJson.booleanValue()) {
+            JSONObject simplified = HylandAgentsService.simplifyResponse(result.getResponseAsJSONObject());
+            result.setResponse(simplified.toString());
+        }
 
         return Blobs.createJSONBlob(result.toJsonString());
     }
