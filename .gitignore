@@ -32,3 +32,5 @@ bin/
 .env
 nashorn_code_cache
 dev_null
+.vscode
+
