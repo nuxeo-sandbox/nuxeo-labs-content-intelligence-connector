@@ -18,7 +18,6 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl;
-import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.KEDescriptor;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.ComponentContext;
 import org.nuxeo.runtime.model.DefaultComponent;
@@ -52,11 +51,11 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
 
     public static final String PULL_RESULTS_MAX_TRIES_PARAM = "nuxeo.hyland.cic.discovery.pullResultsMaxTries";
 
-    public static final int PULL_RESULTS_MAX_TRIES_DEFAULT = 10;
+    public static final int PULL_RESULTS_MAX_TRIES_DEFAULT = 25;
 
     public static final String PULL_RESULTS_SLEEP_INTERVAL_PARAM = "nuxeo.hyland.cic.discovery.pullResultsSleepInterval";
 
-    public static final int PULL_RESULTS_SLEEP_INTERVAL_DEFAULT = 3000;
+    public static final int PULL_RESULTS_SLEEP_INTERVAL_DEFAULT = 5000;
 
     protected static Map<String, AuthenticationToken> discoveryAuthTokens = null;
 
@@ -89,6 +88,13 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
                 PULL_RESULTS_MAX_TRIES_DEFAULT);
         pullResultsSleepIntervalMS = ServicesUtils.configParamToInt(PULL_RESULTS_SLEEP_INTERVAL_PARAM,
                 PULL_RESULTS_SLEEP_INTERVAL_DEFAULT);
+
+        // We don't want a WARN, this is an INFO
+        String msg = "Startup configuration:\n  pullResultsMaxTries=" + pullResultsMaxTries;
+        msg += "\n  pullResultsSleepIntervalMS=" + pullResultsSleepIntervalMS;
+        msg += "\n  defaultSourceId=" + defaultSourceId;
+        msg += "\n  defaultAgentId=" + defaultAgentId;
+        ServicesUtils.forceLogInfo(this.getClass(), msg);
 
     }
 

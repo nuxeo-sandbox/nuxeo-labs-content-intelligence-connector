@@ -29,6 +29,7 @@ import org.json.JSONObject;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl;
 import org.nuxeo.runtime.api.Framework;
+import org.nuxeo.runtime.osgi.OSGiRuntimeService;
 
 /**
  * Shared utilities. Just DRY pattern.
@@ -144,5 +145,19 @@ public class ServicesUtils {
 
         return extraPayload.toString();
 
+    }
+    
+    /**
+     * We don't want to log WARN for info, and we don't want to contribute a logger.
+     * So we use one that is able to display INFO.
+     * @param clazz
+     * @param message
+     * @since TODO
+     */
+    public static void forceLogInfo(Class<?> clazz, String message) {
+        
+        Logger tempLogger = LogManager.getLogger(OSGiRuntimeService.class);
+        String msg = "[On behalf " + clazz.getName() + "] " + message;
+        tempLogger.info(msg);
     }
 }
