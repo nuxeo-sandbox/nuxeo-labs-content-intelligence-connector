@@ -74,11 +74,11 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
     public static final String PULL_RESULTS_MAX_TRIES_PARAM = "nuxeo.hyland.cic.pullResultsMaxTries";
 
-    public static final int PULL_RESULTS_MAX_TRIES_DEFAULT = 10;
+    public static final int PULL_RESULTS_MAX_TRIES_DEFAULT = 25;
 
     public static final String PULL_RESULTS_SLEEP_INTERVAL_PARAM = "nuxeo.hyland.cic.pullResultsSleepInterval";
 
-    public static final int PULL_RESULTS_SLEEP_INTERVAL_DEFAULT = 3000;
+    public static final int PULL_RESULTS_SLEEP_INTERVAL_DEFAULT = 5000;
 
     public static final String DATA_CURATION_PRESIGN_DEFAULT_OPTIONS = "{\"normalization\": {\"quotations\": true},\"chunking\": true,\"embedding\": true,\"json_schema\": \"PIPELINE\"}";
 
@@ -141,6 +141,17 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
                 PULL_RESULTS_SLEEP_INTERVAL_DEFAULT);
 
         useKEV2 = ServicesUtils.configParamToBoolean(KE_USE_V2_PARAM, false);
+
+        logConfigurationInfo();
+    }
+
+    protected void logConfigurationInfo() {
+
+        // We don't want a WARN, this is an INFO
+        String msg = "Startup configuration:\n  pullResultsMaxTries=" + pullResultsMaxTries;
+        msg += "\n  pullResultsSleepIntervalMS=" + pullResultsSleepIntervalMS;
+        msg += "\n  useKEV2=" + useKEV2;
+        ServicesUtils.forceLogInfo(this.getClass(), msg);
     }
 
     protected String getKEToken(String configName) {
@@ -173,6 +184,8 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     @Override
     public void setUseKEV2(boolean value) {
         useKEV2 = value;
+        
+        logConfigurationInfo();
     }
 
     @Override
@@ -213,6 +226,8 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
             pullResultsSleepIntervalMS = sleepIntervalMS;
             break;
         }
+        
+        logConfigurationInfo();
     }
 
     @Override
