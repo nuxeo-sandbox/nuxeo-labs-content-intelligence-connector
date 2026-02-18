@@ -68,8 +68,8 @@ The following are not part of the configurable service:
 
 Other parameters are used to tune the behavior:
 * Somae calls to Kn owledge Discovery require to poll and check if a result is ready (typically, get the answer to a questionà). The following parameters are used in a loop, where if the service does not return a "success" HTTP Code, the thread sleeps a certain time then tries again, until a certain number of tries:
-  * `nuxeo.hyland.cic.discovery.pullResultsMaxTries`, an interger max number of tries. Default value is `10`.
-  * `nuxeo.hyland.cic.discovery.pullResultsSleepInterval`: an integer, the sleep value in milliseconds. Default value is 3000
+  * `nuxeo.hyland.cic.discovery.pullResultsMaxTries`, an interger max number of tries. Default value is `25`.
+  * `nuxeo.hyland.cic.discovery.pullResultsSleepInterval`: an integer, the sleep value in milliseconds. Default value is 5000
   
   So, with these default values, the code will try maximum 10 times and it will take about 30s max.
 
@@ -208,7 +208,7 @@ A high level operation that sends a question, waits for the answer, then returns
 * Input: `void`
 * Output: `Blob`, a JSON blob
 * Parameters
-  * `question`: String required. The question to ask the agent
+  * `question`: String required. The question to ask the agent. If not passed, agentId is read from `nuxeo.hyland.cic.discovery.default.agentId`.
   * `agentId`: String, optional. The ID of the agent to ask the question. If not passed, the plugin uses the value of `nuxeo.hyland.cic.discovery.default.agentId`
   * `contextObjectIdsJsonArrayStr`: String, optional.  A stringified JSON Array of Document UUIDs which were sent to the service previously, and will be used for the context of the question.
   * `extraPayloadJsonStr`: String, optional. A JSON object as string, with extra parameters for the service. Check the Knowledge Discovery docmentation. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload.

@@ -77,8 +77,8 @@ The plugin provides a `"default"` configuration, that uses the following configu
 
 Other parameters are used to tune the behavior (independant to the service configuration):
 * As of now, getting the results is asynchronous and we need to poll and check if they are ready. The following parameters are used in a loop, where if the service does not return a "success" HTTP Code, the thread sleeps a certain time then tries again, until a certain number of tries:
-  * `nuxeo.hyland.cic.pullResultsMaxTries`, an interger max number of tries. Default value is `10`.
-  * `nuxeo.hyland.cic.pullResultsSleepInterval`: an integer, the sleep value in milliseconds. Default value is 3000
+  * `nuxeo.hyland.cic.pullResultsMaxTries`, an interger max number of tries. Default value is `25`.
+  * `nuxeo.hyland.cic.pullResultsSleepInterval`: an integer, the sleep value in milliseconds. Default value is `5000
   
   So, with these default values, the code will try maximum 10 times and it will take about 30s max.
 
