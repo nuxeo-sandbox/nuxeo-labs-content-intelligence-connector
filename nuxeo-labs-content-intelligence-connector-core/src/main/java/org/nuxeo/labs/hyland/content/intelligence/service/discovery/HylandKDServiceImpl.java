@@ -266,9 +266,13 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
 
             result = invokeDiscovery(configName, "GET", endPoint, null, extraHeaders);
             lastResponseCode = result.getResponseCode();
+            // We need a 200
             if (!result.callResponseOK()) {
-                if (result.callFailed()) {
-                    // Force ending the thing if we are not in 200-299
+                // If in OK range or a 404 => continue, else, force stop.
+                // Sometimes, early call (right after asking the question) returns a 404
+                // and another call works. Let's say we consider a real error if the 404
+                // is returned up to 3 times pullResultsSleepIntervalMS
+                if (result.callFailed() && lastResponseCode != 404 && count > 4) {
                     gotIt = true;
                 } else {
                     Thread.sleep(pullResultsSleepIntervalMS);
