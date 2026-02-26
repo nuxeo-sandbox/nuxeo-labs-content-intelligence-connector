@@ -21,10 +21,10 @@ package org.nuxeo.labs.hyland.content.intelligence.service;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.nuxeo.common.xmap.annotation.XNode;
-import org.nuxeo.labs.hyland.content.intelligence.AuthenticationTokenParams;
+import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationTokenParams;
 
 /**
- * KD/KE/DC/COntentlake Descriptors have most of their fields in common
+ * KD/KE/DC/... Descriptors have most of their fields in common
  * => centralizing everything so each descriptor stays simple (instead of duplicated code)
  */
 public abstract class AbstractServiceDescriptor {

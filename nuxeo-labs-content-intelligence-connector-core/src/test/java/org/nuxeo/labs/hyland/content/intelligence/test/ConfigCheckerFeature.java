@@ -23,6 +23,7 @@ package org.nuxeo.labs.hyland.content.intelligence.test;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
+import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
 import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsServiceImpl;
 import org.nuxeo.labs.hyland.content.intelligence.service.datacuration.HylandDCServiceImpl;
 import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDServiceImpl;
@@ -167,7 +168,7 @@ public class ConfigCheckerFeature implements RunnerFeature {
 
         systemProps = System.getProperties();
 
-        boolean hasEndpointAuth = hasProperty(HylandKEServiceImpl.AUTH_BASE_URL_PARAM, ENV_CIC_AUTH_BASE_URL);
+        boolean hasEndpointAuth = hasProperty(CICServiceConstants.AUTH_BASE_URL_PARAM, ENV_CIC_AUTH_BASE_URL);
         if (!hasEndpointAuth) {
             System.out.println("Missing CIC Auth endpoint => no tests");
         }

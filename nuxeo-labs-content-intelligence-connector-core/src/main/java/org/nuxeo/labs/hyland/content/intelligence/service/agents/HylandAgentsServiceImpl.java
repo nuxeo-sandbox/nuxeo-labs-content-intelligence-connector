@@ -1,32 +1,20 @@
 package org.nuxeo.labs.hyland.content.intelligence.service.agents;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.nuxeo.ecm.core.api.NuxeoException;
-import org.nuxeo.labs.hyland.content.intelligence.AuthenticationToken;
-import org.nuxeo.labs.hyland.content.intelligence.AuthenticationTokenAgents;
+import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationToken;
+import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationTokenAgents;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
-import org.nuxeo.labs.hyland.content.intelligence.service.discovery.KDDescriptor;
-import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl;
+import org.nuxeo.labs.hyland.content.intelligence.service.AbstractCICServiceComponent;
+import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
 import org.nuxeo.runtime.model.ComponentContext;
-import org.nuxeo.runtime.model.DefaultComponent;
-import org.nuxeo.runtime.model.Extension;
 
-public class HylandAgentsServiceImpl extends DefaultComponent implements HylandAgentsService {
-
-    private static final Logger log = LogManager.getLogger(HylandAgentsServiceImpl.class);
-
-    // Will add "/connect/token" to this endpoint.
-    public static final String AUTH_BASE_URL_PARAM = HylandKEServiceImpl.AUTH_BASE_URL_PARAM;
-
-    public static final String AUTH_ENDPOINT = HylandKEServiceImpl.AUTH_ENDPOINT;
+public class HylandAgentsServiceImpl extends AbstractCICServiceComponent<AgentDescriptor> implements HylandAgentsService {
 
     public static final String AGENTS_CLIENT_ID_PARAM = "nuxeo.hyland.cic.agents.clientId";
 
@@ -43,29 +31,23 @@ public class HylandAgentsServiceImpl extends DefaultComponent implements HylandA
     // ====================> Extensions points
     protected static final String EXT_POINT_AGENT = "agent";
 
-    protected Map<String, AgentDescriptor> agentContribs = new HashMap<String, AgentDescriptor>();
-
-    public static final String CONFIG_DEFAULT = "default";
-
     // ====================> Utils
     protected AgentDescriptor getDescriptor(String configName) {
-
-        if (StringUtils.isBlank(configName)) {
-            configName = CONFIG_DEFAULT;
-        }
-
-        return agentContribs.get(configName);
+        return super.getDescriptor(configName);
     }
 
     protected String getToken(String configName) {
+        return super.getToken(agentsAuthTokens, configName);
+    }
 
-        if (StringUtils.isBlank(configName)) {
-            configName = CONFIG_DEFAULT;
-        }
+    @Override
+    protected String getDescriptorExtensionPoint() {
+        return EXT_POINT_AGENT;
+    }
 
-        AuthenticationToken token = agentsAuthTokens.get(configName);
-
-        return token.getToken();
+    @Override
+    protected String getServiceLabel() {
+        return "Agents Service";
     }
 
     // ====================> Implementation
@@ -194,97 +176,12 @@ public class HylandAgentsServiceImpl extends DefaultComponent implements HylandA
     // ====================> Service
     @Override
     public List<String> getContribNames() {
-
-        if (agentContribs == null) {
-            agentContribs = new HashMap<String, AgentDescriptor>();
-        }
-
-        return new ArrayList<>(agentContribs.keySet());
-
+        return super.getContribNames();
     }
 
     @Override
     public AgentDescriptor getAgentDescriptor(String configName) {
-
-        if (StringUtils.isBlank(configName)) {
-            configName = CONFIG_DEFAULT;
-        }
-
-        return agentContribs.get(configName);
-    }
-
-    /**
-     * Component activated notification.
-     * Called when the component is activated. All component dependencies are resolved at that moment.
-     * Use this method to initialize the component.
-     *
-     * @param context the component context.
-     */
-    @Override
-    public void activate(ComponentContext context) {
-        super.activate(context);
-        // log.warn("activate component");
-    }
-
-    /**
-     * Component deactivated notification.
-     * Called before a component is unregistered.
-     * Use this method to do cleanup if any and free any resources held by the component.
-     *
-     * @param context the component context.
-     */
-    @Override
-    public void deactivate(ComponentContext context) {
-        super.deactivate(context);
-        // log.warn("deactivate component");
-    }
-
-    /**
-     * Registers the given extension.
-     *
-     * @param extension the extension to register
-     */
-    @Override
-    public void registerExtension(Extension extension) {
-        super.registerExtension(extension);
-
-        if (agentContribs == null) {
-            agentContribs = new HashMap<String, AgentDescriptor>();
-        }
-
-        if (EXT_POINT_AGENT.equals(extension.getExtensionPoint())) {
-            Object[] contribs = extension.getContributions();
-            if (contribs != null) {
-                for (Object contrib : contribs) {
-                    AgentDescriptor desc = (AgentDescriptor) contrib;
-                    agentContribs.put(desc.getName(), desc);
-                }
-            }
-        }
-    }
-
-    /**
-     * Unregisters the given extension.
-     *
-     * @param extension the extension to unregister
-     */
-    @Override
-    public void unregisterExtension(Extension extension) {
-        super.unregisterExtension(extension);
-
-        if (agentContribs == null) {
-            return;
-        }
-
-        if (EXT_POINT_AGENT.equals(extension.getExtensionPoint())) {
-            Object[] contribs = extension.getContributions();
-            if (contribs != null) {
-                for (Object contrib : contribs) {
-                    KDDescriptor desc = (KDDescriptor) contrib;
-                    agentContribs.remove(desc.getName());
-                }
-            }
-        }
+        return super.getDescriptor(configName);
     }
 
     /**
@@ -294,22 +191,11 @@ public class HylandAgentsServiceImpl extends DefaultComponent implements HylandA
      */
     @Override
     public void start(ComponentContext context) {
-        // log.warn("Start component");
-
-        // OK, all extensions loaded, let's initialize the auth. tokens
-        if (agentContribs == null) {
-            log.error("No configuration found for Agents Service. Calls, if any, will fail.");
-        } else {
-            agentsAuthTokens = new HashMap<String, AuthenticationToken>();
-            for (Map.Entry<String, AgentDescriptor> entry : agentContribs.entrySet()) {
-                AgentDescriptor desc = entry.getValue();
-                AuthenticationToken token = new AuthenticationTokenAgents(
-                        desc.getAuthenticationBaseUrl() + AUTH_ENDPOINT, desc.getAuthenticationTokenParams());
-                agentsAuthTokens.put(desc.getName(), token);
-
-                desc.checkConfigAndLogErrors();
-            }
-        }
+        
+        agentsAuthTokens = initAuthTokens(
+                desc -> new AuthenticationTokenAgents(
+                        desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
+                desc.getAuthenticationTokenParams()));
     }
 
     /**

@@ -16,17 +16,17 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence;
+package org.nuxeo.labs.hyland.content.intelligence.authentication;
 
 /**
  * Convenience class for clearer names
  * 
  * @since 2023
  */
-public class AuthenticationTokenEnrichment extends AuthenticationToken {
-    
-    public AuthenticationTokenEnrichment(String authFullUrl, AuthenticationTokenParams params) {
-        super(ServiceType.ENRICHMENT, authFullUrl, params);
+public class AuthenticationTokenDiscovery extends AuthenticationToken {
+
+    public AuthenticationTokenDiscovery(String authFullUrl, AuthenticationTokenParams params) {
+        super(ServiceType.DISCOVERY, authFullUrl, params);
     }
 
 }

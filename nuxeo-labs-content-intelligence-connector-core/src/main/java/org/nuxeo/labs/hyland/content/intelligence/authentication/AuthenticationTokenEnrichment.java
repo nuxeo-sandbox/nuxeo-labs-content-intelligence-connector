@@ -16,17 +16,19 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence;
+package org.nuxeo.labs.hyland.content.intelligence.authentication;
 
 /**
- * Convenience class for clearer names
+ * Convenience class for clearer names.
+ * 
+ * Goes for botk KE and DC
  * 
  * @since 2023
  */
-public class AuthenticationTokenAgents extends AuthenticationToken {
-
-    public AuthenticationTokenAgents(String authFullUrl, AuthenticationTokenParams params) {
-        super(ServiceType.AGENTS, authFullUrl, params);
+public class AuthenticationTokenEnrichment extends AuthenticationToken {
+    
+    public AuthenticationTokenEnrichment(String authFullUrl, AuthenticationTokenParams params) {
+        super(ServiceType.ENRICHMENT, authFullUrl, params);
     }
 
 }

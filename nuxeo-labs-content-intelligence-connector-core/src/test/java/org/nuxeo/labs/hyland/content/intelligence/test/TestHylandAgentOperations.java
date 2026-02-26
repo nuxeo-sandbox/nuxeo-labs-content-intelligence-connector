@@ -40,6 +40,7 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsAskKDQuestionViaRagOp;
 import org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsGetAllAgentsOp;
+import org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsInvokeRagOp;
 import org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsInvokeTaskOp;
 import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService;
 import org.nuxeo.runtime.test.runner.Deploy;
@@ -88,12 +89,12 @@ public class TestHylandAgentOperations {
     }
 
     @Test
-    public void shouldInvokeAgent() throws Exception {
+    public void shouldInvokeTaskAgent() throws Exception {
 
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasDiscoveryClientInfo());
         
-        String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
+        String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_AGENT_FOR_UNIT_TEST);
         Assume.assumeTrue("No agentId set in env. variables => ignoring the test", StringUtils.isNotBlank(agentId));
 
         OperationContext ctx = new OperationContext(session);

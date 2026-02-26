@@ -16,7 +16,7 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence;
+package org.nuxeo.labs.hyland.content.intelligence.authentication;
 
 /**
  * The services change regularly what it expects in terms of headers or body value
