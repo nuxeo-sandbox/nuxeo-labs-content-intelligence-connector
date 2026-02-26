@@ -26,7 +26,6 @@ import java.io.File;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assume;
@@ -471,7 +470,7 @@ public class TestHylandKEDCService {
         for (int i = 0; i < array.length(); i++) {
             JSONObject obj = array.getJSONObject(i);
             String value = obj.getString(key);
-            if (Strings.CS.equals(searchStr, value)) {
+            if (searchStr.equals(value)) {
                 return true;
             }
         }
