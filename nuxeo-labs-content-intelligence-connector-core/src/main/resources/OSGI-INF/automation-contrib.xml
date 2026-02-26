@@ -3,28 +3,31 @@
 
     <extension point="operations" target="org.nuxeo.ecm.core.operation.OperationServiceComponent">
         <!-- Enrichment -->
-        <operation class="org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKEInvokeOp"/>
-        <operation class="org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKEUploadFileOp"/>
-        <operation class="org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKEEnrichOp"/>
-        <operation class="org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKECurateOp"/>
-        <operation class="org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.ConfigureServiceOp"/>
-        <operation class="org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKEEnrichSeveralOp"/>
-        <operation class="org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKESendForEnrichmentOp"/>
-        <operation class="org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKEGetEnrichmentResultsOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.HylandKEInvokeOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.HylandKEUploadFileOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.HylandKEEnrichOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.HylandKECurateOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.ConfigureServiceOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.HylandKEEnrichSeveralOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.HylandKESendForEnrichmentOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.HylandKEGetEnrichmentResultsOp"/>
 
         <!-- Discovery -->
-        <operation class="org.nuxeo.labs.hyland.content.intelligence.discovery.automation.HylandKDInvokeOp"/>
-        <operation class="org.nuxeo.labs.hyland.content.intelligence.discovery.automation.HylandKDGetAllAgentsOp"/>
-        <operation class="org.nuxeo.labs.hyland.content.intelligence.discovery.automation.HylandKDAskQuestionAndGetAnswerOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.discovery.HylandKDInvokeOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.discovery.HylandKDGetAllAgentsOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.discovery.HylandKDAskQuestionAndGetAnswerOp"/>
 
         <!-- Agents -->
-        <operation class="org.nuxeo.labs.hyland.content.intelligence.agents.automation.HylandAgentsGetAllAgentsOp"/>
-        <operation class="org.nuxeo.labs.hyland.content.intelligence.agents.automation.HylandAgentsLookupAgentOp"/>
-        <operation class="org.nuxeo.labs.hyland.content.intelligence.agents.automation.HylandAgentsInvokeTaskOp"/>
-        <operation class="org.nuxeo.labs.hyland.content.intelligence.agents.automation.HylandAgentsInvokeRagOp"/>
-        <operation class="org.nuxeo.labs.hyland.content.intelligence.agents.automation.HylandAgentsInvokeToolOp"/>
-        <operation class="org.nuxeo.labs.hyland.content.intelligence.agents.automation.HylandAgentsAskKDQuestionViaRagOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsGetAllAgentsOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsLookupAgentOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsInvokeTaskOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsInvokeRagOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsInvokeToolOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsAskKDQuestionViaRagOp"/>
         
+        <!-- Ingest -->
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.ingest.IngestCheckDigestOp"/>
+
         <!-- All -->
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.HylandCIGetContributionNamesOp"/>
     </extension>

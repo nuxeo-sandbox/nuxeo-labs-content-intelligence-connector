@@ -27,9 +27,10 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nuxeo.ecm.platform.test.PlatformFeature;
+import org.nuxeo.labs.hyland.content.intelligence.service.datacuration.DCDescriptor;
+import org.nuxeo.labs.hyland.content.intelligence.service.datacuration.HylandDCService;
 import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService;
 import org.nuxeo.labs.hyland.content.intelligence.service.discovery.KDDescriptor;
-import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.DCDescriptor;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.KEDescriptor;
 import org.nuxeo.runtime.test.runner.Deploy;
@@ -47,6 +48,9 @@ public class TestXMLContributions {
     protected HylandKEService hylandKEService;
 
     @Inject
+    protected HylandDCService hylandDCService;
+
+    @Inject
     protected HylandKDService hylandKDService;
 
     @Test
@@ -58,7 +62,7 @@ public class TestXMLContributions {
     @Test
     public void shouldHaveDefaultKDConfig() {
         
-        List<String> contribs = hylandKDService.getKDContribNames();
+        List<String> contribs = hylandKDService.getContribNames();
         assertNotNull(contribs);
         assertEquals(1, contribs.size());
         assertTrue(contribs.indexOf("default") == 0);
@@ -80,23 +84,23 @@ public class TestXMLContributions {
     public void shouldDeployExtraContribs() {
         // Contribs contain random string => do not test connection to services, just existence.
         
-        List<String> contribs = hylandKDService.getKDContribNames();
+        List<String> contribs = hylandKDService.getContribNames();
         assertEquals(2, contribs.size());
         KDDescriptor kdDesc = hylandKDService.getKDDescriptor("more-kd-1");
         assertNotNull(kdDesc);
         assertTrue(kdDesc.hasAllValues());
 
         
-        contribs = hylandKEService.getKEContribNames();
+        contribs = hylandKEService.getContribNames();
         assertEquals(2, contribs.size());
         KEDescriptor keDesc = hylandKEService.getKEDescriptor("more-ke-1");
         assertNotNull(keDesc);
         assertTrue(keDesc.hasAllValues());
         
 
-        contribs = hylandKEService.getDCContribNames();
+        contribs = hylandKEService.getContribNames();
         assertEquals(2, contribs.size());
-        DCDescriptor dcDesc = hylandKEService.getDCDescriptor("more-dc-1");
+        DCDescriptor dcDesc = hylandDCService.getDCDescriptor("more-dc-1");
         assertNotNull(dcDesc);
         assertTrue(dcDesc.hasAllValues());
     }

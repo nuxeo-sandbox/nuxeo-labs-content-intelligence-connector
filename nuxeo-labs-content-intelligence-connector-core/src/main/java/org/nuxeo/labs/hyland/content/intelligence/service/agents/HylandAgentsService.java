@@ -86,7 +86,7 @@ public interface HylandAgentsService {
      * @return the list of contributions
      * @since 2023
      */
-    List<String> getAgentContribNames();
+    List<String> getContribNames();
 
     /**
      * Introspection

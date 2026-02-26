@@ -14,11 +14,6 @@
 			class="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.KEDescriptor" />
 	</extension-point>
 
-	<extension-point name="dataCuration">
-		<object
-			class="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.DCDescriptor" />
-	</extension-point>
-
 	<!-- Default contributions use configuration parameters -->
 	<extension
 		target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
@@ -33,18 +28,5 @@
 			<clientSecret>${nuxeo.hyland.cic.enrichment.clientSecret:=}</clientSecret>
 		</knowledgeEnrichment>
 	</extension>
-
-	<extension
-		target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
-		point="dataCuration">
-		<dataCuration>
-			<name>default</name>
-			<authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
-			<baseUrl>${nuxeo.hyland.cic.dataCuration.baseUrl:=}</baseUrl>
-			<tokenGrantType>${nuxeo.hyland.cic.dataCuration.auth.grantType:=client_credentials}</tokenGrantType>
-			<tokenScope>${nuxeo.hyland.cic.dataCuration.auth.scope:=environment_authorization}</tokenScope>
-			<clientId>${nuxeo.hyland.cic.datacuration.clientId:=}</clientId>
-			<clientSecret>${nuxeo.hyland.cic.datacuration.clientSecret:=}</clientSecret>
-		</dataCuration>
-	</extension>
+	
 </component>

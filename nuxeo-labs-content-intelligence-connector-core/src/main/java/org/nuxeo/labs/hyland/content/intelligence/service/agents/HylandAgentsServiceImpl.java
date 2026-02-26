@@ -193,7 +193,7 @@ public class HylandAgentsServiceImpl extends DefaultComponent implements HylandA
 
     // ====================> Service
     @Override
-    public List<String> getAgentContribNames() {
+    public List<String> getContribNames() {
 
         if (agentContribs == null) {
             agentContribs = new HashMap<String, AgentDescriptor>();

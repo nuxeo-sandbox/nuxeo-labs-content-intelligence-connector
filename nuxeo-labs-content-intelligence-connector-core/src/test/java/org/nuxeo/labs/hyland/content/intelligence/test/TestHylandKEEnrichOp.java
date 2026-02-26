@@ -45,8 +45,8 @@ import org.nuxeo.ecm.automation.test.AutomationFeature;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.impl.blob.FileBlob;
-import org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKEEnrichOp;
-import org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKEEnrichSeveralOp;
+import org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.HylandKEEnrichOp;
+import org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.HylandKEEnrichSeveralOp;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 import org.nuxeo.runtime.test.runner.Deploy;
@@ -81,9 +81,9 @@ public class TestHylandKEEnrichOp {
 
         OperationContext ctx = new OperationContext(session);
 
-        File f = FileUtils.getResourceFileFromContext(TestHylandKEService.TEST_IMAGE_PATH);
+        File f = FileUtils.getResourceFileFromContext(TestHylandKEDCService.TEST_IMAGE_PATH);
         Blob blob = new FileBlob(f);
-        blob.setMimeType(TestHylandKEService.TEST_IMAGE_MIMETYPE);
+        blob.setMimeType(TestHylandKEDCService.TEST_IMAGE_MIMETYPE);
         blob.setFilename(f.getName());
         ctx.setInput(blob);
 
@@ -142,9 +142,9 @@ public class TestHylandKEEnrichOp {
 
         OperationContext ctx = new OperationContext(session);
 
-        File f = FileUtils.getResourceFileFromContext(TestHylandKEService.TEST_IMAGE_PATH);
+        File f = FileUtils.getResourceFileFromContext(TestHylandKEDCService.TEST_IMAGE_PATH);
         Blob blob = new FileBlob(f);
-        blob.setMimeType(TestHylandKEService.TEST_IMAGE_MIMETYPE);
+        blob.setMimeType(TestHylandKEDCService.TEST_IMAGE_MIMETYPE);
         blob.setFilename(f.getName());
 
         // Set operation params and input
@@ -212,9 +212,9 @@ public class TestHylandKEEnrichOp {
 
         OperationContext ctx = new OperationContext(session);
 
-        File f = FileUtils.getResourceFileFromContext(TestHylandKEService.TEST_IMAGE_PATH);
+        File f = FileUtils.getResourceFileFromContext(TestHylandKEDCService.TEST_IMAGE_PATH);
         Blob blob = new FileBlob(f);
-        blob.setMimeType(TestHylandKEService.TEST_IMAGE_MIMETYPE);
+        blob.setMimeType(TestHylandKEDCService.TEST_IMAGE_MIMETYPE);
         blob.setFilename(f.getName());
 
         // Set operation params and input
@@ -272,14 +272,14 @@ public class TestHylandKEEnrichOp {
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
 
-        File f1 = FileUtils.getResourceFileFromContext(TestHylandKEService.TEST_IMAGE_PATH);
+        File f1 = FileUtils.getResourceFileFromContext(TestHylandKEDCService.TEST_IMAGE_PATH);
         Blob blob1 = new FileBlob(f1);
-        blob1.setMimeType(TestHylandKEService.TEST_IMAGE_MIMETYPE);
+        blob1.setMimeType(TestHylandKEDCService.TEST_IMAGE_MIMETYPE);
         blob1.setFilename(f1.getName());
 
-        File f2 = FileUtils.getResourceFileFromContext(TestHylandKEService.TEST_OTHER_IMAGE_PATH);
+        File f2 = FileUtils.getResourceFileFromContext(TestHylandKEDCService.TEST_OTHER_IMAGE_PATH);
         Blob blo2b = new FileBlob(f1);
-        blo2b.setMimeType(TestHylandKEService.TEST_OTHER_IMAGE_MIMETYPE);
+        blo2b.setMimeType(TestHylandKEDCService.TEST_OTHER_IMAGE_MIMETYPE);
         blo2b.setFilename(f2.getName());
 
         BlobList blobs = new BlobList();
@@ -307,8 +307,8 @@ public class TestHylandKEEnrichOp {
         assertNotNull(mapping);
         assertEquals(2, mapping.length());
         // And we have our IDs
-        assertTrue(TestHylandKEService.hasValueInJSONArray(mapping, "sourceId", "12345"));
-        assertTrue(TestHylandKEService.hasValueInJSONArray(mapping, "sourceId", "67890"));
+        assertTrue(TestHylandKEDCService.hasValueInJSONArray(mapping, "sourceId", "12345"));
+        assertTrue(TestHylandKEDCService.hasValueInJSONArray(mapping, "sourceId", "67890"));
 
         JSONObject responseJson = result.getResponseAsJSONObject();
         String status = responseJson.getString("status");
@@ -329,7 +329,7 @@ public class TestHylandKEEnrichOp {
             if (isSuccess) {
                 String objectKey = resultObj.getString("objectKey");
                 // Must exists in the returned mapping
-                assertTrue(TestHylandKEService.hasValueInJSONArray(mapping, "objectKey", objectKey));
+                assertTrue(TestHylandKEDCService.hasValueInJSONArray(mapping, "objectKey", objectKey));
             }
         });
 

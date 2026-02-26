@@ -16,7 +16,7 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence.enrichment.automation;
+package org.nuxeo.labs.hyland.content.intelligence.automation.enrichment;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -34,20 +34,26 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 
-@Operation(id = HylandKEEnrichOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Knowledge Enrichement on Blob", description = ""
-        + "Invoke the Hyland Knowledge Enrichment (KE) API to enrich the blob. actions is a list of actions to process"
-        + " (image-Description, imageEmbeddings, …), classes a list of values to be used for classification,"
-        + " and similarValues is used for metadata endpoint. It must be passed as a JSON string."
-        + " (See KE documentation for details, limitation, etc.)"
+@Operation(id = HylandKESendForEnrichmentOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Knowledge Enrichement Send Blob", description = ""
+        + "Invoke the Hyland Knowledge Enrichment (KE) API to send the blob for enrichment. actions is a list of actions to process"
+        + " (image-description, image-embeddings, …, or imageDescription, imageEmbeddings, … for KE v2), classes a list of values to be used for classification,"
+        + " and similarValues is used for metadata endpoint. It must be passed as a. (See KE documentation for details, limitation, etc.)"
+        + " The result is a JSON as string. If succesful, its response object will have a processingId property,"
+        + " it is the value to pass to the HylandKnowledgeEnrichment.GetEnrichmentResults operation to actually get the results."
+        + " sourceId is optional, it makes it possible to bind the result jobId to a document, for example, so you can get the"
+        + " document when calling HylandKnowledgeEnrichment.GetEnrichmentResults."
+        + " configName is the name of the XML configuration to use (if not passed, using 'default')"
         + " Since KE V2, you can pass instructions as an object of objects, one per action "
-        + " (see plugin doc for details.)"
-        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
-public class HylandKEEnrichOp {
+        + " (see plugin doc for details.)")
+public class HylandKESendForEnrichmentOp {
 
-    public static final String ID = "HylandKnowledgeEnrichment.Enrich";
+    public static final String ID = "HylandKnowledgeEnrichment.SendForEnrichment";
 
     @Context
     protected HylandKEService keService;
+
+    @Param(name = "sourceId", required = true)
+    protected String sourceId;
 
     @Param(name = "actions", required = true)
     protected String actions;
@@ -60,7 +66,7 @@ public class HylandKEEnrichOp {
 
     @Param(name = "extraJsonPayloadStr", required = false)
     protected String extraJsonPayloadStr = null;
-    
+
     @Param(name = "instructionsV2JsonStr", required = false)
     protected String instructionsV2JsonStr = null;
 
@@ -76,12 +82,13 @@ public class HylandKEEnrichOp {
         if (StringUtils.isNotBlank(classes)) {
             theClasses = Arrays.stream(classes.split(",")).map(String::trim).toList();
         }
-        
+
         extraJsonPayloadStr = ServicesUtils.addInstructionsToExtraPayload(instructionsV2JsonStr, extraJsonPayloadStr);
 
         ServiceCallResult result;
         try {
-            result = keService.enrich(configName, blob, theActions, theClasses, similarMetadataJsonArrayStr, extraJsonPayloadStr);
+            result = keService.sendForEnrichment(configName, blob, sourceId, theActions, theClasses,
+                    similarMetadataJsonArrayStr, extraJsonPayloadStr);
         } catch (IOException e) {
             throw new NuxeoException(e);
         }

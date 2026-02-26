@@ -53,7 +53,7 @@ public class AuthenticationToken {
     protected ServiceCall serviceCall = new ServiceCall();
 
     public enum ServiceType {
-        ENRICHMENT, DISCOVERY, AGENTS
+        ENRICHMENT, DISCOVERY, AGENTS, INGEST
     }
 
     ServiceType serviceType;
@@ -85,7 +85,7 @@ public class AuthenticationToken {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Accept", "*/*");
         headers.put("Accept-Encoding", "gzip, deflate, br");
-        if (serviceType == ServiceType.DISCOVERY) {
+        if (serviceType == ServiceType.DISCOVERY || serviceType == ServiceType.INGEST) {
             headers.put("hxp-environment", tokenParams.getEnvironment());
         }
         // Not JSON...

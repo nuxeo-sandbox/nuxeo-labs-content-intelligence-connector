@@ -24,8 +24,8 @@ import org.nuxeo.common.xmap.annotation.XNode;
 import org.nuxeo.labs.hyland.content.intelligence.AuthenticationTokenParams;
 
 /**
- * KD/KE/DC Descriptors have most of their fields in common => centralizing evcerything so
- * each descriptor stays simple (instead of duplicated code)
+ * KD/KE/DC/COntentlake Descriptors have most of their fields in common
+ * => centralizing everything so each descriptor stays simple (instead of duplicated code)
  */
 public abstract class AbstractServiceDescriptor {
 

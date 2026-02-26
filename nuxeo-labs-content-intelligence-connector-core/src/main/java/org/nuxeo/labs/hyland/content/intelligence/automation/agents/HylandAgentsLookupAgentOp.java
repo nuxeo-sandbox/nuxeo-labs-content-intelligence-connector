@@ -16,11 +16,10 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence.agents.automation;
+package org.nuxeo.labs.hyland.content.intelligence.automation.agents;
 
 import java.util.Map;
 
-import org.json.JSONObject;
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
 import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
@@ -30,26 +29,20 @@ import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService;
-import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService.AgentType;
 
 /**
  * @since TODO
  */
-@Operation(id = HylandAgentsAskKDQuestionViaRagOp.ID, category = "Hyland Agent Builder", label = "Ask question to KD via RAG Agent", description = ""
-        + "Ask a question to KD using a RAG agent."
-        + " Returns a JSON blob holding the result of the call. Call its getString() method then JSON.parse()."
-        + " If resturnSimplifiedJson is passed and true, the returned JSON is simpler than the original: See plugin documentation."
+@Operation(id = HylandAgentsLookupAgentOp.ID, category = "Hyland Agent Builder", label = "Lookup Agent", description = ""
+        + "Returns a JSON blob holding the result of the call. Call its getString() method then JSON.parse()."
         + " See CIC documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
         + " and the response of the agent in the 'response' object."
         + " agentVersion is optional. If not used, latest version is invoked."
-        + " contextObjectIdsJsonArrayStr is a stringified JSON array of object Ids (doc UUIDs in Nuxeo) to be used for the context."
-        + " guardrailsJsonArrayStr is optional. A JSON array of guardrails to apply."
-        + " extraPayloadJsonStr is a stringified JSON Object, to be merged to the payload built by the service (if you need extra parameters)."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
         + " configName is the name of the XML configuration to use (if not passed, using 'default')")
-public class HylandAgentsAskKDQuestionViaRagOp {
+public class HylandAgentsLookupAgentOp {
 
-    public static final String ID = "HylandAgents.AskKDQuestionViaRAGAgent";
+    public static final String ID = "HylandAgents.LookupAgent";
 
     @Context
     protected HylandAgentsService agentsService;
@@ -63,39 +56,15 @@ public class HylandAgentsAskKDQuestionViaRagOp {
     @Param(name = "agentVersion", required = false)
     protected String agentVersion;
 
-    @Param(name = "question", required = true)
-    protected String question;
-
-    @Param(name = "contextObjectIdsJsonArrayStr", required = false)
-    protected String contextObjectIdsJsonArrayStr;
-
-    @Param(name = "guardrailsJsonArrayStr", required = false)
-    protected String guardrailsJsonArrayStr;
-
-    @Param(name = "extraPayloadJsonStr", required = false)
-    protected String extraPayloadJsonStr;
-
     @Param(name = "extraHeadersJsonStr", required = false)
     protected String extraHeadersJsonStr;
-
-    @Param(name = "returnSimplifiedJson", required = false)
-    protected Boolean returnSimplifiedJson = false;
 
     @OperationMethod
     public Blob run() {
 
         Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
 
-        JSONObject payload = HylandAgentsService.formatJsonPayloadForKDQuestion(question, contextObjectIdsJsonArrayStr,
-                guardrailsJsonArrayStr);
-
-        ServiceCallResult result = agentsService.invokeAgent(AgentType.RAG, configName, agentId, agentVersion,
-                payload.toString(), extraHeaders);
-
-        if (returnSimplifiedJson.booleanValue()) {
-            JSONObject simplified = HylandAgentsService.simplifyResponse(result.getResponseAsJSONObject());
-            result.setResponse(simplified.toString());
-        }
+        ServiceCallResult result = agentsService.lookupAgent(configName, agentId, agentVersion, extraHeaders);
 
         return Blobs.createJSONBlob(result.toJsonString());
     }

@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.labs.hyland.content.intelligence.HylandDCService">
+
+	<implementation
+		class="org.nuxeo.labs.hyland.content.intelligence.service.datacuration.HylandDCServiceImpl" />
+
+	<service>
+		<provide
+			interface="org.nuxeo.labs.hyland.content.intelligence.service.datacuration.HylandDCService" />
+	</service>
+
+	<extension-point name="dataCuration">
+		<object
+			class="org.nuxeo.labs.hyland.content.intelligence.service.datacuration.DCDescriptor" />
+	</extension-point>
+
+	<!-- Default contributions use configuration parameters -->
+	<extension
+		target="org.nuxeo.labs.hyland.content.intelligence.HylandDCService"
+		point="dataCuration">
+		<dataCuration>
+			<name>default</name>
+			<authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
+			<baseUrl>${nuxeo.hyland.cic.dataCuration.baseUrl:=}</baseUrl>
+			<tokenGrantType>${nuxeo.hyland.cic.dataCuration.auth.grantType:=client_credentials}</tokenGrantType>
+			<tokenScope>${nuxeo.hyland.cic.dataCuration.auth.scope:=environment_authorization}</tokenScope>
+			<clientId>${nuxeo.hyland.cic.datacuration.clientId:=}</clientId>
+			<clientSecret>${nuxeo.hyland.cic.datacuration.clientSecret:=}</clientSecret>
+		</dataCuration>
+	</extension>
+	
+</component>
