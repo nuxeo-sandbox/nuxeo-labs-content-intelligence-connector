@@ -38,6 +38,7 @@ import org.nuxeo.common.utils.FileUtils;
 import org.nuxeo.ecm.platform.test.PlatformFeature;
 import org.nuxeo.labs.hyland.content.intelligence.ContentToProcess;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.datacuration.HylandDCService;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
@@ -53,7 +54,7 @@ import jakarta.inject.Inject;
 @RunWith(FeaturesRunner.class)
 @Features({ PlatformFeature.class, ConfigCheckerFeature.class })
 @Deploy("nuxeo-hyland-content-intelligence-connector-core")
-public class TestHylandKEService {
+public class TestHylandKEDCService {
 
     public static final String TEST_IMAGE_PATH = "files/dc-3-smaller.jpg";
 
@@ -70,6 +71,9 @@ public class TestHylandKEService {
     @Inject
     protected HylandKEService hylandKEService;
 
+    @Inject
+    protected HylandDCService hylandDCService;
+
     @Before
     public void onceExecutedBeforeAll() throws Exception {
 
@@ -77,8 +81,13 @@ public class TestHylandKEService {
     }
 
     @Test
-    public void testServiceIsDeployed() {
+    public void testKEServiceIsDeployed() {
         assertNotNull(hylandKEService);
+    }
+
+    @Test
+    public void testDCServiceIsDeployed() {
+        assertNotNull(hylandDCService);
     }
 
     @Test
@@ -529,7 +538,7 @@ public class TestHylandKEService {
         // schema MDATS - FULL - PIPELINE. See
         // https://hyland.github.io/DocumentFilters-Docs/latest/getting_started_with_document_filters/about_json_output.html#json_output_schema
         String options = "{\"normalization\": {\"quotations\": true},\"chunking\": true,\"embedding\": false, \"json_schema\": \"MDAST\"}";
-        ServiceCallResult result = hylandKEService.curate(null, f, options);
+        ServiceCallResult result = hylandDCService.curate(null, f, options);
         assertNotNull(result);
 
         // File file = new File("/Users/ME/Desktop/output-MDAST.json");

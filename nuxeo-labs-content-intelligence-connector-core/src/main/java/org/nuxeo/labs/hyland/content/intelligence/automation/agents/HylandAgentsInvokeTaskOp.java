@@ -16,7 +16,7 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence.discovery.automation;
+package org.nuxeo.labs.hyland.content.intelligence.automation.agents;
 
 import java.util.Map;
 
@@ -28,47 +28,50 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
-import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService;
+import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService;
+import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService.AgentType;
 
 /**
- * 
  * @since TODO
  */
-@Operation(id = HylandKDInvokeOp.ID, category = "Hyland Knowledge Discovery", label = "Call Hyland Knowledge Discovery Service", description = ""
-        + "Invoke the Hyland Content Intelligence/Discovery API."
-        + " Used for the low-level calls. (See Discovery API documentation for details)."
-        + " The result will have a 'responseCode' property that you should check,"
-        + " and the returned result is in the 'response' property."
+@Operation(id = HylandAgentsInvokeTaskOp.ID, category = "Hyland Agent Builder", label = "Invoke Task Agent", description = ""
+        + "Returns a JSON blob holding the result of the call. Call its getString() method then JSON.parse()."
+        + " See CIC documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
+        + " and the response of the agent in the 'response' object."
+        + " agentVersion is optional. If not used, latest version is invoked."
+        + " jsonPayloadStr is required: the expected JSON input (as string) for the agent."
+        + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
         + " configName is the name of the XML configuration to use (if not passed, using 'default')")
-public class HylandKDInvokeOp {
-    
-    public static final String ID = "HylandKnowledgeDiscovery.Invoke";
-    
+public class HylandAgentsInvokeTaskOp {
+
+    public static final String ID = "HylandAgents.InvokeTaskAgent";
+
     @Context
-    protected HylandKDService kdService;
+    protected HylandAgentsService agentsService;
 
-    @Param(name = "httpMethod", required = true)
-    protected String httpMethod;
-    
-    @Param(name = "endpoint", required = true)
-    protected String endpoint;
+    @Param(name = "configName", required = false)
+    protected String configName;
 
-    @Param(name = "jsonPayloadStr", required = false)
+    @Param(name = "agentId", required = true)
+    protected String agentId;
+
+    @Param(name = "agentVersion", required = false)
+    protected String agentVersion;
+
+    @Param(name = "jsonPayloadStr", required = true)
     protected String jsonPayloadStr;
 
     @Param(name = "extraHeadersJsonStr", required = false)
     protected String extraHeadersJsonStr;
 
-    @Param(name = "configName", required = false)
-    protected String configName;
-    
     @OperationMethod
     public Blob run() {
-        
+
         Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
-        
-        ServiceCallResult result = kdService.invokeDiscovery(configName, httpMethod, endpoint, jsonPayloadStr, extraHeaders);
-        
+
+        ServiceCallResult result = agentsService.invokeAgent(AgentType.TASK, configName, agentId, agentVersion, jsonPayloadStr,
+                extraHeaders);
+
         return Blobs.createJSONBlob(result.toJsonString());
     }
 

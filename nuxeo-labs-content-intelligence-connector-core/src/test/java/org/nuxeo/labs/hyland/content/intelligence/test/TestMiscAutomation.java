@@ -37,7 +37,7 @@ import org.nuxeo.ecm.automation.test.AutomationFeature;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.labs.hyland.content.intelligence.automation.HylandCIGetContributionNamesOp;
-import org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.ConfigureServiceOp;
+import org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.ConfigureServiceOp;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl;
 import org.nuxeo.runtime.test.runner.Deploy;

@@ -16,7 +16,7 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence.service.enrichment;
+package org.nuxeo.labs.hyland.content.intelligence.service.datacuration;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

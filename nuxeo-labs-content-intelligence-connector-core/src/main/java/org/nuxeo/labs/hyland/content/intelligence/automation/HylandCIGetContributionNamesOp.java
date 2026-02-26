@@ -28,8 +28,10 @@ import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService;
+import org.nuxeo.labs.hyland.content.intelligence.service.datacuration.HylandDCService;
 import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
+import org.nuxeo.labs.hyland.content.intelligence.service.ingest.IngestService;
 
 /**
  * 
@@ -45,10 +47,16 @@ public class HylandCIGetContributionNamesOp {
     protected HylandKEService keService;
     
     @Context
+    protected HylandDCService dcService;
+    
+    @Context
     protected HylandKDService kdService;
     
     @Context
     protected HylandAgentsService agentsService;
+    
+    @Context
+    protected IngestService ingestService;
     
     @OperationMethod
     public Blob run() {
@@ -58,21 +66,25 @@ public class HylandCIGetContributionNamesOp {
         
         JSONObject result = new JSONObject();
         
-        contribs = keService.getKEContribNames();
+        contribs = keService.getContribNames();
         contribsJson = new JSONArray(contribs);
         result.put("knowledgeEnrichment", contribsJson);
         
-        contribs = keService.getDCContribNames();
+        contribs = dcService.getContribNames();
         contribsJson = new JSONArray(contribs);
         result.put("dataCuration", contribsJson);
         
-        contribs = kdService.getKDContribNames();
+        contribs = kdService.getContribNames();
         contribsJson = new JSONArray(contribs);
         result.put("knowledgeDiscovery", contribsJson);
         
-        contribs = agentsService.getAgentContribNames();
+        contribs = agentsService.getContribNames();
         contribsJson = new JSONArray(contribs);
         result.put("agents", contribsJson);
+        
+        contribs = ingestService.getContribNames();
+        contribsJson = new JSONArray(contribs);
+        result.put("ingest", contribsJson);
         
         return Blobs.createJSONBlob(result.toString());
     }

@@ -133,7 +133,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
         // Get auth token
         String bearer = getToken(configName);
         if (StringUtils.isBlank(bearer)) {
-            throw new NuxeoException("No authentication info for calling the Enrichment service.");
+            throw new NuxeoException("No authentication info for calling the Knowledge Discovery service.");
         }
 
         // URL/endpoint
@@ -321,7 +321,7 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     // ======================================================================
     // ======================================================================
     @Override
-    public List<String> getKDContribNames() {
+    public List<String> getContribNames() {
 
         if (kdContribs == null) {
             kdContribs = new HashMap<String, KDDescriptor>();

@@ -38,9 +38,9 @@ import org.nuxeo.ecm.automation.OperationContext;
 import org.nuxeo.ecm.automation.test.AutomationFeature;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.CoreSession;
-import org.nuxeo.labs.hyland.content.intelligence.agents.automation.HylandAgentsAskKDQuestionViaRagOp;
-import org.nuxeo.labs.hyland.content.intelligence.agents.automation.HylandAgentsGetAllAgentsOp;
-import org.nuxeo.labs.hyland.content.intelligence.agents.automation.HylandAgentsInvokeTaskOp;
+import org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsAskKDQuestionViaRagOp;
+import org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsGetAllAgentsOp;
+import org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsInvokeTaskOp;
 import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService;
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
@@ -93,7 +93,7 @@ public class TestHylandAgentOperations {
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasDiscoveryClientInfo());
         
-        String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_AGENT_FOR_UNIT_TEST);
+        String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
         Assume.assumeTrue("No agentId set in env. variables => ignoring the test", StringUtils.isNotBlank(agentId));
 
         OperationContext ctx = new OperationContext(session);
@@ -138,9 +138,9 @@ public class TestHylandAgentOperations {
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasDiscoveryClientInfo());
         
-        String agentId = System.getenv(ConfigCheckerFeature.CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
+        String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
         if(StringUtils.isBlank(agentId)) {
-            System.out.println("Missing the " + ConfigCheckerFeature.CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID + " env. variable => ignoring the test.");
+            System.out.println("Missing the " + ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID + " env. variable => ignoring the test.");
             return;
         }
 
@@ -180,9 +180,9 @@ public class TestHylandAgentOperations {
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasDiscoveryClientInfo());
         
-        String agentId = System.getenv(ConfigCheckerFeature.CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
+        String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
         if(StringUtils.isBlank(agentId)) {
-            System.out.println("Missing the " + ConfigCheckerFeature.CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID + " env. variable => ignoring the test.");
+            System.out.println("Missing the " + ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID + " env. variable => ignoring the test.");
             return;
         }
 
@@ -223,9 +223,9 @@ public class TestHylandAgentOperations {
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasDiscoveryClientInfo());
         
-        String agentId = System.getenv(ConfigCheckerFeature.CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
+        String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
         if(StringUtils.isBlank(agentId)) {
-            System.out.println("Missing the " + ConfigCheckerFeature.CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID + " env. variable => ignoring the test.");
+            System.out.println("Missing the " + ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID + " env. variable => ignoring the test.");
             return;
         }
 

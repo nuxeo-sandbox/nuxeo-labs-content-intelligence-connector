@@ -16,7 +16,7 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence.enrichment.automation;
+package org.nuxeo.labs.hyland.content.intelligence.automation.enrichment;
 
 import java.io.IOException;
 
@@ -30,29 +30,29 @@ import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 
-@Operation(id = HylandKECurateOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Data Curation on Blob", description = ""
-        + "Invoke the Hyland Data Curation (DC) API to curate the blob. jsonOptions is optional, a JSON string"
-        + " that will tune the result.(See DC documentation for details, limitation, etc.)."
+@Operation(id = HylandKEGetEnrichmentResultsOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Knowledge Enrichement Get Results", description = ""
+        + "Invoke the Hyland Knowledge Enrichment (KE) API to get the processing results. Pass in jobId the value received"
+        + " after a call to the HylandKnowledgeEnrichment.SendForEnrichment operation."
         + " configName is the name of the XML configuration to use (if not passed, using 'default')")
-public class HylandKECurateOp {
+public class HylandKEGetEnrichmentResultsOp {
 
-    public static final String ID = "HylandKnowledgeEnrichment.Curate";
+    public static final String ID = "HylandKnowledgeEnrichment.GetEnrichmentResults";
 
     @Context
     protected HylandKEService keService;
 
+    @Param(name = "jobId", required = true)
+    protected String jobId;
+
     @Param(name = "configName", required = false)
     protected String configName;
 
-    @Param(name = "jsonOptions", required = false)
-    protected String jsonOptions;
-
     @OperationMethod
-    public Blob run(Blob blob) {
+    public Blob run() {
 
         ServiceCallResult result;
         try {
-            result = keService.curate(configName, blob, jsonOptions);
+            result = keService.getJobIdResult(configName, jobId);
         } catch (IOException e) {
             throw new NuxeoException(e);
         }

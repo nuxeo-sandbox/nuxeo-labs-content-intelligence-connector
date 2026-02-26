@@ -16,7 +16,7 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence.agents.automation;
+package org.nuxeo.labs.hyland.content.intelligence.automation.agents;
 
 import java.util.Map;
 
@@ -31,41 +31,35 @@ import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService;
 
 /**
+ * 
  * @since TODO
  */
-@Operation(id = HylandAgentsLookupAgentOp.ID, category = "Hyland Agent Builder", label = "Lookup Agent", description = ""
-        + "Returns a JSON blob holding the result of the call. Call its getString() method then JSON.parse()."
+@Operation(id = HylandAgentsGetAllAgentsOp.ID, category = "Hyland Agent Builder", label = "Get All Agents", description = ""
+        + "Returns a JSON blob holding  the result of the call. Call its getString() method then JSON.parse()."
         + " See CIC documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
-        + " and the response of the agent in the 'response' object."
-        + " agentVersion is optional. If not used, latest version is invoked."
+        + " and the array of agents is in the 'response' property."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
         + " configName is the name of the XML configuration to use (if not passed, using 'default')")
-public class HylandAgentsLookupAgentOp {
-
-    public static final String ID = "HylandAgents.LookupAgent";
-
+public class HylandAgentsGetAllAgentsOp {
+    
+    public static final String ID = "HylandAgents.getAllAgents";
+    
     @Context
     protected HylandAgentsService agentsService;
-
-    @Param(name = "configName", required = false)
-    protected String configName;
-
-    @Param(name = "agentId", required = true)
-    protected String agentId;
-
-    @Param(name = "agentVersion", required = false)
-    protected String agentVersion;
 
     @Param(name = "extraHeadersJsonStr", required = false)
     protected String extraHeadersJsonStr;
 
+    @Param(name = "configName", required = false)
+    protected String configName;
+    
     @OperationMethod
     public Blob run() {
-
+        
         Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
-
-        ServiceCallResult result = agentsService.lookupAgent(configName, agentId, agentVersion, extraHeaders);
-
+        
+        ServiceCallResult result = agentsService.getAllAgents(configName, extraHeaders);
+        
         return Blobs.createJSONBlob(result.toJsonString());
     }
 

@@ -71,10 +71,6 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 @SuppressWarnings("rawtypes")
 public interface HylandKEService {
 
-    enum EnrichmentServiceType {
-        ENRICHMENT, DATA_CURATION
-    }
-
     /**
      * Using KE v2 is global to every call. It is not possible to use v2 for a call, then v1 for another, etc.
      * It can be set at startup with the HylandKEServiceImpl#KE_USE_V2_PARAM configuration parameter
@@ -268,47 +264,7 @@ public interface HylandKEService {
             String jsonPayload);
 
     /**
-     * Call the DataCuraiton APi and returns
-     * Implementation should provide default values if jsonOptions is null or "".
-     * For possible values, please see the service documentation at
-     * {@link https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/DataCurationAPI}
-     * * <br>
-     * The returned String is JSON String with 3 fields:
-     * {
-     * "responseCode": The HTTP response of the service when performoing the call. Should be a succesful range (200-299)
-     * "responseMessage": The HTTP response message (like "OK")
-     * "response": The response (as JSON string from the service
-     * }
-     * <br>
-     * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
-     * by the plugin and using config. parameters)
-     * 
-     * @param configName
-     * @param blob
-     * @param jsonOptions
-     * @return a ServiceCallResult
-     * @throws IOException
-     * @since 2023
-     */
-    public ServiceCallResult curate(String configName, Blob blob, String jsonOptions) throws IOException;
-
-    /**
-     * (see <code>curate(Blob blob, String jsonOptions)</code>
-     * <br>
-     * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
-     * by the plugin and using config. parameters)
-     * 
-     * @param configName
-     * @param file
-     * @param jsonOptions
-     * @return
-     * @throws IOException
-     * @since 2023
-     */
-    public ServiceCallResult curate(String configName, File file, String jsonOptions) throws IOException;
-
-    /**
-     * maxRetries and sleepinterval are configuration s, they can be tuned with this method.
+     * maxRetries and sleepInterval are configurations, they can be tuned with this method.
      * <br>
      * The value is used for all and every calls until they change again.
      * <br>
@@ -328,19 +284,11 @@ public interface HylandKEService {
      * @return the list of contributions for KE
      * @since 2023
      */
-    public List<String> getKEContribNames();
-
-    /**
-     * @return the list of contributions for DC
-     * @since 2023
-     */
-    public List<String> getDCContribNames();
+    public List<String> getContribNames();
 
     /**
      * Introspection
      */
     public KEDescriptor getKEDescriptor(String configName);
-
-    public DCDescriptor getDCDescriptor(String configName);
 
 }

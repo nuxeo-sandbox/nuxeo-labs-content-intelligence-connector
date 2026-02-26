@@ -37,7 +37,7 @@ import org.nuxeo.ecm.automation.OperationContext;
 import org.nuxeo.ecm.automation.test.AutomationFeature;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.CoreSession;
-import org.nuxeo.labs.hyland.content.intelligence.enrichment.automation.HylandKEInvokeOp;
+import org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.HylandKEInvokeOp;
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;

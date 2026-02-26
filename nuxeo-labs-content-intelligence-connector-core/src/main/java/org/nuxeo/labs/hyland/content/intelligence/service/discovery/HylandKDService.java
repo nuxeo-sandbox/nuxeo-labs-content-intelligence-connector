@@ -131,7 +131,7 @@ public interface HylandKDService {
      * @return the list of contributions
      * @since 2023
      */
-    public List<String> getKDContribNames();
+    public List<String> getContribNames();
     
     /**
      * Introspection

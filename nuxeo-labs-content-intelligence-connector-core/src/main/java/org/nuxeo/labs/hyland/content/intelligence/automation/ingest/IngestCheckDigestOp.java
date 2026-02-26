@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2025 Hyland (http://hyland.com/) and others.
+ * (C) Copyright 2025 Hyland (http://hyland.com/)  and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence.enrichment.automation;
+package org.nuxeo.labs.hyland.content.intelligence.automation.ingest;
 
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
@@ -24,36 +24,41 @@ import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
 import org.nuxeo.ecm.automation.core.annotations.Param;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
+import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
-import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
+import org.nuxeo.labs.hyland.content.intelligence.service.ingest.IngestService;
 
-@Operation(id = HylandKEInvokeOp.ID, category = "Hyland Knowledge Enrichment", label = "Call Hyland Knowledge Enrichment Service", description = ""
-        + "Invoke the Hyland Content Intelligence/Knowledge Enrichment API."
-        + " Used for the low-level calls. (See Knowledge Enrichment API documentation for details)"
+/**
+ * @since TODO
+ */
+@Operation(id = IngestCheckDigestOp.ID, category = "Hyland Agent Builder", label = "Check Document was Ingested", description = ""
+        + "input is a document. xpath is the xpath of the blob (file:content by default)."
+        + " Returns a JSON blob holding the result of the call. Call its getString() method then JSON.parse()."
+        + " See plugin documentation for possible values of the returned blob."
+        + " sourceid is optional/. If not pass, we use the value of nuxeo.hyland.cic.ingest.default.sourceId."
         + " configName is the name of the XML configuration to use (if not passed, using 'default')")
-public class HylandKEInvokeOp {
+public class IngestCheckDigestOp {
 
-    public static final String ID = "HylandKnowledgeEnrichment.Invoke";
+    public static final String ID = "HylandIngest.CheckDigest";
 
     @Context
-    protected HylandKEService keService;
+    protected IngestService ingestService;
 
-    @Param(name = "httpMethod", required = true)
-    protected String httpMethod;
-    
-    @Param(name = "endpoint", required = true)
-    protected String endpoint;
+    @Param(name = "xpath", required = false)
+    protected String xpath;
 
-    @Param(name = "jsonPayload", required = false)
-    protected String jsonPayload;
+    @Param(name = "sourceId", required = true)
+    protected String sourceId;
 
     @Param(name = "configName", required = false)
     protected String configName;
 
     @OperationMethod
-    public Blob run() {
-        ServiceCallResult result = keService.invokeEnrichment(configName, httpMethod, endpoint, jsonPayload);
-        
+    public Blob run(DocumentModel doc) {
+
+
+        ServiceCallResult result = ingestService.checkDigest(configName, doc, xpath, sourceId);
+
         return Blobs.createJSONBlob(result.toJsonString());
     }
 

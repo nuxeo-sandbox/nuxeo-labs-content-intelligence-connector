@@ -33,7 +33,6 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.Blob;
-import org.nuxeo.ecm.core.api.CloseableFile;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.labs.hyland.content.intelligence.AuthenticationToken;
 import org.nuxeo.labs.hyland.content.intelligence.AuthenticationTokenEnrichment;
@@ -59,18 +58,12 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
     public static final String ENRICHMENT_CLIENT_SECRET_PARAM = "nuxeo.hyland.cic.enrichment.clientSecret";
 
-    public static final String DATA_CURATION_CLIENT_ID_PARAM = "nuxeo.hyland.cic.datacuration.clientId";
-
-    public static final String DATA_CURATION_CLIENT_SECRET_PARAM = "nuxeo.hyland.cic.datacuration.clientSecret";
-
     // Will add "/connect/token" to this baseUrl.
     public static final String AUTH_BASE_URL_PARAM = "nuxeo.hyland.cic.auth.baseUrl";
 
     public static final String AUTH_ENDPOINT = "/connect/token";
 
     public static final String CONTEXT_ENRICHMENT_BASE_URL_PARAM = "nuxeo.hyland.cic.contextEnrichment.baseUrl";
-
-    public static final String DATA_CURATION_BASE_URL_PARAM = "nuxeo.hyland.cic.dataCuration.baseUrl";
 
     public static final String PULL_RESULTS_MAX_TRIES_PARAM = "nuxeo.hyland.cic.pullResultsMaxTries";
 
@@ -80,13 +73,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
     public static final int PULL_RESULTS_SLEEP_INTERVAL_DEFAULT = 5000;
 
-    public static final String DATA_CURATION_PRESIGN_DEFAULT_OPTIONS = "{\"normalization\": {\"quotations\": true},\"chunking\": true,\"embedding\": true,\"json_schema\": \"PIPELINE\"}";
-
-    public static final String CONTENT_INTELL_CACHE = "content_intelligence_cache";
-
     protected static Map<String, AuthenticationToken> enrichmentAuthTokens = null;
-
-    protected static Map<String, AuthenticationToken> dataCurationAuthTokens = null;
 
     protected static int pullResultsMaxTries;
 
@@ -101,11 +88,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     // ====================> Extensions points
     protected static final String EXT_POINT_KE = "knowledgeEnrichment";
 
-    protected static final String EXT_POINT_DC = "dataCuration";
-
     protected Map<String, KEDescriptor> keContribs = new HashMap<String, KEDescriptor>();
-
-    protected Map<String, DCDescriptor> dcContribs = new HashMap<String, DCDescriptor>();
 
     public static final String CONFIG_DEFAULT = "default";
 
@@ -148,7 +131,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     protected void logConfigurationInfo() {
 
         // We don't want a WARN, this is an INFO
-        String msg = "Startup configuration:\n  pullResultsMaxTries=" + pullResultsMaxTries;
+        String msg = "Knowledge Enrichment startup configuration:\n  pullResultsMaxTries=" + pullResultsMaxTries;
         msg += "\n  pullResultsSleepIntervalMS=" + pullResultsSleepIntervalMS;
         msg += "\n  useKEV2=" + useKEV2;
         ServicesUtils.forceLogInfo(this.getClass(), msg);
@@ -161,17 +144,6 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         }
 
         AuthenticationToken token = enrichmentAuthTokens.get(configName);
-
-        return token.getToken();
-    }
-
-    protected String getDCToken(String configName) {
-
-        if (StringUtils.isBlank(configName)) {
-            configName = CONFIG_DEFAULT;
-        }
-
-        AuthenticationToken token = dataCurationAuthTokens.get(configName);
 
         return token.getToken();
     }
@@ -536,66 +508,6 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         return result;
     }
 
-    @Override
-    public ServiceCallResult curate(String configName, Blob blob, String jsonOptions) throws IOException {
-
-        try (CloseableFile closFile = blob.getCloseableFile()) {
-            return curate(configName, closFile.getFile(), jsonOptions);
-        }
-    }
-
-    @Override
-    public ServiceCallResult curate(String configName, File file, String jsonOptions) throws IOException {
-
-        ServiceCallResult result;
-        JSONObject jsonPresign;
-        String jobId = null;
-        String getUrl = null;
-        String putUrl = null;
-
-        // ====================> 1. Get auth token
-        String bearer = getDCToken(configName);// dataCurationAuthToken.getToken();
-        if (StringUtils.isBlank(bearer)) {
-            throw new NuxeoException("No authentication info for calling the Data Curation service, for configuration '"
-                    + configName + "'.");
-        }
-
-        // ====================> 2. Get presigned stuff
-        DCDescriptor config = getDCDescriptor(configName);
-        String targetUrl = config.getBaseUrl();// dataCurationBaseUrl;
-        targetUrl += "/presign";
-
-        Map<String, String> headers = new HashMap<String, String>();
-        headers.put("Accept", "*/*");
-        headers.put("Authorization", "Bearer " + bearer);
-        // headers.put("Content-Type", "application/json");
-
-        if (StringUtils.isBlank(jsonOptions)) {
-            jsonOptions = DATA_CURATION_PRESIGN_DEFAULT_OPTIONS;
-        }
-
-        result = serviceCall.post(targetUrl, headers, jsonOptions);
-        if (result.callFailed()) {
-            return result;
-        }
-        jsonPresign = result.getResponseAsJSONObject();
-        jobId = jsonPresign.getString("job_id");
-        putUrl = jsonPresign.getString("put_url");
-        getUrl = jsonPresign.getString("get_url");
-
-        // ====================> 3. Upload with PUT
-        result = serviceCall.uploadFileWithPut(file, putUrl, "application/octet-stream");
-        if (result.callFailed()) {
-            return result;
-        }
-
-        // ====================> 4. Pull results
-        result = pullDataCurationResults(configName, jobId, getUrl);
-
-        return result;
-
-    }
-
     protected ServiceCallResult pullEnrichmentResults(String configName, String resultId) {
 
         ServiceCallResult result;
@@ -631,78 +543,6 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         } while (!result.callResponseOK() && count <= pullResultsMaxTries);
 
         return result;
-    }
-
-    /*
-     * Pull to dataCurationEndPoint/status/job_id until getting it "Done"
-     * Once "Done", just GET at the getUrl (presigned)
-     */
-    protected ServiceCallResult pullDataCurationResults(String configName, String jobId, String getUrl) {
-
-        ServiceCallResult result = null;
-        int count = 1;
-
-        if (StringUtils.isBlank(jobId) || StringUtils.isBlank(getUrl)) {
-            throw new IllegalArgumentException("jobId and/or getUrl - presigned - is/are null");
-        }
-
-        DCDescriptor config = getDCDescriptor(configName);
-        String targetUrl = config.getBaseUrl() + "/status/" + jobId;
-        boolean gotIt = false;
-        do {
-            if (count > 1) {
-                try {
-                    Thread.sleep(pullResultsSleepIntervalMS);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (count > (pullResultsMaxTries / 2)) {
-                log.warn("Pulling Data Curation results is taking time. This is the call #" + count + " (max calls: "
-                        + pullResultsMaxTries + ")");
-            }
-
-            String bearer = getDCToken(configName);// dataCurationAuthToken.getToken();
-            if (StringUtils.isBlank(bearer)) {
-                throw new NuxeoException(
-                        "No authentication info for calling the Data Curation service, for configuration '" + configName
-                                + "'.");
-            }
-
-            Map<String, String> headers = new HashMap<String, String>();
-            headers.put("Authorization", "Bearer " + bearer);
-
-            result = serviceCall.get(targetUrl, headers);
-            if (result.callWasSuccesful()) {
-                JSONObject resultJson = result.getResponseAsJSONObject();
-                String responseJobId = resultJson.getString("jobId");
-                if (!responseJobId.equals(jobId)) {
-                    String msg = "Received OK for a different jobID. Exoected jobId: " + jobId + ", received: "
-                            + responseJobId;
-                    log.warn(msg);
-                    // Not really a HTTP status, right?
-                    // Nut this is needed woth the while(...) part.
-                    result = new ServiceCallResult("{}", -2, msg);
-                } else {
-                    String status = resultJson.getString("status");
-                    if (status.toLowerCase().equals("done")) {
-                        // Just GET at the presigned URL, no headers required
-                        result = serviceCall.get(getUrl, null);
-                        if (result.callWasSuccesful()) {
-                            gotIt = true;
-                        }
-                    } else {
-                        log.info("Pulling Data Curation status for job " + jobId + ", status: " + status);
-                    }
-                }
-            }
-
-            count += 1;
-
-        } while (!gotIt && count <= pullResultsMaxTries);
-
-        return result;
-
     }
 
     @Override
@@ -762,7 +602,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     // ======================================================================
     // ======================================================================
     @Override
-    public List<String> getKEContribNames() {
+    public List<String> getContribNames() {
 
         if (keContribs == null) {
             keContribs = new HashMap<String, KEDescriptor>();
@@ -780,27 +620,6 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
         }
 
         return keContribs.get(configName);
-    }
-
-    @Override
-    public List<String> getDCContribNames() {
-
-        if (dcContribs == null) {
-            dcContribs = new HashMap<String, DCDescriptor>();
-        }
-
-        return new ArrayList<>(dcContribs.keySet());
-
-    }
-
-    @Override
-    public DCDescriptor getDCDescriptor(String configName) {
-
-        if (StringUtils.isBlank(configName)) {
-            configName = CONFIG_DEFAULT;
-        }
-
-        return dcContribs.get(configName);
     }
 
     /**
@@ -840,24 +659,12 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
             keContribs = new HashMap<String, KEDescriptor>();
         }
 
-        if (dcContribs == null) {
-            dcContribs = new HashMap<String, DCDescriptor>();
-        }
-
         if (EXT_POINT_KE.equals(extension.getExtensionPoint())) {
             Object[] contribs = extension.getContributions();
             if (contribs != null) {
                 for (Object contrib : contribs) {
                     KEDescriptor desc = (KEDescriptor) contrib;
                     keContribs.put(desc.getName(), desc);
-                }
-            }
-        } else if (EXT_POINT_DC.equals(extension.getExtensionPoint())) {
-            Object[] contribs = extension.getContributions();
-            if (contribs != null) {
-                for (Object contrib : contribs) {
-                    DCDescriptor desc = (DCDescriptor) contrib;
-                    dcContribs.put(desc.getName(), desc);
                 }
             }
         }
@@ -872,26 +679,16 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     public void unregisterExtension(Extension extension) {
         super.unregisterExtension(extension);
 
+        if (keContribs == null) {
+            return;
+        }
+
         if (EXT_POINT_KE.equals(extension.getExtensionPoint())) {
-            if (keContribs == null) {
-                return;
-            }
             Object[] contribs = extension.getContributions();
             if (contribs != null) {
                 for (Object contrib : contribs) {
                     KEDescriptor desc = (KEDescriptor) contrib;
                     keContribs.remove(desc.getName());
-                }
-            }
-        } else if (EXT_POINT_DC.equals(extension.getExtensionPoint())) {
-            if (dcContribs == null) {
-                return;
-            }
-            Object[] contribs = extension.getContributions();
-            if (contribs != null) {
-                for (Object contrib : contribs) {
-                    DCDescriptor desc = (DCDescriptor) contrib;
-                    dcContribs.remove(desc.getName());
                 }
             }
         }
@@ -906,7 +703,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     public void start(ComponentContext context) {
         // OK, all extensions loaded, let's initialize the auth. tokens
         if (keContribs == null) {
-            log.error("No configuration found for Knowledge Enrichement. Calls, if any, will fail.");
+            log.error("No configuration found for Knowledge Enrichment. Calls, if any, will fail.");
         } else {
             enrichmentAuthTokens = new HashMap<String, AuthenticationToken>();
             for (Map.Entry<String, KEDescriptor> entry : keContribs.entrySet()) {
@@ -914,20 +711,6 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
                 AuthenticationToken token = new AuthenticationTokenEnrichment(
                         desc.getAuthenticationBaseUrl() + AUTH_ENDPOINT, desc.getAuthenticationTokenParams());
                 enrichmentAuthTokens.put(desc.getName(), token);
-
-                desc.checkConfigAndLogErrors();
-            }
-        }
-
-        if (dcContribs == null) {
-            log.error("No configuration found for Data Curation. Calls, if any, will fail.");
-        } else {
-            dataCurationAuthTokens = new HashMap<String, AuthenticationToken>();
-            for (Map.Entry<String, DCDescriptor> entry : dcContribs.entrySet()) {
-                DCDescriptor desc = entry.getValue();
-                AuthenticationToken token = new AuthenticationTokenEnrichment(
-                        desc.getAuthenticationBaseUrl() + AUTH_ENDPOINT, desc.getAuthenticationTokenParams());
-                dataCurationAuthTokens.put(desc.getName(), token);
 
                 desc.checkConfigAndLogErrors();
             }

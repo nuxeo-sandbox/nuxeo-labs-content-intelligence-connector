@@ -16,7 +16,7 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence.agents.automation;
+package org.nuxeo.labs.hyland.content.intelligence.automation.agents;
 
 import java.util.Map;
 

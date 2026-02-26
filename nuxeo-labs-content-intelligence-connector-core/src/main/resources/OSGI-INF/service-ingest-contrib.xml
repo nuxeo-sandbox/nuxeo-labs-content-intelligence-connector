@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.labs.hyland.content.intelligence.IngestService">
+
+	<implementation
+		class="org.nuxeo.labs.hyland.content.intelligence.service.ingest.IngestServiceImpl" />
+
+	<service>
+		<provide
+			interface="org.nuxeo.labs.hyland.content.intelligence.service.ingest.IngestService" />
+	</service>
+
+	<extension-point
+		name="ingest">
+		<object
+			class="org.nuxeo.labs.hyland.content.intelligence.service.ingest.IngestDescriptor" />
+	</extension-point>
+
+	<!-- Default contributions use configuration parameters -->
+	<extension
+		target="org.nuxeo.labs.hyland.content.intelligence.IngestService"
+		point="ingest">
+		<ingest>
+			<name>default</name>
+			<authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
+			<baseUrl>${nuxeo.hyland.cic.ingest.baseUrl:=}</baseUrl>
+			<tokenGrantType>${nuxeo.hyland.cic.ingest.auth.grantType:=client_credentials}</tokenGrantType>
+			<tokenScope>${nuxeo.hyland.cic.ingest.auth.scope:=environment_authorization}</tokenScope>
+			<clientId>${nuxeo.hyland.cic.ingest.clientId:=}</clientId>
+			<clientSecret>${nuxeo.hyland.cic.ingest.clientSecret:=}</clientSecret>
+			<environment>${nuxeo.hyland.cic.ingest.environment:=}</environment>
+		</ingest>
+	</extension>
+
+</component>

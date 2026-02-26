@@ -16,7 +16,7 @@
 	</extension>
 
 	<extension
-		target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
+		target="org.nuxeo.labs.hyland.content.intelligence.HylandDCService"
 		point="dataCuration">
 		<dataCuration>
 			<name>more-dc-1</name>
