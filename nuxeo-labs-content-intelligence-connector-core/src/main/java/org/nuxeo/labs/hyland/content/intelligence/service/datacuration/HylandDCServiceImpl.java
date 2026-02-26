@@ -20,7 +20,6 @@ package org.nuxeo.labs.hyland.content.intelligence.service.datacuration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,31 +31,26 @@ import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.CloseableFile;
 import org.nuxeo.ecm.core.api.NuxeoException;
-import org.nuxeo.labs.hyland.content.intelligence.AuthenticationToken;
-import org.nuxeo.labs.hyland.content.intelligence.AuthenticationTokenEnrichment;
+import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationToken;
+import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationTokenEnrichment;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.AbstractCICServiceComponent;
+import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.runtime.model.ComponentContext;
-import org.nuxeo.runtime.model.DefaultComponent;
-import org.nuxeo.runtime.model.Extension;
 
 /**
  * 
  * @since 2025.15/2023.18
  */
-public class HylandDCServiceImpl extends DefaultComponent implements HylandDCService {
+public class HylandDCServiceImpl extends AbstractCICServiceComponent<DCDescriptor> implements HylandDCService {
 
     private static final Logger log = LogManager.getLogger(HylandDCServiceImpl.class);
 
     public static final String DATA_CURATION_CLIENT_ID_PARAM = "nuxeo.hyland.cic.datacuration.clientId";
 
     public static final String DATA_CURATION_CLIENT_SECRET_PARAM = "nuxeo.hyland.cic.datacuration.clientSecret";
-
-    // Will add "/connect/token" to this baseUrl.
-    public static final String AUTH_BASE_URL_PARAM = "nuxeo.hyland.cic.auth.baseUrl";
-
-    public static final String AUTH_ENDPOINT = "/connect/token";
 
     public static final String DATA_CURATION_BASE_URL_PARAM = "nuxeo.hyland.cic.dataCuration.baseUrl";
 
@@ -80,10 +74,6 @@ public class HylandDCServiceImpl extends DefaultComponent implements HylandDCSer
 
     // ====================> Extensions points
     protected static final String EXT_POINT_DC = "dataCuration";
-
-    protected Map<String, DCDescriptor> dcContribs = new HashMap<String, DCDescriptor>();
-
-    public static final String CONFIG_DEFAULT = "default";
 
     // ======================================================================
     // ======================================================================
@@ -123,14 +113,17 @@ public class HylandDCServiceImpl extends DefaultComponent implements HylandDCSer
     }
 
     protected String getDCToken(String configName) {
+        return super.getToken(dataCurationAuthTokens, configName);
+    }
 
-        if (StringUtils.isBlank(configName)) {
-            configName = CONFIG_DEFAULT;
-        }
+    @Override
+    protected String getDescriptorExtensionPoint() {
+        return EXT_POINT_DC;
+    }
 
-        AuthenticationToken token = dataCurationAuthTokens.get(configName);
-
-        return token.getToken();
+    @Override
+    protected String getServiceLabel() {
+        return "Data Curation";
     }
 
     // ======================================================================
@@ -316,95 +309,12 @@ public class HylandDCServiceImpl extends DefaultComponent implements HylandDCSer
 
     @Override
     public List<String> getContribNames() {
-
-        if (dcContribs == null) {
-            dcContribs = new HashMap<String, DCDescriptor>();
-        }
-
-        return new ArrayList<>(dcContribs.keySet());
-
+        return super.getContribNames();
     }
 
     @Override
     public DCDescriptor getDCDescriptor(String configName) {
-
-        if (StringUtils.isBlank(configName)) {
-            configName = CONFIG_DEFAULT;
-        }
-
-        return dcContribs.get(configName);
-    }
-
-    /**
-     * Component activated notification.
-     * Called when the component is activated. All component dependencies are resolved at that moment.
-     * Use this method to initialize the component.
-     *
-     * @param context the component context.
-     */
-    @Override
-    public void activate(ComponentContext context) {
-        super.activate(context);
-    }
-
-    /**
-     * Component deactivated notification.
-     * Called before a component is unregistered.
-     * Use this method to do cleanup if any and free any resources held by the component.
-     *
-     * @param context the component context.
-     */
-    @Override
-    public void deactivate(ComponentContext context) {
-        super.deactivate(context);
-    }
-
-    /**
-     * Registers the given extension.
-     *
-     * @param extension the extension to register
-     */
-    @Override
-    public void registerExtension(Extension extension) {
-        super.registerExtension(extension);
-
-        if (dcContribs == null) {
-            dcContribs = new HashMap<String, DCDescriptor>();
-        }
-
-        if (EXT_POINT_DC.equals(extension.getExtensionPoint())) {
-            Object[] contribs = extension.getContributions();
-            if (contribs != null) {
-                for (Object contrib : contribs) {
-                    DCDescriptor desc = (DCDescriptor) contrib;
-                    dcContribs.put(desc.getName(), desc);
-                }
-            }
-        }
-    }
-
-    /**
-     * Unregisters the given extension.
-     *
-     * @param extension the extension to unregister
-     */
-    @Override
-    public void unregisterExtension(Extension extension) {
-        super.unregisterExtension(extension);
-
-        if (dcContribs == null) {
-            return;
-        }
-
-        if (EXT_POINT_DC.equals(extension.getExtensionPoint())) {
-            Object[] contribs = extension.getContributions();
-            if (contribs != null) {
-                for (Object contrib : contribs) {
-                    DCDescriptor desc = (DCDescriptor) contrib;
-                    dcContribs.remove(desc.getName());
-                }
-            }
-        }
+        return super.getDescriptor(configName);
     }
 
     /**
@@ -414,20 +324,11 @@ public class HylandDCServiceImpl extends DefaultComponent implements HylandDCSer
      */
     @Override
     public void start(ComponentContext context) {
-        // OK, all extensions loaded, let's initialize the auth. tokens
-        if (dcContribs == null) {
-            log.error("No configuration found for Data Curation. Calls, if any, will fail.");
-        } else {
-            dataCurationAuthTokens = new HashMap<String, AuthenticationToken>();
-            for (Map.Entry<String, DCDescriptor> entry : dcContribs.entrySet()) {
-                DCDescriptor desc = entry.getValue();
-                AuthenticationToken token = new AuthenticationTokenEnrichment(
-                        desc.getAuthenticationBaseUrl() + AUTH_ENDPOINT, desc.getAuthenticationTokenParams());
-                dataCurationAuthTokens.put(desc.getName(), token);
-
-                desc.checkConfigAndLogErrors();
-            }
-        }
+        
+        dataCurationAuthTokens = initAuthTokens(
+                desc -> new AuthenticationTokenEnrichment(
+                        desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
+                desc.getAuthenticationTokenParams()));
     }
 
     /**

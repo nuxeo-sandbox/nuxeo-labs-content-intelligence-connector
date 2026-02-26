@@ -34,17 +34,17 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.NuxeoException;
-import org.nuxeo.labs.hyland.content.intelligence.AuthenticationToken;
-import org.nuxeo.labs.hyland.content.intelligence.AuthenticationTokenEnrichment;
+import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationToken;
+import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationTokenEnrichment;
 import org.nuxeo.labs.hyland.content.intelligence.ContentToProcess;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.AbstractCICServiceComponent;
+import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.runtime.model.ComponentContext;
-import org.nuxeo.runtime.model.DefaultComponent;
-import org.nuxeo.runtime.model.Extension;
 
-public class HylandKEServiceImpl extends DefaultComponent implements HylandKEService {
+public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescriptor> implements HylandKEService {
 
     private static final Logger log = LogManager.getLogger(HylandKEServiceImpl.class);
 
@@ -57,11 +57,6 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     public static final String ENRICHMENT_CLIENT_ID_PARAM = "nuxeo.hyland.cic.enrichment.clientId";
 
     public static final String ENRICHMENT_CLIENT_SECRET_PARAM = "nuxeo.hyland.cic.enrichment.clientSecret";
-
-    // Will add "/connect/token" to this baseUrl.
-    public static final String AUTH_BASE_URL_PARAM = "nuxeo.hyland.cic.auth.baseUrl";
-
-    public static final String AUTH_ENDPOINT = "/connect/token";
 
     public static final String CONTEXT_ENRICHMENT_BASE_URL_PARAM = "nuxeo.hyland.cic.contextEnrichment.baseUrl";
 
@@ -87,10 +82,6 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
 
     // ====================> Extensions points
     protected static final String EXT_POINT_KE = "knowledgeEnrichment";
-
-    protected Map<String, KEDescriptor> keContribs = new HashMap<String, KEDescriptor>();
-
-    public static final String CONFIG_DEFAULT = "default";
 
     // ======================================================================
     // ======================================================================
@@ -138,14 +129,17 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     }
 
     protected String getKEToken(String configName) {
+        return super.getToken(enrichmentAuthTokens, configName);
+    }
 
-        if (StringUtils.isBlank(configName)) {
-            configName = CONFIG_DEFAULT;
-        }
+    @Override
+    protected String getDescriptorExtensionPoint() {
+        return EXT_POINT_KE;
+    }
 
-        AuthenticationToken token = enrichmentAuthTokens.get(configName);
-
-        return token.getToken();
+    @Override
+    protected String getServiceLabel() {
+        return "Knowledge Enrichment";
     }
 
     // ======================================================================
@@ -156,7 +150,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     @Override
     public void setUseKEV2(boolean value) {
         useKEV2 = value;
-        
+
         logConfigurationInfo();
     }
 
@@ -198,7 +192,7 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
             pullResultsSleepIntervalMS = sleepIntervalMS;
             break;
         }
-        
+
         logConfigurationInfo();
     }
 
@@ -603,95 +597,12 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
     // ======================================================================
     @Override
     public List<String> getContribNames() {
-
-        if (keContribs == null) {
-            keContribs = new HashMap<String, KEDescriptor>();
-        }
-
-        return new ArrayList<>(keContribs.keySet());
-
+        return super.getContribNames();
     }
 
     @Override
     public KEDescriptor getKEDescriptor(String configName) {
-
-        if (StringUtils.isBlank(configName)) {
-            configName = CONFIG_DEFAULT;
-        }
-
-        return keContribs.get(configName);
-    }
-
-    /**
-     * Component activated notification.
-     * Called when the component is activated. All component dependencies are resolved at that moment.
-     * Use this method to initialize the component.
-     *
-     * @param context the component context.
-     */
-    @Override
-    public void activate(ComponentContext context) {
-        super.activate(context);
-    }
-
-    /**
-     * Component deactivated notification.
-     * Called before a component is unregistered.
-     * Use this method to do cleanup if any and free any resources held by the component.
-     *
-     * @param context the component context.
-     */
-    @Override
-    public void deactivate(ComponentContext context) {
-        super.deactivate(context);
-    }
-
-    /**
-     * Registers the given extension.
-     *
-     * @param extension the extension to register
-     */
-    @Override
-    public void registerExtension(Extension extension) {
-        super.registerExtension(extension);
-
-        if (keContribs == null) {
-            keContribs = new HashMap<String, KEDescriptor>();
-        }
-
-        if (EXT_POINT_KE.equals(extension.getExtensionPoint())) {
-            Object[] contribs = extension.getContributions();
-            if (contribs != null) {
-                for (Object contrib : contribs) {
-                    KEDescriptor desc = (KEDescriptor) contrib;
-                    keContribs.put(desc.getName(), desc);
-                }
-            }
-        }
-    }
-
-    /**
-     * Unregisters the given extension.
-     *
-     * @param extension the extension to unregister
-     */
-    @Override
-    public void unregisterExtension(Extension extension) {
-        super.unregisterExtension(extension);
-
-        if (keContribs == null) {
-            return;
-        }
-
-        if (EXT_POINT_KE.equals(extension.getExtensionPoint())) {
-            Object[] contribs = extension.getContributions();
-            if (contribs != null) {
-                for (Object contrib : contribs) {
-                    KEDescriptor desc = (KEDescriptor) contrib;
-                    keContribs.remove(desc.getName());
-                }
-            }
-        }
+        return super.getDescriptor(configName);
     }
 
     /**
@@ -701,20 +612,11 @@ public class HylandKEServiceImpl extends DefaultComponent implements HylandKESer
      */
     @Override
     public void start(ComponentContext context) {
-        // OK, all extensions loaded, let's initialize the auth. tokens
-        if (keContribs == null) {
-            log.error("No configuration found for Knowledge Enrichment. Calls, if any, will fail.");
-        } else {
-            enrichmentAuthTokens = new HashMap<String, AuthenticationToken>();
-            for (Map.Entry<String, KEDescriptor> entry : keContribs.entrySet()) {
-                KEDescriptor desc = entry.getValue();
-                AuthenticationToken token = new AuthenticationTokenEnrichment(
-                        desc.getAuthenticationBaseUrl() + AUTH_ENDPOINT, desc.getAuthenticationTokenParams());
-                enrichmentAuthTokens.put(desc.getName(), token);
 
-                desc.checkConfigAndLogErrors();
-            }
-        }
+        enrichmentAuthTokens = initAuthTokens(
+                desc -> new AuthenticationTokenEnrichment(
+                        desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
+                desc.getAuthenticationTokenParams()));
     }
 
     /**

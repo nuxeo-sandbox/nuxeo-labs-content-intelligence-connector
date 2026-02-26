@@ -16,7 +16,7 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence;
+package org.nuxeo.labs.hyland.content.intelligence.authentication;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

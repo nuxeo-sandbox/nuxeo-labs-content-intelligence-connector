@@ -27,6 +27,8 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nuxeo.ecm.platform.test.PlatformFeature;
+import org.nuxeo.labs.hyland.content.intelligence.service.AbstractCICServiceComponent;
+import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
 import org.nuxeo.labs.hyland.content.intelligence.service.datacuration.DCDescriptor;
 import org.nuxeo.labs.hyland.content.intelligence.service.datacuration.HylandDCService;
 import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService;
@@ -54,18 +56,29 @@ public class TestXMLContributions {
     protected HylandKDService hylandKDService;
 
     @Test
-    public void testServiceIsDeployed() {
+    public void testServicesAreDeployed() {
         assertNotNull(hylandKDService);
+        assertNotNull(hylandDCService);
         assertNotNull(hylandKEService);
     }
 
     @Test
-    public void shouldHaveDefaultKDConfig() {
+    public void shouldHaveDefaultConfigs() {
         
         List<String> contribs = hylandKDService.getContribNames();
         assertNotNull(contribs);
         assertEquals(1, contribs.size());
-        assertTrue(contribs.indexOf("default") == 0);
+        assertTrue(contribs.indexOf(CICServiceConstants.CONFIG_DEFAULT) == 0);
+
+        contribs = hylandDCService.getContribNames();
+        assertNotNull(contribs);
+        assertEquals(1, contribs.size());
+        assertTrue(contribs.indexOf(CICServiceConstants.CONFIG_DEFAULT) == 0);
+        
+        contribs = hylandKEService.getContribNames();
+        assertNotNull(contribs);
+        assertEquals(1, contribs.size());
+        assertTrue(contribs.indexOf(CICServiceConstants.CONFIG_DEFAULT) == 0);
         
     }
     

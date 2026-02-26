@@ -1,6 +1,5 @@
 package org.nuxeo.labs.hyland.content.intelligence.service.discovery;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -12,30 +11,24 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.NuxeoException;
-import org.nuxeo.labs.hyland.content.intelligence.AuthenticationToken;
-import org.nuxeo.labs.hyland.content.intelligence.AuthenticationTokenDiscovery;
+import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationToken;
+import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationTokenDiscovery;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.AbstractCICServiceComponent;
+import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
-import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.ComponentContext;
-import org.nuxeo.runtime.model.DefaultComponent;
-import org.nuxeo.runtime.model.Extension;
 
 /**
  * This class handles calls to Content Intelligence Knowledge Discovery service
  * 
  * @since 2023
  */
-public class HylandKDServiceImpl extends DefaultComponent implements HylandKDService {
+public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescriptor> implements HylandKDService {
 
     private static final Logger log = LogManager.getLogger(HylandKDServiceImpl.class);
-
-    // Will add "/connect/token" to this endpoint.
-    public static final String AUTH_BASE_URL_PARAM = HylandKEServiceImpl.AUTH_BASE_URL_PARAM;
-
-    public static final String AUTH_ENDPOINT = HylandKEServiceImpl.AUTH_ENDPOINT;
 
     public static final String DISCOVERY_CLIENT_ID_PARAM = "nuxeo.hyland.cic.discovery.clientId";
 
@@ -72,10 +65,6 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     // ====================> Extensions points
     protected static final String EXT_POINT_KD = "knowledgeDiscovery";
 
-    protected Map<String, KDDescriptor> kdContribs = new HashMap<String, KDDescriptor>();
-
-    public static final String CONFIG_DEFAULT = "default";
-
     public HylandKDServiceImpl() {
         initialize();
     }
@@ -99,23 +88,21 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     }
 
     protected KDDescriptor getDescriptor(String configName) {
-
-        if (StringUtils.isBlank(configName)) {
-            configName = CONFIG_DEFAULT;
-        }
-
-        return kdContribs.get(configName);
+        return super.getDescriptor(configName);
     }
 
     protected String getToken(String configName) {
+        return super.getToken(discoveryAuthTokens, configName);
+    }
 
-        if (StringUtils.isBlank(configName)) {
-            configName = CONFIG_DEFAULT;
-        }
+    @Override
+    protected String getDescriptorExtensionPoint() {
+        return EXT_POINT_KD;
+    }
 
-        AuthenticationToken token = discoveryAuthTokens.get(configName);
-
-        return token.getToken();
+    @Override
+    protected String getServiceLabel() {
+        return "Knowledge Discovery";
     }
 
     @Override
@@ -322,97 +309,12 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
     // ======================================================================
     @Override
     public List<String> getContribNames() {
-
-        if (kdContribs == null) {
-            kdContribs = new HashMap<String, KDDescriptor>();
-        }
-
-        return new ArrayList<>(kdContribs.keySet());
-
+        return super.getContribNames();
     }
 
     @Override
     public KDDescriptor getKDDescriptor(String configName) {
-
-        if (StringUtils.isBlank(configName)) {
-            configName = CONFIG_DEFAULT;
-        }
-
-        return kdContribs.get(configName);
-    }
-
-    /**
-     * Component activated notification.
-     * Called when the component is activated. All component dependencies are resolved at that moment.
-     * Use this method to initialize the component.
-     *
-     * @param context the component context.
-     */
-    @Override
-    public void activate(ComponentContext context) {
-        super.activate(context);
-        // log.warn("activate component");
-    }
-
-    /**
-     * Component deactivated notification.
-     * Called before a component is unregistered.
-     * Use this method to do cleanup if any and free any resources held by the component.
-     *
-     * @param context the component context.
-     */
-    @Override
-    public void deactivate(ComponentContext context) {
-        super.deactivate(context);
-        // log.warn("deactivate component");
-    }
-
-    /**
-     * Registers the given extension.
-     *
-     * @param extension the extension to register
-     */
-    @Override
-    public void registerExtension(Extension extension) {
-        super.registerExtension(extension);
-
-        if (kdContribs == null) {
-            kdContribs = new HashMap<String, KDDescriptor>();
-        }
-
-        if (EXT_POINT_KD.equals(extension.getExtensionPoint())) {
-            Object[] contribs = extension.getContributions();
-            if (contribs != null) {
-                for (Object contrib : contribs) {
-                    KDDescriptor desc = (KDDescriptor) contrib;
-                    kdContribs.put(desc.getName(), desc);
-                }
-            }
-        }
-    }
-
-    /**
-     * Unregisters the given extension.
-     *
-     * @param extension the extension to unregister
-     */
-    @Override
-    public void unregisterExtension(Extension extension) {
-        super.unregisterExtension(extension);
-
-        if (kdContribs == null) {
-            return;
-        }
-
-        if (EXT_POINT_KD.equals(extension.getExtensionPoint())) {
-            Object[] contribs = extension.getContributions();
-            if (contribs != null) {
-                for (Object contrib : contribs) {
-                    KDDescriptor desc = (KDDescriptor) contrib;
-                    kdContribs.remove(desc.getName());
-                }
-            }
-        }
+        return super.getDescriptor(configName);
     }
 
     /**
@@ -422,22 +324,11 @@ public class HylandKDServiceImpl extends DefaultComponent implements HylandKDSer
      */
     @Override
     public void start(ComponentContext context) {
-        // log.warn("Start component");
 
-        // OK, all extensions loaded, let's initialize the auth. tokens
-        if (kdContribs == null) {
-            log.error("No configuration found for Knowledge Discovery. Calls, if any, will fail.");
-        } else {
-            discoveryAuthTokens = new HashMap<String, AuthenticationToken>();
-            for (Map.Entry<String, KDDescriptor> entry : kdContribs.entrySet()) {
-                KDDescriptor desc = entry.getValue();
-                AuthenticationToken token = new AuthenticationTokenDiscovery(
-                        desc.getAuthenticationBaseUrl() + AUTH_ENDPOINT, desc.getAuthenticationTokenParams());
-                discoveryAuthTokens.put(desc.getName(), token);
-
-                desc.checkConfigAndLogErrors();
-            }
-        }
+        discoveryAuthTokens = initAuthTokens(
+                desc -> new AuthenticationTokenDiscovery(
+                        desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
+                desc.getAuthenticationTokenParams()));
     }
 
     /**

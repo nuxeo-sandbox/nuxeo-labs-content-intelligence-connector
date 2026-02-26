@@ -18,7 +18,6 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.service.ingest;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,28 +27,22 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.DocumentModel;
-import org.nuxeo.labs.hyland.content.intelligence.AuthenticationToken;
-import org.nuxeo.labs.hyland.content.intelligence.AuthenticationTokenIngestion;
+import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationToken;
+import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationTokenIngestion;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.AbstractCICServiceComponent;
+import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
-import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.ComponentContext;
-import org.nuxeo.runtime.model.DefaultComponent;
-import org.nuxeo.runtime.model.Extension;
 
 /**
  * @since 2025.15/2023.18
  */
-public class IngestServiceImpl extends DefaultComponent implements IngestService {
+public class IngestServiceImpl extends AbstractCICServiceComponent<IngestDescriptor> implements IngestService {
 
     private static final Logger log = LogManager.getLogger(IngestServiceImpl.class);
-
-    // Will add "/connect/token" to this endpoint.
-    public static final String AUTH_BASE_URL_PARAM = HylandKEServiceImpl.AUTH_BASE_URL_PARAM;
-
-    public static final String AUTH_ENDPOINT = HylandKEServiceImpl.AUTH_ENDPOINT;
 
     public static final String INGEST_CLIENT_ID_PARAM = "nuxeo.hyland.cic.ingest.clientId";
 
@@ -69,10 +62,6 @@ public class IngestServiceImpl extends DefaultComponent implements IngestService
 
     // ====================> Extensions points
     protected static final String EXT_POINT_INGEST = "ingest";
-
-    protected Map<String, IngestDescriptor> ingestContribs = new HashMap<String, IngestDescriptor>();
-
-    public static final String CONFIG_DEFAULT = "default";
 
     // ====================> Endpoints
     public static final String ENDPOINT_CHECK_DIGEST = "/v1/check-digest";
@@ -96,14 +85,17 @@ public class IngestServiceImpl extends DefaultComponent implements IngestService
     }
 
     protected String getToken(String configName) {
+        return super.getToken(ingestAuthTokens, configName);
+    }
 
-        if (StringUtils.isBlank(configName)) {
-            configName = CONFIG_DEFAULT;
-        }
+    @Override
+    protected String getDescriptorExtensionPoint() {
+        return EXT_POINT_INGEST;
+    }
 
-        AuthenticationToken token = ingestAuthTokens.get(configName);
-
-        return token.getToken();
+    @Override
+    protected String getServiceLabel() {
+        return "Content Lake";
     }
 
     // ======================================================================
@@ -190,96 +182,12 @@ public class IngestServiceImpl extends DefaultComponent implements IngestService
     // ======================================================================
     @Override
     public List<String> getContribNames() {
-
-        if (ingestContribs == null) {
-            ingestContribs = new HashMap<String, IngestDescriptor>();
-        }
-
-        return new ArrayList<>(ingestContribs.keySet());
+        return super.getContribNames();
     }
 
     @Override
     public IngestDescriptor getDescriptor(String configName) {
-
-        if (StringUtils.isBlank(configName)) {
-            configName = CONFIG_DEFAULT;
-        }
-
-        return ingestContribs.get(configName);
-    }
-
-    /**
-     * Component activated notification.
-     * Called when the component is activated. All component dependencies are resolved at that moment.
-     * Use this method to initialize the component.
-     *
-     * @param context the component context.
-     */
-    @Override
-    public void activate(ComponentContext context) {
-        super.activate(context);
-        // log.warn("activate component");
-    }
-
-    /**
-     * Component deactivated notification.
-     * Called before a component is unregistered.
-     * Use this method to do cleanup if any and free any resources held by the component.
-     *
-     * @param context the component context.
-     */
-    @Override
-    public void deactivate(ComponentContext context) {
-        super.deactivate(context);
-        // log.warn("deactivate component");
-    }
-
-    /**
-     * Registers the given extension.
-     *
-     * @param extension the extension to register
-     */
-    @Override
-    public void registerExtension(Extension extension) {
-        super.registerExtension(extension);
-
-        if (ingestContribs == null) {
-            ingestContribs = new HashMap<String, IngestDescriptor>();
-        }
-
-        if (EXT_POINT_INGEST.equals(extension.getExtensionPoint())) {
-            Object[] contribs = extension.getContributions();
-            if (contribs != null) {
-                for (Object contrib : contribs) {
-                    IngestDescriptor desc = (IngestDescriptor) contrib;
-                    ingestContribs.put(desc.getName(), desc);
-                }
-            }
-        }
-    }
-
-    /**
-     * Unregisters the given extension.
-     *
-     * @param extension the extension to unregister
-     */
-    @Override
-    public void unregisterExtension(Extension extension) {
-        super.unregisterExtension(extension);
-
-        if (ingestContribs == null) {
-            return;
-        }
-
-        if (EXT_POINT_INGEST.equals(extension.getExtensionPoint())) {
-            Object[] contribs = extension.getContributions();
-            if (contribs != null) {
-                for (Object contrib : contribs) {
-                    IngestDescriptor desc = (IngestDescriptor) contrib;
-                    ingestContribs.remove(desc.getName());
-                }
-            }
-        }
+        return super.getDescriptor(configName);
     }
 
     /**
@@ -289,22 +197,11 @@ public class IngestServiceImpl extends DefaultComponent implements IngestService
      */
     @Override
     public void start(ComponentContext context) {
-        // log.warn("Start component");
 
-        // OK, all extensions loaded, let's initialize the auth. tokens
-        if (ingestContribs == null) {
-            log.error("No configuration found for Content Lake. Calls, if any, will fail.");
-        } else {
-            ingestAuthTokens = new HashMap<String, AuthenticationToken>();
-            for (Map.Entry<String, IngestDescriptor> entry : ingestContribs.entrySet()) {
-                IngestDescriptor desc = entry.getValue();
-                AuthenticationToken token = new AuthenticationTokenIngestion(
-                        desc.getAuthenticationBaseUrl() + AUTH_ENDPOINT, desc.getAuthenticationTokenParams());
-                ingestAuthTokens.put(desc.getName(), token);
-
-                desc.checkConfigAndLogErrors();
-            }
-        }
+        ingestAuthTokens = initAuthTokens(
+                desc -> new AuthenticationTokenIngestion(
+                        desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
+                desc.getAuthenticationTokenParams()));
     }
 
     /**
