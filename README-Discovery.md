@@ -25,6 +25,30 @@ To summarize, every call returns a Blob, stringified JSON object that has at lea
 > [!TIP]
 > To get this JSON string, you must first call the getString() method on the returned blob.
 
+### Displaying a Conversation Dialog
+
+The plugin contains a full element displaying a conversation with an agent. User selects the agent and starts asking question.
+
+You can find the element at /UI-Examples/kd-conversation.html
+
+You can just import the element in your Studio project and then use it wherever you need, with the visibility filter you need.
+
+**WARNING** The element expects that _you_ provide a JS Chain, `javascript.getAvailableAgents`, that returns a JSON array of agents. For example;
+
+```json
+[ {
+    "title": "HR",
+    "agentId": "123456-7890-..."
+  },{
+    "title": "IT",
+    "agentId": "abcdef-1234-..."
+  },
+  . . .
+]
+```
+
+You can tune the element as you want, change the operation used, maybe always call the same agent, etc.: This element is an example of using the operations provided to have a conversation maintaining the context.
+
 <br>
 
 ## Sending Documents to CIC Knowledge Discovery: About Nuxeo HxAI connector
