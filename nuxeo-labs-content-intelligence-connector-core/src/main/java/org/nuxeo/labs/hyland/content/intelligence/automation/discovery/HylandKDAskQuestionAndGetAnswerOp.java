@@ -44,7 +44,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDServ
         + " contextObjectIdsJsonArrayStr is a stringified JSON array of object Ids (doc UUIDs in Nuxeo) to be used for the context."
         + " extraPayloadJsonStr is a stringified JSON Object, to be merged to the payload built by the service (if you need extra parameters)."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
-        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
 public class HylandKDAskQuestionAndGetAnswerOp {
 
     public static final String ID = "HylandKnowledgeDiscovery.askQuestionAndGetAnswer";

@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.labs.hyland.content.intelligence.ContentLakeService">
+
+	<implementation
+		class="org.nuxeo.labs.hyland.content.intelligence.service.contentlake.ContentLakeServiceImpl" />
+
+	<service>
+		<provide
+			interface="org.nuxeo.labs.hyland.content.intelligence.service.contentlake.ContentLakeService" />
+	</service>
+
+	<extension-point
+		name="contentLake">
+		<object
+			class="org.nuxeo.labs.hyland.content.intelligence.service.contentlake.ContentLakeDescriptor" />
+	</extension-point>
+
+	<!-- Default contributions use configuration parameters -->
+	<extension
+		target="org.nuxeo.labs.hyland.content.intelligence.ContentLakeService"
+		point="contentLake">
+		<contentLake>
+			<name>default</name>
+			<authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
+			<baseUrl>${nuxeo.hyland.cic.contentlake.baseUrl:=}</baseUrl>
+			<tokenGrantType>${nuxeo.hyland.cic.contentlake.auth.grantType:=client_credentials}</tokenGrantType>
+			<tokenScope>${nuxeo.hyland.cic.contentlake.auth.scope:=environment_authorization}</tokenScope>
+			<clientId>${nuxeo.hyland.cic.contentlake.clientId:=}</clientId>
+			<clientSecret>${nuxeo.hyland.cic.contentlake.clientSecret:=}</clientSecret>
+			<environment>${nuxeo.hyland.cic.contentlake.environment:=}</environment>
+		</contentLake>
+	</extension>
+
+</component>

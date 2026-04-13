@@ -89,3 +89,154 @@ function run(input, params) {
 
 }
 ```
+
+## Example Using `HylandKnowledgeDiscovery.startConversation`
+
+In this example, we start a new conversation with an agent. Unlike `askQuestionAndGetAnswer`, the conversation API returns the answer synchronously (no polling needed). The returned `conversationId` can be stored and reused for follow-up questions.
+
+```javascript
+// input type: void
+// output type: blob
+function run(input, params) {
+
+  var result = HylandKnowledgeDiscovery.startConversation(
+    null, {
+      "question": "What are the main security policies?"
+    }
+  );
+  var jsonStr = result.getString();
+  var json = JSON.parse(jsonStr);
+
+  if(json.responseCode === 200) {
+    // Get the conversationId for follow-up questions
+    var conversationId = json.response.conversation.id;
+    // Get the answer
+    var answer = json.response.message.answer;
+    var messageId = json.response.message.id;
+
+    Console.log("Conversation ID: " + conversationId);
+    Console.log("Answer: " + answer);
+  }
+
+  return result;
+}
+```
+
+## Example Using `HylandKnowledgeDiscovery.continueConversation`
+
+In this example, we continue an existing conversation. The agent retains context from previous messages, so follow-up questions like "tell me more about the first one" work as expected.
+
+```javascript
+// input type: void
+// output type: blob
+function run(input, params) {
+
+  // Assuming we already have a conversationId from a previous startConversation call
+  var conversationId = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
+
+  var result = HylandKnowledgeDiscovery.continueConversation(
+    null, {
+      "conversationId": conversationId,
+      "question": "Can you provide more details about the timeline?"
+    }
+  );
+  var jsonStr = result.getString();
+  var json = JSON.parse(jsonStr);
+
+  if(json.responseCode === 200) {
+    var answer = json.response.answer;
+    var messageId = json.response.id;
+
+    Console.log("Message ID: " + messageId);
+    Console.log("Answer: " + answer);
+  }
+
+  return result;
+}
+```
+
+## Example Using `HylandKnowledgeDiscovery.conversationFeedback`
+
+In this example, we submit feedback on a conversation message.
+
+```javascript
+// input type: void
+// output type: blob
+function run(input, params) {
+
+  var result = HylandKnowledgeDiscovery.conversationFeedback(
+    null, {
+      "conversationId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "messageId": "f1e2d3c4-b5a6-7890-1234-567890abcdef",
+      "feedback": "Good"
+    }
+  );
+  var jsonStr = result.getString();
+  var json = JSON.parse(jsonStr);
+
+  if(json.responseCode >= 200 && json.responseCode < 300) {
+    Console.log("Feedback submitted successfully");
+  }
+
+  return result;
+}
+```
+
+## Example: Full Conversation Flow
+
+This example shows a complete conversation flow: start a conversation, ask a follow-up, and submit feedback.
+
+```javascript
+// input type: void
+// output type: blob
+function run(input, params) {
+
+  var result, jsonStr, json, conversationId, messageId;
+
+  // 1. Start a conversation
+  Console.log("Starting conversation...");
+  result = HylandKnowledgeDiscovery.startConversation(
+    null, {
+      "question": "What types of contracts do we have?"
+    }
+  );
+  json = JSON.parse(result.getString());
+  if(json.responseCode !== 200) {
+    Console.error("Failed to start conversation: " + JSON.stringify(json, null, 2));
+    return result;
+  }
+
+  conversationId = json.response.conversation.id;
+  messageId = json.response.message.id;
+  Console.log("First answer: " + json.response.message.answer);
+
+  // 2. Ask a follow-up question
+  Console.log("Asking follow-up...");
+  result = HylandKnowledgeDiscovery.continueConversation(
+    null, {
+      "conversationId": conversationId,
+      "question": "Which ones expire this year?"
+    }
+  );
+  json = JSON.parse(result.getString());
+  if(json.responseCode === 200) {
+    Console.log("Follow-up answer: " + json.response.answer);
+    messageId = json.response.id;
+  }
+
+  // 3. Submit feedback on the last answer
+  Console.log("Submitting feedback...");
+  result = HylandKnowledgeDiscovery.conversationFeedback(
+    null, {
+      "conversationId": conversationId,
+      "messageId": messageId,
+      "feedback": "Good"
+    }
+  );
+  json = JSON.parse(result.getString());
+  Console.log("Feedback response code: " + json.responseCode);
+
+  Console.log("Done.");
+  return result;
+}
+```

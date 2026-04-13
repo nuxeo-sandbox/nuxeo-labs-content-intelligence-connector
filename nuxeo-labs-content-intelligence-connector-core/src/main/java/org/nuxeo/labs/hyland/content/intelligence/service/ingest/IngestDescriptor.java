@@ -43,7 +43,7 @@ public class IngestDescriptor extends AbstractServiceDescriptor {
 
     @Override
     protected String serviceLabel() {
-        return "Content Lake";
+        return IngestService.SERVICE_LABEL;
     }
     
     @Override

@@ -32,7 +32,7 @@ public class HylandAgentsServiceImpl extends AbstractCICServiceComponent<AgentDe
     protected static final String EXT_POINT_AGENT = "agent";
 
     // ====================> Utils
-    protected AgentDescriptor getDescriptor(String configName) {
+    public AgentDescriptor getDescriptor(String configName) {
         return super.getDescriptor(configName);
     }
 
@@ -41,13 +41,13 @@ public class HylandAgentsServiceImpl extends AbstractCICServiceComponent<AgentDe
     }
 
     @Override
-    protected String getDescriptorExtensionPoint() {
+    public String getDescriptorExtensionPoint() {
         return EXT_POINT_AGENT;
     }
 
     @Override
-    protected String getServiceLabel() {
-        return "Agents Service";
+    public String getServiceLabel() {
+        return HylandAgentsService.SERVICE_LABEL;
     }
 
     // ====================> Implementation

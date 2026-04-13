@@ -117,13 +117,13 @@ public class HylandDCServiceImpl extends AbstractCICServiceComponent<DCDescripto
     }
 
     @Override
-    protected String getDescriptorExtensionPoint() {
+    public String getDescriptorExtensionPoint() {
         return EXT_POINT_DC;
     }
 
     @Override
-    protected String getServiceLabel() {
-        return "Data Curation";
+    public String getServiceLabel() {
+        return HylandDCService.SERVICE_LABEL;
     }
 
     // ======================================================================

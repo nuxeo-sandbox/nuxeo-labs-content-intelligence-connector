@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2025 Hyland (http://hyland.com/)  and others.
+ * (C) Copyright 2026 Hyland (http://hyland.com/)  and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,25 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence.service.datacuration;
+package org.nuxeo.labs.hyland.content.intelligence.service.contentlake;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.nuxeo.common.xmap.annotation.XNode;
 import org.nuxeo.common.xmap.annotation.XObject;
 import org.nuxeo.labs.hyland.content.intelligence.service.AbstractServiceDescriptor;
 
 /**
- * @since 2023
+ * 
+ * @since 2025.15/2023.18
  */
-@XObject("dataCuration")
-public class DCDescriptor extends AbstractServiceDescriptor {
+@XObject("contentLake")
+public class ContentLakeDescriptor extends AbstractServiceDescriptor {
+    
+    private static final Logger LOG = LogManager.getLogger(ContentLakeDescriptor.class);
 
-    private static final Logger LOG = LogManager.getLogger(DCDescriptor.class);
+    @XNode("environment")
+    protected String environment;
 
     @Override
     protected Logger log() {
@@ -38,17 +43,17 @@ public class DCDescriptor extends AbstractServiceDescriptor {
 
     @Override
     protected String serviceLabel() {
-        return HylandDCService.SERVICE_LABEL;
+        return ContentLakeService.SERVICE_LABEL;
     }
     
     @Override
     protected boolean requiresEnvironment() {
-        return false;
+        return true;
     }
     
     @Override
     public String getEnvironment() {
-        return null;
+        return environment;
     }
 
 }

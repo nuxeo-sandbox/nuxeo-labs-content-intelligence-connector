@@ -53,7 +53,7 @@ public class AuthenticationToken {
     protected ServiceCall serviceCall = new ServiceCall();
 
     public enum ServiceType {
-        ENRICHMENT, DISCOVERY, AGENTS, INGEST
+        ENRICHMENT, DISCOVERY, AGENTS, INGEST, CONTENTLAKE
     }
 
     ServiceType serviceType;

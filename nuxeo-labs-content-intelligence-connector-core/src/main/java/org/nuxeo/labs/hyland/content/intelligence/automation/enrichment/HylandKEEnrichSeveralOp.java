@@ -47,7 +47,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
         + " To map the 'objectKey' returned by the service with your blobs, use the sourceIds param (comma separated list of unique valued)."
         + " If input is a list od Documents and sourceIds is not passed, then we use the document UUIDs as 'sourceId'. "
         + " See the documentation for details."
-        + " configName is the name of the XML configuration to use (if not passed, using 'default')."
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')."
         + " Since KE V2, you can pass instructions as an object of objects, one per action "
         + " (see plugin doc for details.)")
 public class HylandKEEnrichSeveralOp {

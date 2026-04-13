@@ -30,6 +30,8 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
  * @since 2025.15/2023.18
  */
 public interface HylandDCService {
+    
+    public static final String SERVICE_LABEL = "Data Curation";
 
     /**
      * Call the Data Curation API and returns the curated result.
