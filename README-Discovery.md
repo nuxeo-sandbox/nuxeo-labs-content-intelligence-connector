@@ -4,7 +4,7 @@ This part of the plugin connects a [Nuxeo](https://www.hyland.com/solutions/prod
 
 It provides two kinds of operations handling the calls to the service (see details for each operation below):
 
-* For ease of use, High-level operations (`HylandKnowledgeDiscovery.getAllAgents` and `HylandKnowledgeDiscovery.askQuestionAndGetAnswer`) that perform all the different individual calls required to get the answer from the service. No need to know the exact endpoints and JSON payload, etc.
+* For ease of use, High-level operations (`HylandKnowledgeDiscovery.getAllAgents`, `HylandKnowledgeDiscovery.askQuestionAndGetAnswer`, and the Conversation operations) that perform all the different individual calls required to get the answer from the service. No need to know the exact endpoints and JSON payload, etc.
 * A low-level operation, `HylandKnowledgeDiscovery.Invoke`, that calls the service and returns the JSON response without adding any logic. This is for flexibility: When/if Hyland Content Intelligence adds new endpoints, and/or adds/changes endpoint expected payload, no need to wait for a new version of the plugin, just modify the caller (in most of our usages, Nuxeo Studio project and JavaScript Automation).
 
 > [!NOTE]
@@ -24,6 +24,30 @@ To summarize, every call returns a Blob, stringified JSON object that has at lea
 
 > [!TIP]
 > To get this JSON string, you must first call the getString() method on the returned blob.
+
+### Displaying a Conversation Dialog
+
+The plugin contains a full element displaying a conversation with an agent. User selects the agent and starts asking question.
+
+You can find the element at /UI-Examples/kd-conversation.html
+
+You can just import the element in your Studio project and then use it wherever you need, with the visibility filter you need.
+
+**WARNING** The element expects that _you_ provide a JS Chain, `javascript.getAvailableAgents`, that returns a JSON array of agents. For example;
+
+```json
+[ {
+    "title": "HR",
+    "agentId": "123456-7890-..."
+  },{
+    "title": "IT",
+    "agentId": "abcdef-1234-..."
+  },
+  . . .
+]
+```
+
+You can tune the element as you want, change the operation used, maybe always call the same agent, etc.: This element is an example of using the operations provided to have a conversation maintaining the context.
 
 <br>
 
@@ -144,9 +168,15 @@ The service returns a token valid a certain time: The plugin handles this timeou
 > Check in CIC Discovery documentation the type of files accepted by the service (pdf, ...), and convert if needed
 > See [JS Automation Examples](/README-Discovery-JS-Automation-Examples.md))
 
+### Single-Shot Operations
 * `HylandKnowledgeDiscovery.getAllAgents`
 * `HylandKnowledgeDiscovery.askQuestionAndGetAnswer`
 * `HylandKnowledgeDiscovery.Invoke`
+
+### Conversation Operations
+* `HylandKnowledgeDiscovery.startConversation`
+* `HylandKnowledgeDiscovery.continueConversation`
+* `HylandKnowledgeDiscovery.conversationFeedback`
 
 
 ### `HylandKnowledgeDiscovery.getAllAgents`
@@ -290,6 +320,108 @@ The operation calls the endpoint service and returns the raw result. You have to
 This operation allows for maximum flexibility, to adapt to the service in case new API is added, the API for an endpoint changes, its payload or headers change, etc.: No need to wait for the plugin to be updated.
 
 See the example of asking a question and getting an answer using `HylandKnowledgeDiscovery.Invoke` in the [JS Automation Examples](/README-Discovery-JS-Automation-Examples.md) file.
+
+<br>
+
+### `HylandKnowledgeDiscovery.startConversation`
+
+A high level operation that starts a new conversation with a Knowledge Discovery agent. Unlike `askQuestionAndGetAnswer` (which is a single-shot question requiring polling), the conversation API returns the answer synchronously in the same response. The returned `conversationId` can then be used to ask follow-up questions that retain context from previous messages.
+
+* Input: `void`
+* Output: `Blob`, a JSON blob
+* Parameters
+  * `question`: String, required. The initial question to ask the agent.
+  * `agentId`: String, optional. The ID of the agent to converse with. If not passed, the plugin uses the value of `nuxeo.hyland.cic.discovery.default.agentId`.
+  * `dynamicFilterJsonStr`: String, optional. A JSON object as string, containing a dynamic filter to narrow the search scope. The filter must match the agent's `dynamicFilterTemplate` configuration (see CIC Discovery documentation).
+  * `extraHeadersJsonStr`: String, optional. A JSON object as string, with more headers than the one sent by the plugin, allowing for extra tuning if needed.
+  * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
+
+The returned JSON is something like:
+
+```
+{
+  "responseCode": 200,
+  "responseMessage": "OK",
+  "response": {
+    "conversation": {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "lastModified": "2025-12-02T10:30:00Z"
+    },
+    "message": {
+      "id": "f1e2d3c4-b5a6-7890-1234-567890abcdef",
+      "answer": "Based on the documents, the main security policies are...",
+      "documentReferences": [ ... ],
+      "question": "What are the main security policies?",
+      "feedback": null,
+      "dateCreated": "2025-12-02T10:30:00Z",
+      "dateAnswered": "2025-12-02T10:30:05Z",
+      "agentVersion": 1,
+      "status": "Answered"
+    }
+  }
+}
+```
+
+See [JS Automation Examples](/README-Discovery-JS-Automation-Examples.md) for usage examples.
+
+<br>
+
+### `HylandKnowledgeDiscovery.continueConversation`
+
+A high level operation that continues an existing conversation by sending a follow-up question. The agent uses previous messages in the conversation as context, enabling multi-turn dialogue. The answer is returned synchronously.
+
+* Input: `void`
+* Output: `Blob`, a JSON blob
+* Parameters
+  * `conversationId`: String, required. The ID of the conversation to continue, as returned by `HylandKnowledgeDiscovery.startConversation`.
+  * `question`: String, required. The follow-up question to ask.
+  * `agentId`: String, optional. The ID of the agent. If not passed, the plugin uses the value of `nuxeo.hyland.cic.discovery.default.agentId`.
+  * `dynamicFilterJsonStr`: String, optional. A JSON object as string, containing a dynamic filter to narrow the search scope for this specific message.
+  * `extraHeadersJsonStr`: String, optional. A JSON object as string, with more headers than the one sent by the plugin, allowing for extra tuning if needed.
+  * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
+
+The returned JSON is something like:
+
+```
+{
+  "responseCode": 200,
+  "responseMessage": "OK",
+  "response": {
+    "id": "b2c3d4e5-f6a7-8901-2345-678901abcdef",
+    "answer": "The project timeline is on track with an expected completion date of Q2 2026.",
+    "documentReferences": [ ... ],
+    "question": "Can you provide more details about the timeline?",
+    "feedback": null,
+    "dateCreated": "2025-12-02T10:35:00Z",
+    "dateAnswered": "2025-12-02T10:35:03Z",
+    "agentVersion": 1,
+    "status": "Answered"
+  }
+}
+```
+
+See [JS Automation Examples](/README-Discovery-JS-Automation-Examples.md) for usage examples.
+
+<br>
+
+### `HylandKnowledgeDiscovery.conversationFeedback`
+
+A high level operation that submits feedback on a specific message in a conversation.
+
+* Input: `void`
+* Output: `Blob`, a JSON blob
+* Parameters
+  * `conversationId`: String, required. The ID of the conversation containing the message.
+  * `messageId`: String, required. The ID of the message to provide feedback on.
+  * `feedback`: String, required. The feedback value. Must be one of: `"Good"`, `"Bad"`, or `"Retry"`.
+  * `agentId`: String, optional. The ID of the agent. If not passed, the plugin uses the value of `nuxeo.hyland.cic.discovery.default.agentId`.
+  * `extraHeadersJsonStr`: String, optional. A JSON object as string, with more headers than the one sent by the plugin, allowing for extra tuning if needed.
+  * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
+
+See [JS Automation Examples](/README-Discovery-JS-Automation-Examples.md) for usage examples, including a full conversation flow (start, follow-up, feedback).
+
+> [!TIP]
+> For other conversation management operations (listing conversations, getting conversation details, retrieving message history, updating conversation metadata), you can use the low-level `HylandKnowledgeDiscovery.Invoke` operation with the appropriate HTTP method and endpoint. See the [CIC Conversations documentation](https://hyland.github.io/ContentIntelligence-Docs/tutorials/conversations) for the full list of endpoints.
 
 <br>
 
