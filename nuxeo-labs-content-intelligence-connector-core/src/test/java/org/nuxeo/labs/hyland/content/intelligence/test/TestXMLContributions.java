@@ -27,14 +27,16 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nuxeo.ecm.platform.test.PlatformFeature;
-import org.nuxeo.labs.hyland.content.intelligence.service.AbstractCICServiceComponent;
 import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
+import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService;
+import org.nuxeo.labs.hyland.content.intelligence.service.contentlake.ContentLakeService;
 import org.nuxeo.labs.hyland.content.intelligence.service.datacuration.DCDescriptor;
 import org.nuxeo.labs.hyland.content.intelligence.service.datacuration.HylandDCService;
 import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService;
 import org.nuxeo.labs.hyland.content.intelligence.service.discovery.KDDescriptor;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.KEDescriptor;
+import org.nuxeo.labs.hyland.content.intelligence.service.ingest.IngestService;
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
@@ -45,47 +47,57 @@ import javax.inject.Inject;
 @Features({ PlatformFeature.class, ConfigCheckerFeature.class })
 @Deploy("nuxeo-hyland-content-intelligence-connector-core")
 public class TestXMLContributions {
-
+    
     @Inject
-    protected HylandKEService hylandKEService;
-
+    protected HylandKEService keService;
+    
     @Inject
-    protected HylandDCService hylandDCService;
-
+    protected HylandDCService dcService;
+    
     @Inject
-    protected HylandKDService hylandKDService;
+    protected HylandKDService kdService;
+    
+    @Inject
+    protected HylandAgentsService agentsService;
+    
+    @Inject
+    protected IngestService ingestService;
+    
+    @Inject
+    protected ContentLakeService clService;
 
     @Test
     public void testServicesAreDeployed() {
-        assertNotNull(hylandKDService);
-        assertNotNull(hylandDCService);
-        assertNotNull(hylandKEService);
+        assertNotNull(keService);
+        assertNotNull(dcService);
+        assertNotNull(kdService);
+        assertNotNull(agentsService);
+        assertNotNull(ingestService);
+        assertNotNull(clService);
+    }
+    
+    protected void checkHasDefaultContrib(List<String> contribs) {
+        assertNotNull(contribs);
+        assertEquals(1, contribs.size());
+        assertTrue(contribs.indexOf(CICServiceConstants.CONFIG_DEFAULT) == 0);
     }
 
     @Test
     public void shouldHaveDefaultConfigs() {
         
-        List<String> contribs = hylandKDService.getContribNames();
-        assertNotNull(contribs);
-        assertEquals(1, contribs.size());
-        assertTrue(contribs.indexOf(CICServiceConstants.CONFIG_DEFAULT) == 0);
-
-        contribs = hylandDCService.getContribNames();
-        assertNotNull(contribs);
-        assertEquals(1, contribs.size());
-        assertTrue(contribs.indexOf(CICServiceConstants.CONFIG_DEFAULT) == 0);
-        
-        contribs = hylandKEService.getContribNames();
-        assertNotNull(contribs);
-        assertEquals(1, contribs.size());
-        assertTrue(contribs.indexOf(CICServiceConstants.CONFIG_DEFAULT) == 0);
+        checkHasDefaultContrib(keService.getContribNames());
+        checkHasDefaultContrib(dcService.getContribNames());
+        checkHasDefaultContrib(kdService.getContribNames());
+        checkHasDefaultContrib(agentsService.getContribNames());
+        checkHasDefaultContrib(ingestService.getContribNames());
+        checkHasDefaultContrib(clService.getContribNames());
         
     }
     
     @Test
     public void defaultKDContribLooksOK() {
         
-        KDDescriptor desc = hylandKDService.getKDDescriptor("default");
+        KDDescriptor desc = kdService.getKDDescriptor("default");
         assertNotNull(desc);
         
         assertTrue(desc.hasAllValues());
@@ -97,23 +109,23 @@ public class TestXMLContributions {
     public void shouldDeployExtraContribs() {
         // Contribs contain random string => do not test connection to services, just existence.
         
-        List<String> contribs = hylandKDService.getContribNames();
+        List<String> contribs = kdService.getContribNames();
         assertEquals(2, contribs.size());
-        KDDescriptor kdDesc = hylandKDService.getKDDescriptor("more-kd-1");
+        KDDescriptor kdDesc = kdService.getKDDescriptor("more-kd-1");
         assertNotNull(kdDesc);
         assertTrue(kdDesc.hasAllValues());
 
         
-        contribs = hylandKEService.getContribNames();
+        contribs = keService.getContribNames();
         assertEquals(2, contribs.size());
-        KEDescriptor keDesc = hylandKEService.getKEDescriptor("more-ke-1");
+        KEDescriptor keDesc = keService.getKEDescriptor("more-ke-1");
         assertNotNull(keDesc);
         assertTrue(keDesc.hasAllValues());
         
 
-        contribs = hylandKEService.getContribNames();
+        contribs = dcService.getContribNames();
         assertEquals(2, contribs.size());
-        DCDescriptor dcDesc = hylandDCService.getDCDescriptor("more-dc-1");
+        DCDescriptor dcDesc = dcService.getDCDescriptor("more-dc-1");
         assertNotNull(dcDesc);
         assertTrue(dcDesc.hasAllValues());
     }

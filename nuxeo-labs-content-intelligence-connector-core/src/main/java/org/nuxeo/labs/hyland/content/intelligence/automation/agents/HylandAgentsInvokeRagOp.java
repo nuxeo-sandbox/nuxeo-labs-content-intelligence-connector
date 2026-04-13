@@ -41,7 +41,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsSer
         + " agentVersion is optional. If not used, latest version is invoked."
         + " jsonPayloadStr is required: the expected JSON input (as string) for the agent."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
-        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
 public class HylandAgentsInvokeRagOp {
 
     public static final String ID = "HylandAgents.InvokeRagAgent";

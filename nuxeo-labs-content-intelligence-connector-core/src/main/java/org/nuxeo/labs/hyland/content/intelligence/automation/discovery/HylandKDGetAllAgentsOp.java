@@ -39,7 +39,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDServ
         + " See documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
         + " and the array of KD agents is in the 'response' property."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
-        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
 public class HylandKDGetAllAgentsOp {
     
     public static final String ID = "HylandKnowledgeDiscovery.getAllAgents";

@@ -33,7 +33,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.datacuration.HylandDCS
 @Operation(id = HylandKECurateOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Data Curation on Blob", description = ""
         + "Invoke the Hyland Data Curation (DC) API to curate the blob. jsonOptions is optional, a JSON string"
         + " that will tune the result.(See DC documentation for details, limitation, etc.)."
-        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
 public class HylandKECurateOp {
 
     public static final String ID = "HylandKnowledgeEnrichment.Curate";

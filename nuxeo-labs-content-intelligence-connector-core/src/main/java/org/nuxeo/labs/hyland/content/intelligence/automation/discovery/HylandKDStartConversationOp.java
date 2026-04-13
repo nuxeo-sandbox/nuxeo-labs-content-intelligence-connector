@@ -31,44 +31,51 @@ import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService;
 
 /**
- * 
- * @since TODO
+ * Start a new conversation with a Knowledge Discovery agent. Sends the initial question and returns
+ * both the conversation metadata (with conversationId) and the first message (question + answer).
+ * Unlike single-shot questions, the answer is returned synchronously (no polling).
+ *
+ * @since 2025
  */
-@Operation(id = HylandKDInvokeOp.ID, category = "Hyland Knowledge Discovery", label = "Call Hyland Knowledge Discovery Service", description = ""
-        + "Invoke the Hyland Content Intelligence/Discovery API."
-        + " Used for the low-level calls. (See Discovery API documentation for details)."
-        + " The result will have a 'responseCode' property that you should check,"
+@Operation(id = HylandKDStartConversationOp.ID, category = "Hyland Knowledge Discovery", label = "Start Conversation", description = ""
+        + "Starts a new conversation with a Knowledge Discovery agent."
+        + " Returns a JSON blob with the conversation metadata (conversationId) and the first message (question + answer)."
+        + " The result will have a 'responseCode' property that you should check (must be 200),"
         + " and the returned result is in the 'response' property."
+        + " agentId => If empty, it is read from nuxeo.hyland.cic.discovery.default.agentId."
+        + " dynamicFilterJsonStr is an optional stringified JSON object to narrow the search scope."
+        + " You can also pass extra headers in extraHeadersJsonStr as a stringified JSON object."
         + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
-public class HylandKDInvokeOp {
-    
-    public static final String ID = "HylandKnowledgeDiscovery.Invoke";
-    
+public class HylandKDStartConversationOp {
+
+    public static final String ID = "HylandKnowledgeDiscovery.startConversation";
+
     @Context
     protected HylandKDService kdService;
 
-    @Param(name = "httpMethod", required = true)
-    protected String httpMethod;
-    
-    @Param(name = "endpoint", required = true)
-    protected String endpoint;
+    @Param(name = "agentId", required = false)
+    protected String agentId;
 
-    @Param(name = "jsonPayloadStr", required = false)
-    protected String jsonPayloadStr;
+    @Param(name = "question", required = true)
+    protected String question;
+
+    @Param(name = "dynamicFilterJsonStr", required = false)
+    protected String dynamicFilterJsonStr;
 
     @Param(name = "extraHeadersJsonStr", required = false)
     protected String extraHeadersJsonStr;
 
     @Param(name = "configName", required = false)
     protected String configName;
-    
+
     @OperationMethod
     public Blob run() {
-        
+
         Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
-        
-        ServiceCallResult result = kdService.invokeDiscovery(configName, httpMethod, endpoint, jsonPayloadStr, extraHeaders);
-        
+
+        ServiceCallResult result = kdService.startConversation(configName, agentId, question,
+                dynamicFilterJsonStr, extraHeaders);
+
         return Blobs.createJSONBlob(result.toJsonString());
     }
 

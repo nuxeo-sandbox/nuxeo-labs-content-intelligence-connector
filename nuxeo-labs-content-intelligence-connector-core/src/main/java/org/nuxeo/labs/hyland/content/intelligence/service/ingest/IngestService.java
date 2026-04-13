@@ -27,13 +27,15 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
  * @since 2025.15/2023.18
  */
 public interface IngestService {
+    
+    public static final String SERVICE_LABEL = "Ingest";
 
     /**
      * For all checkDigest() methods, they return a ServiceCall result.
      * - Success => responseCode is 200, and the response is {"exists": true/false}
      * - Failure: check response code (403, forbidden, 404, not found, etc.)
      * <br>
-     * Check if the digest exists in the ContentLake, using the defauilt sourceId repository
+     * Check if the digest exists in the ContentLake, using the default sourceId repository
      * 
      * @param configName, optional. Null or "" => "default"
      * @param doc, required
@@ -48,7 +50,7 @@ public interface IngestService {
      * @param configName, optional. Null or "" => "default"
      * @param doc, required
      * @param xpath, optional. "file:content" by default
-     * @paral sourceId, optional, the repository ID in ContentLkae.
+     * @param sourceId, optional, the repository ID in ContentLkae.
      *        Default reads from nuxeo.hyland.cic.contentlake.sourceId
      * @return the result from the service
      */

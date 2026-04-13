@@ -16,7 +16,7 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence.service.ingest;
+package org.nuxeo.labs.hyland.content.intelligence.service.contentlake;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,10 +25,9 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationToken;
-import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationTokenIngest;
+import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationTokenContentLake;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.AbstractCICServiceComponent;
@@ -40,43 +39,46 @@ import org.nuxeo.runtime.model.ComponentContext;
 /**
  * @since 2025.15/2023.18
  */
-public class IngestServiceImpl extends AbstractCICServiceComponent<IngestDescriptor> implements IngestService {
+public class ContentLakeServiceImpl extends AbstractCICServiceComponent<ContentLakeDescriptor>
+        implements ContentLakeService {
 
-    private static final Logger log = LogManager.getLogger(IngestServiceImpl.class);
+    private static final Logger log = LogManager.getLogger(ContentLakeServiceImpl.class);
 
-    public static final String INGEST_CLIENT_ID_PARAM = "nuxeo.hyland.cic.ingest.clientId";
+    public static final String CONTENTLAKE_CLIENT_ID_PARAM = "nuxeo.hyland.cic.contentlake.clientId";
 
-    public static final String INGEST_CLIENT_SECRET_PARAM = "nuxeo.hyland.cic.ingest.clientSecret";
+    public static final String CONTENTLAKE_CLIENT_SECRET_PARAM = "nuxeo.hyland.cic.contentlake.clientSecret";
 
-    public static final String INGEST_BASE_URL_PARAM = "nuxeo.hyland.cic.ingest.baseUrl";
+    public static final String CONTENTLAKE_BASE_URL_PARAM = "nuxeo.hyland.cic.contentlake.baseUrl";
 
-    public static final String INGEST_ENVIRONMENT_PARAM = "nuxeo.hyland.cic.ingest.environment";
+    public static final String CONTENTLAKE_ENVIRONMENT_PARAM = "nuxeo.hyland.cic.contentlake.environment";
 
-    public static final String INGEST_DEFAULT_SOURCEID_PARAM = "nuxeo.hyland.cic.ingest.default.sourceId";
+    public static final String CONTENTLAKE_DEFAULT_SOURCEID_PARAM = "nuxeo.hyland.cic.contentlake.default.sourceId";
+    
+    public static final String CIN_DOC_ID_SEPARATOR = "__";
 
-    protected static Map<String, AuthenticationToken> ingestAuthTokens = null;
+    protected static Map<String, AuthenticationToken> clAuthTokens = null;
 
     protected static String defaultSourceId;
 
     protected static ServiceCall serviceCall = new ServiceCall();
 
     // ====================> Extensions points
-    protected static final String EXT_POINT_INGEST = "ingest";
+    public static final String EXT_POINT_CONTENTLAKE = "contentLake";
 
-    // ====================> Endpoints
-    public static final String ENDPOINT_CHECK_DIGEST = "/v1/check-digest";
+    // ====================> Endpoint(s)
+    public static final String CL_DOCUMENTS_ENDPOINT = "/api/documents";
 
     // ======================================================================
     // ======================================================================
     // Internal
     // ======================================================================
     // ======================================================================
-    public IngestServiceImpl() {
+    public ContentLakeServiceImpl() {
         initialize();
     }
 
     protected void initialize() {
-        defaultSourceId = Framework.getProperty(INGEST_DEFAULT_SOURCEID_PARAM);
+        defaultSourceId = Framework.getProperty(CONTENTLAKE_DEFAULT_SOURCEID_PARAM);
 
         // We don't want a WARN, this is an INFO
         String msg = "Startup configuration:";
@@ -85,17 +87,35 @@ public class IngestServiceImpl extends AbstractCICServiceComponent<IngestDescrip
     }
 
     protected String getToken(String configName) {
-        return super.getToken(ingestAuthTokens, configName);
+        return super.getToken(clAuthTokens, configName);
+    }
+
+    protected String buildBaseUrl(String configName) {
+        ContentLakeDescriptor config = getDescriptor(configName);
+        String url = "https://" + config.getEnvironment() + "." + config.getBaseUrl();
+        if (url.endsWith("/")) {
+            url = url.substring(0, url.length() - 1);
+        }
+        return url;
+    }
+
+    protected String buildCLDocId(String sourceId, String docId) {
+
+        if (StringUtils.isBlank(sourceId)) {
+            sourceId = defaultSourceId;
+        }
+
+        return sourceId + CIN_DOC_ID_SEPARATOR + docId;
     }
 
     @Override
     public String getDescriptorExtensionPoint() {
-        return EXT_POINT_INGEST;
+        return EXT_POINT_CONTENTLAKE;
     }
 
     @Override
     public String getServiceLabel() {
-        return IngestService.SERVICE_LABEL;
+        return ContentLakeService.SERVICE_LABEL;
     }
 
     // ======================================================================
@@ -104,75 +124,35 @@ public class IngestServiceImpl extends AbstractCICServiceComponent<IngestDescrip
     // ======================================================================
     // ======================================================================
     @Override
-    public ServiceCallResult checkDigest(String configName, DocumentModel doc, String xpath) {
+    public ServiceCallResult getDocument(String configName, DocumentModel doc, String sourceId) {
 
-        return checkDigest(configName, doc, xpath, null);
+        return getDocument(configName, doc.getId(), sourceId);
     }
 
     @Override
-    public ServiceCallResult checkDigest(String configName, DocumentModel doc, String xpath, String sourceId) {
-
-        if (StringUtils.isBlank(xpath)) {
-            xpath = "file:content";
-        }
-        Blob blob = (Blob) doc.getPropertyValue(xpath);
-        if (blob == null) {
-            log.error("No blob at xpath " + xpath);
-            return new ServiceCallResult("{}", -1, "No blob at xpath " + xpath);
-        }
-
-        String digest = blob.getDigest();
-        if (StringUtils.isBlank(digest)) {
-            log.error("No digest for blob at xpath " + xpath);
-            return new ServiceCallResult("{}", -1, "No digest for blob at xpath " + xpath);
-        }
-
-        return checkDigest(configName, doc.getId(), digest, sourceId);
-
-    }
-
-    @Override
-    public ServiceCallResult checkDigest(String configName, String docId, String blobDigest, String sourceId) {
+    public ServiceCallResult getDocument(String configName, String docId, String sourceId) {
 
         if (StringUtils.isBlank(sourceId)) {
             sourceId = defaultSourceId;
         }
-        if (StringUtils.isBlank(sourceId)) {
-            log.error("No sourceId available?");
-            return new ServiceCallResult("{}", -1, "No sourceId available?");
-        }
-
-        ServiceCallResult result = null;
 
         // Get auth token
         String bearer = getToken(configName);
         if (StringUtils.isBlank(bearer)) {
-            log.error("No authentication info for calling the Ingest service.");
-            return new ServiceCallResult("{}", -1, "No authentication info for calling the Ingest service.");
+            log.error("No authentication info for calling the Content Lake service.");
+            return new ServiceCallResult("{}", -1, "No authentication info for calling the Content Lake service.");
         }
 
-        // URL/endpoint
-        IngestDescriptor config = getDescriptor(configName);
-        String targetUrl = config.getBaseUrl();
-        if (targetUrl.endsWith("/")) {
-            targetUrl = targetUrl.substring(0, targetUrl.length() - 1);
-        }
-        targetUrl += ENDPOINT_CHECK_DIGEST;
-        // Add parameters
-        targetUrl += "/" + sourceId + "/" + docId + "?digest=" + blobDigest + "&useContentLake=true";
-
+        String targetUrl = buildBaseUrl(configName) + CL_DOCUMENTS_ENDPOINT + "/" + buildCLDocId(sourceId, docId);
         // Headers
         Map<String, String> headers = new HashMap<String, String>();
-        headers.put("Accept", "*/*");
+        headers.put("Accept", "application/json");
         headers.put("Authorization", "Bearer " + bearer);
-        // More specific Ingest
-        headers.put("hxp-Environment", config.getEnvironment());
 
         // Call
-        result = serviceCall.get(targetUrl, headers);
+        ServiceCallResult result = serviceCall.get(targetUrl, headers);
 
         return result;
-
     }
 
     // ======================================================================
@@ -186,7 +166,7 @@ public class IngestServiceImpl extends AbstractCICServiceComponent<IngestDescrip
     }
 
     @Override
-    public IngestDescriptor getDescriptor(String configName) {
+    public ContentLakeDescriptor getDescriptor(String configName) {
         return super.getDescriptor(configName);
     }
 
@@ -198,9 +178,8 @@ public class IngestServiceImpl extends AbstractCICServiceComponent<IngestDescrip
     @Override
     public void start(ComponentContext context) {
 
-        ingestAuthTokens = initAuthTokens(
-                desc -> new AuthenticationTokenIngest(
-                        desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
+        clAuthTokens = initAuthTokens(desc -> new AuthenticationTokenContentLake(
+                desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
                 desc.getAuthenticationTokenParams()));
     }
 

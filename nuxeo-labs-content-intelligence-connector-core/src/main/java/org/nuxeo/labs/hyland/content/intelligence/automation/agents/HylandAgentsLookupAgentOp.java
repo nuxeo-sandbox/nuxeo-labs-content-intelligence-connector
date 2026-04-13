@@ -39,7 +39,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsSer
         + " and the response of the agent in the 'response' object."
         + " agentVersion is optional. If not used, latest version is invoked."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
-        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
 public class HylandAgentsLookupAgentOp {
 
     public static final String ID = "HylandAgents.LookupAgent";

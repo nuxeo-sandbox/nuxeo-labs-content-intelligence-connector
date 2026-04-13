@@ -39,7 +39,7 @@ public class AgentDescriptor extends AbstractServiceDescriptor {
 
     @Override
     protected String serviceLabel() {
-        return "Agent Builder";
+        return HylandAgentsService.SERVICE_LABEL;
     }
     
     @Override

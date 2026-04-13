@@ -25,6 +25,7 @@ import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
 import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsServiceImpl;
+import org.nuxeo.labs.hyland.content.intelligence.service.contentlake.ContentLakeServiceImpl;
 import org.nuxeo.labs.hyland.content.intelligence.service.datacuration.HylandDCServiceImpl;
 import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDServiceImpl;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl;
@@ -66,11 +67,18 @@ import org.nuxeo.runtime.test.runner.RunnerFeature;
  * CIC_INGEST_CLIENT_SECRET
  * CIC_INGEST_ENVIRONMENT
  * <br/>
+ * CONTENT LAKE:
+ * CIC_CONTENTLAKE_BASE_URL
+ * CIC_CONTENTLAKE_CLIENT_ID
+ * CIC_CONTENTLAKE_CLIENT_SECRET
+ * CIC_CONTENTLAKE_ENVIRONMENT
+ * <br/>
  * These are for unit test only (no config params)
  * CIC_DISCOVERY_UNIT_TEST_AGENT_ID
  * CIC_DISCOVERY_UNIT_TEST_REPO_SOURCE
  * CIC_AGENT_FOR_UNIT_TEST
  * CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID
+ * CIC_CONTENTLAKE_SOURCE_ID
  * CIC_INGEST_UNIT_TEST_REPO_SOURCE
  * 
  * @since 2023
@@ -110,7 +118,7 @@ public class ConfigCheckerFeature implements RunnerFeature {
 
     public static final String ENV_CIC_AGENTS_CLIENT_SECRET = "CIC_AGENTS_CLIENT_SECRET";
 
-    // ==========> Content Lake
+    // ==========> Ingest
     public static final String ENV_CIC_INGEST_BASE_URL = "CIC_INGEST_BASE_URL";
 
     public static final String ENV_CIC_INGEST_CLIENT_ID = "CIC_INGEST_CLIENT_ID";
@@ -118,6 +126,15 @@ public class ConfigCheckerFeature implements RunnerFeature {
     public static final String ENV_CIC_INGEST_CLIENT_SECRET = "CIC_INGEST_CLIENT_SECRET";
 
     public static final String ENV_CIC_INGEST_ENVIRONMENT = "CIC_INGEST_ENVIRONMENT";
+
+    // ==========> Content Lake
+    public static final String ENV_CIC_CONTENTLAKE_BASE_URL = "CIC_CONTENTLAKE_BASE_URL";
+
+    public static final String ENV_CIC_CONTENTLAKE_CLIENT_ID = "CIC_CONTENTLAKE_CLIENT_ID";
+
+    public static final String ENV_CIC_CONTENTLAKE_CLIENT_SECRET = "CIC_CONTENTLAKE_CLIENT_SECRET";
+
+    public static final String ENV_CIC_CONTENTLAKE_ENVIRONMENT = "CIC_CONTENTLAKE_ENVIRONMENT";
 
     // ==========> Other, not config params
     public static final String ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID = "CIC_DISCOVERY_UNIT_TEST_AGENT_ID";
@@ -130,6 +147,8 @@ public class ConfigCheckerFeature implements RunnerFeature {
 
     public static final String ENV_CIC_INGEST_UNIT_TEST_REPO_SOURCE = "CIC_INGEST_UNIT_TEST_REPO_SOURCE";
 
+    public static final String ENV_CIC_CONTENTLAKE_UNIT_TEST_REPO_SOURCE = "CIC_CONTENTLAKE_UNIT_TEST_REPO_SOURCE";
+
     // ==========
     protected static boolean hasEnrichmentClientInfo = false;
 
@@ -140,6 +159,8 @@ public class ConfigCheckerFeature implements RunnerFeature {
     protected static boolean hasAgentsClientInfo = false;
 
     protected static boolean hasIngestClientInfo = false;
+
+    protected static boolean hasContentLakeClientInfo = false;
 
     Properties systemProps = null;
 
@@ -158,9 +179,13 @@ public class ConfigCheckerFeature implements RunnerFeature {
     public static boolean hasAgentsClientInfo() {
         return hasAgentsClientInfo;
     }
-    
+
     public static boolean hasIngestClientInfo() {
         return hasIngestClientInfo;
+    }
+    
+    public static boolean hasContentLakeClientInfo() {
+        return hasContentLakeClientInfo;
     }
 
     @Override
@@ -173,6 +198,7 @@ public class ConfigCheckerFeature implements RunnerFeature {
             System.out.println("Missing CIC Auth endpoint => no tests");
         }
 
+        // ==================================================
         boolean hasEnrichmentBaseUrl = hasProperty(HylandKEServiceImpl.CONTEXT_ENRICHMENT_BASE_URL_PARAM,
                 ENV_CIC_ENRICHMENT_BASE_URL);
         if (!hasEnrichmentBaseUrl) {
@@ -188,6 +214,7 @@ public class ConfigCheckerFeature implements RunnerFeature {
             System.out.println("Missing CIC Enrichment Client info => no tests of enricvhment");
         }
 
+        // ==================================================
         boolean hasDataCurationBaseUrl = hasProperty(HylandDCServiceImpl.DATA_CURATION_BASE_URL_PARAM,
                 ENV_CIC_DATA_CURATION_BASE_URL);
         if (!hasDataCurationBaseUrl) {
@@ -203,6 +230,7 @@ public class ConfigCheckerFeature implements RunnerFeature {
             System.out.println("Missing CIC Data Curation Client info => no tests of data curation");
         }
 
+        // ==================================================
         boolean hasDiscoveryBaseUrl = hasProperty(HylandKDServiceImpl.DISCOVERY_BASE_URL_PARAM,
                 ENV_CIC_DISCOVERY_BASE_URL);
         if (!hasDiscoveryBaseUrl) {
@@ -220,6 +248,7 @@ public class ConfigCheckerFeature implements RunnerFeature {
             System.out.println("Missing CIC Discovery Client info => no tests of Discovery");
         }
 
+        // ==================================================
         boolean hasAgentsBaseUrl = hasProperty(HylandAgentsServiceImpl.AGENTS_BASE_URL_PARAM, ENV_CIC_AGENTS_BASE_URL);
         if (!hasAgentsBaseUrl) {
             System.out.println("Missing CIC Agents Base URL => no Agent tests");
@@ -232,23 +261,35 @@ public class ConfigCheckerFeature implements RunnerFeature {
         if (!hasAgentsClientInfo) {
             System.out.println("Missing CIC Agents Client info => no tests of agents");
         }
-        
 
-        boolean hasIngestBaseUrl = hasProperty(IngestServiceImpl.INGEST_BASE_URL_PARAM,
-                ENV_CIC_INGEST_BASE_URL);
+        // ==================================================
+        boolean hasIngestBaseUrl = hasProperty(IngestServiceImpl.INGEST_BASE_URL_PARAM, ENV_CIC_INGEST_BASE_URL);
         if (!hasIngestBaseUrl) {
             System.out.println("Missing CIC Content Lake Base URL => no Content Lake tests");
         }
-        boolean hasIngestClientId = hasProperty(IngestServiceImpl.INGEST_CLIENT_ID_PARAM,
-                ENV_CIC_INGEST_CLIENT_ID);
+        boolean hasIngestClientId = hasProperty(IngestServiceImpl.INGEST_CLIENT_ID_PARAM, ENV_CIC_INGEST_CLIENT_ID);
         boolean hasIngestClientSecret = hasProperty(IngestServiceImpl.INGEST_CLIENT_SECRET_PARAM,
                 ENV_CIC_INGEST_CLIENT_SECRET);
         boolean hasIngestEnvironment = hasProperty(IngestServiceImpl.INGEST_ENVIRONMENT_PARAM,
                 ENV_CIC_INGEST_ENVIRONMENT);
-        hasIngestClientInfo = hasEndpointAuth && hasIngestClientId && hasIngestClientSecret
-                && hasIngestEnvironment;
+        hasIngestClientInfo = hasEndpointAuth && hasIngestClientId && hasIngestClientSecret && hasIngestEnvironment;
         if (!hasIngestClientInfo) {
-            System.out.println("Missing CIC Content Lake Client info => no tests of COntent Lake");
+            System.out.println("Missing CIC Ingest Client info => no tests of Ingest");
+        }
+
+        // ==================================================
+        boolean hasContentLakeBaseUrl = hasProperty(ContentLakeServiceImpl.CONTENTLAKE_BASE_URL_PARAM, ENV_CIC_CONTENTLAKE_BASE_URL);
+        if (!hasContentLakeBaseUrl) {
+            System.out.println("Missing CIC Content Lake Base URL => no Content Lake tests");
+        }
+        boolean hasContentLakeClientId = hasProperty(ContentLakeServiceImpl.CONTENTLAKE_CLIENT_ID_PARAM, ENV_CIC_CONTENTLAKE_CLIENT_ID);
+        boolean hasContentLakeClientSecret = hasProperty(ContentLakeServiceImpl.CONTENTLAKE_CLIENT_SECRET_PARAM,
+                ENV_CIC_CONTENTLAKE_CLIENT_SECRET);
+        boolean hasContentLakeEnvironment = hasProperty(ContentLakeServiceImpl.CONTENTLAKE_ENVIRONMENT_PARAM,
+                ENV_CIC_CONTENTLAKE_ENVIRONMENT);
+        hasContentLakeClientInfo = hasEndpointAuth && hasContentLakeClientId && hasContentLakeClientSecret && hasContentLakeEnvironment;
+        if (!hasContentLakeClientInfo) {
+            System.out.println("Missing CIC Content Lake Client info => no tests of Content Lake");
         }
 
     }

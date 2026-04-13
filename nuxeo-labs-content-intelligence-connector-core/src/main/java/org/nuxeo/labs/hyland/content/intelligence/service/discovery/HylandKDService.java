@@ -6,6 +6,8 @@ import java.util.Map;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 
 public interface HylandKDService {
+    
+    public static final String SERVICE_LABEL = "Knowledge Discovery";
 
     /*
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -137,5 +139,64 @@ public interface HylandKDService {
      * Introspection
      */
     public KDDescriptor getKDDescriptor(String configName);
+
+    /*
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * Conversation API
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     */
+
+    /**
+     * Start a new conversation with an agent. Sends the initial question and returns both the
+     * conversation metadata (including the conversationId) and the first message (question + answer).
+     * Unlike single-shot questions, this endpoint returns the answer synchronously (no polling required).
+     * <br>
+     * configName is the contribution to read for authentication and misc. If null or "", we use "default".
+     *
+     * @param configName the configuration contribution name
+     * @param agentId the agent to converse with. If blank, uses the default agentId from configuration.
+     * @param question the initial question to ask
+     * @param dynamicFilterJsonStr optional JSON string for dynamic filter (can be null/blank)
+     * @param extraHeaders optional extra headers to override defaults (can be null)
+     * @return the result containing { conversation: { id, lastModified }, message: { id, answer, ... } }
+     * @since 2025
+     */
+    public ServiceCallResult startConversation(String configName, String agentId, String question,
+            String dynamicFilterJsonStr, Map<String, String> extraHeaders);
+
+    /**
+     * Continue an existing conversation by sending a follow-up question. The agent uses previous messages
+     * in the conversation as context. Returns the new message (question + answer) synchronously.
+     * <br>
+     * configName is the contribution to read for authentication and misc. If null or "", we use "default".
+     *
+     * @param configName the configuration contribution name
+     * @param agentId the agent to converse with. If blank, uses the default agentId from configuration.
+     * @param conversationId the conversation to continue
+     * @param question the follow-up question to ask
+     * @param dynamicFilterJsonStr optional JSON string for dynamic filter (can be null/blank)
+     * @param extraHeaders optional extra headers to override defaults (can be null)
+     * @return the result containing { id, answer, question, documentReferences, status, ... }
+     * @since 2025
+     */
+    public ServiceCallResult continueConversation(String configName, String agentId, String conversationId,
+            String question, String dynamicFilterJsonStr, Map<String, String> extraHeaders);
+
+    /**
+     * Submit feedback (Good, Bad, or Retry) for a specific message in a conversation.
+     * <br>
+     * configName is the contribution to read for authentication and misc. If null or "", we use "default".
+     *
+     * @param configName the configuration contribution name
+     * @param agentId the agent that owns the conversation
+     * @param conversationId the conversation containing the message
+     * @param messageId the message to provide feedback on
+     * @param feedback the feedback value: "Good", "Bad", or "Retry"
+     * @param extraHeaders optional extra headers to override defaults (can be null)
+     * @return the result of the feedback submission
+     * @since 2025
+     */
+    public ServiceCallResult submitConversationFeedback(String configName, String agentId, String conversationId,
+            String messageId, String feedback, Map<String, String> extraHeaders);
 
 }

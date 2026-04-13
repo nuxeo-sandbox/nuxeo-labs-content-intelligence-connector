@@ -70,6 +70,8 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
  */
 @SuppressWarnings("rawtypes")
 public interface HylandKEService {
+    
+    public static final String SERVICE_LABEL = "Knowledge Enrichment";
 
     /**
      * Using KE v2 is global to every call. It is not possible to use v2 for a call, then v1 for another, etc.

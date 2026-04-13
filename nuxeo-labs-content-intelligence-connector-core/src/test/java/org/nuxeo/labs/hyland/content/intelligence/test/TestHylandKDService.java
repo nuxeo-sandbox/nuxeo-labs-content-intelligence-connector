@@ -187,4 +187,108 @@ public class TestHylandKDService {
 
     }
 
+    // ======================================================================
+    // Conversation API tests
+    // ======================================================================
+    @Test
+    public void shouldStartConversation() {
+
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasDiscoveryClientInfo());
+
+        String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID);
+        Assume.assumeTrue("Missing agent ID env variable", StringUtils.isNotBlank(agentId));
+
+        ServiceCallResult result = hylandKDService.startConversation(null, agentId,
+                "What types of documents are available?", null, null);
+        assertNotNull(result);
+
+        if (result.callResponseOK()) {
+            JSONObject response = result.getResponseAsJSONObject();
+
+            // Check conversation metadata
+            JSONObject conversation = response.getJSONObject("conversation");
+            assertNotNull(conversation);
+            String conversationId = conversation.getString("id");
+            assertFalse(StringUtils.isBlank(conversationId));
+
+            // Check first message
+            JSONObject message = response.getJSONObject("message");
+            assertNotNull(message);
+            String messageId = message.getString("id");
+            assertFalse(StringUtils.isBlank(messageId));
+            String answer = message.getString("answer");
+            assertFalse(StringUtils.isBlank(answer));
+            assertEquals("Answered", message.getString("status"));
+        } else {
+            System.out.println("shouldStartConversation - unexpected response:\n" + result.toJsonString(2));
+        }
+    }
+
+    @Test
+    public void shouldContinueConversation() {
+
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasDiscoveryClientInfo());
+
+        String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID);
+        Assume.assumeTrue("Missing agent ID env variable", StringUtils.isNotBlank(agentId));
+
+        // 1. Start a conversation
+        ServiceCallResult result = hylandKDService.startConversation(null, agentId,
+                "What types of documents are available?", null, null);
+        assertNotNull(result);
+        Assume.assumeTrue("Could not start conversation", result.callResponseOK());
+
+        JSONObject response = result.getResponseAsJSONObject();
+        String conversationId = response.getJSONObject("conversation").getString("id");
+        String firstMessageId = response.getJSONObject("message").getString("id");
+
+        // 2. Continue the conversation with a follow-up question
+        result = hylandKDService.continueConversation(null, agentId, conversationId,
+                "Can you tell me more about the first type?", null, null);
+        assertNotNull(result);
+
+        if (result.callResponseOK()) {
+            JSONObject followUpResponse = result.getResponseAsJSONObject();
+            String followUpMessageId = followUpResponse.getString("id");
+            assertFalse(StringUtils.isBlank(followUpMessageId));
+            // The follow-up message should have a different ID
+            assertFalse(firstMessageId.equals(followUpMessageId));
+
+            String answer = followUpResponse.getString("answer");
+            assertFalse(StringUtils.isBlank(answer));
+            assertEquals("Answered", followUpResponse.getString("status"));
+        } else {
+            System.out.println("shouldContinueConversation - unexpected response:\n" + result.toJsonString(2));
+        }
+    }
+
+    @Test
+    public void shouldSubmitConversationFeedback() {
+
+        Assume.assumeTrue("No configuration parameters set => ignoring the test",
+                ConfigCheckerFeature.hasDiscoveryClientInfo());
+
+        String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID);
+        Assume.assumeTrue("Missing agent ID env variable", StringUtils.isNotBlank(agentId));
+
+        // 1. Start a conversation to get a conversationId and messageId
+        ServiceCallResult result = hylandKDService.startConversation(null, agentId,
+                "What types of documents are available?", null, null);
+        assertNotNull(result);
+        Assume.assumeTrue("Could not start conversation", result.callResponseOK());
+
+        JSONObject response = result.getResponseAsJSONObject();
+        String conversationId = response.getJSONObject("conversation").getString("id");
+        String messageId = response.getJSONObject("message").getString("id");
+
+        // 2. Submit feedback on the first message
+        result = hylandKDService.submitConversationFeedback(null, agentId, conversationId,
+                messageId, "Good", null);
+        assertNotNull(result);
+        assertTrue("Feedback submission failed with code " + result.getResponseCode(),
+                result.callWasSuccesful());
+    }
+
 }

@@ -87,7 +87,8 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
 
     }
 
-    protected KDDescriptor getDescriptor(String configName) {
+    @Override
+    public KDDescriptor getDescriptor(String configName) {
         return super.getDescriptor(configName);
     }
 
@@ -96,13 +97,13 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
     }
 
     @Override
-    protected String getDescriptorExtensionPoint() {
+    public String getDescriptorExtensionPoint() {
         return EXT_POINT_KD;
     }
 
     @Override
-    protected String getServiceLabel() {
-        return "Knowledge Discovery";
+    public String getServiceLabel() {
+        return HylandKDService.SERVICE_LABEL;
     }
 
     @Override
@@ -315,6 +316,92 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
     @Override
     public KDDescriptor getKDDescriptor(String configName) {
         return super.getDescriptor(configName);
+    }
+
+    // ======================================================================
+    // ======================================================================
+    // Conversation API
+    // ======================================================================
+    // ======================================================================
+    // Possible values for status: Unspecified, Submitted, Answered, Error, Blocked
+    @Override
+    public ServiceCallResult startConversation(String configName, String agentId, String question,
+            String dynamicFilterJsonStr, Map<String, String> extraHeaders) {
+
+        if (StringUtils.isBlank(agentId)) {
+            agentId = defaultAgentId;
+        }
+        if (StringUtils.isBlank(agentId)) {
+            throw new NuxeoException("No agentId");
+        }
+
+        String endPoint = "/qna/agents/" + agentId + "/conversations";
+
+        JSONObject payload = new JSONObject();
+        payload.put("question", question);
+        if (StringUtils.isNotBlank(dynamicFilterJsonStr)) {
+            payload.put("dynamicFilter", new JSONObject(dynamicFilterJsonStr));
+        } else {
+            payload.put("dynamicFilter", JSONObject.NULL);
+        }
+
+        return invokeDiscovery(configName, "POST", endPoint, payload.toString(), extraHeaders);
+    }
+
+    @Override
+    public ServiceCallResult continueConversation(String configName, String agentId, String conversationId,
+            String question, String dynamicFilterJsonStr, Map<String, String> extraHeaders) {
+
+        if (StringUtils.isBlank(agentId)) {
+            agentId = defaultAgentId;
+        }
+        if (StringUtils.isBlank(agentId)) {
+            throw new NuxeoException("No agentId");
+        }
+        if (StringUtils.isBlank(conversationId)) {
+            throw new NuxeoException("No conversationId");
+        }
+
+        String endPoint = "/qna/agents/" + agentId + "/conversations/" + conversationId + "/messages";
+
+        JSONObject payload = new JSONObject();
+        payload.put("question", question);
+        if (StringUtils.isNotBlank(dynamicFilterJsonStr)) {
+            payload.put("dynamicFilter", new JSONObject(dynamicFilterJsonStr));
+        } else {
+            payload.put("dynamicFilter", JSONObject.NULL);
+        }
+
+        return invokeDiscovery(configName, "POST", endPoint, payload.toString(), extraHeaders);
+    }
+
+    @Override
+    public ServiceCallResult submitConversationFeedback(String configName, String agentId, String conversationId,
+            String messageId, String feedback, Map<String, String> extraHeaders) {
+
+        if (StringUtils.isBlank(agentId)) {
+            agentId = defaultAgentId;
+        }
+        if (StringUtils.isBlank(agentId)) {
+            throw new NuxeoException("No agentId");
+        }
+        if (StringUtils.isBlank(conversationId)) {
+            throw new NuxeoException("No conversationId");
+        }
+        if (StringUtils.isBlank(messageId)) {
+            throw new NuxeoException("No messageId");
+        }
+        if (StringUtils.isBlank(feedback)) {
+            throw new NuxeoException("No feedback value");
+        }
+
+        String endPoint = "/qna/agents/" + agentId + "/conversations/" + conversationId + "/messages/" + messageId
+                + "/feedback";
+
+        JSONObject payload = new JSONObject();
+        payload.put("feedback", feedback);
+
+        return invokeDiscovery(configName, "POST", endPoint, payload.toString(), extraHeaders);
     }
 
     /**

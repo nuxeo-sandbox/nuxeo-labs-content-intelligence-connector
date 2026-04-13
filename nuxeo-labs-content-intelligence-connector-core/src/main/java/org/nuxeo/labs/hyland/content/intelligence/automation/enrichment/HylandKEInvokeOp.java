@@ -30,7 +30,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
 @Operation(id = HylandKEInvokeOp.ID, category = "Hyland Knowledge Enrichment", label = "Call Hyland Knowledge Enrichment Service", description = ""
         + "Invoke the Hyland Content Intelligence/Knowledge Enrichment API."
         + " Used for the low-level calls. (See Knowledge Enrichment API documentation for details)"
-        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
 public class HylandKEInvokeOp {
 
     public static final String ID = "HylandKnowledgeEnrichment.Invoke";

@@ -46,18 +46,18 @@ public abstract class AbstractCICServiceComponent<D extends AbstractServiceDescr
     // Shared code for the services
     // ======================================================================
     // ======================================================================
-    protected String checkConfigName(String configName) {
+    public String checkConfigName(String configName) {
         if (StringUtils.isBlank(configName)) {
             return CICServiceConstants.CONFIG_DEFAULT;
         }
         return configName;
     }
 
-    protected D getDescriptor(String configName) {
+    public D getDescriptor(String configName) {
         return contribs.get(checkConfigName(configName));
     }
 
-    protected String getToken(Map<String, AuthenticationToken> tokens, String configName) {
+    public String getToken(Map<String, AuthenticationToken> tokens, String configName) {
 
         if (tokens == null) {
             return null;
@@ -71,14 +71,14 @@ public abstract class AbstractCICServiceComponent<D extends AbstractServiceDescr
         return token.getToken();
     }
 
-    protected List<String> getContribNames() {
+    public List<String> getContribNames() {
         if(contribs == null) {
             contribs = new HashMap<String, D>();
         }
         return new ArrayList<>(contribs.keySet());
     }
 
-    protected Map<String, D> getContribMap() {
+    public Map<String, D> getContribMap() {
         return contribs;
     }
 
@@ -89,9 +89,9 @@ public abstract class AbstractCICServiceComponent<D extends AbstractServiceDescr
     // ======================================================================
     // Each child class must implement this method to specify the extension point for the descriptors
     // at register/unregister time.
-    protected abstract String getDescriptorExtensionPoint();
+    public abstract String getDescriptorExtensionPoint();
 
-    protected String getServiceLabel() {
+    public String getServiceLabel() {
         return this.getClass().getSimpleName();
     }
 

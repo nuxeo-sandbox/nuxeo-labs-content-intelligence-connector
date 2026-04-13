@@ -32,6 +32,8 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
  * @since TODO
  */
 public interface HylandAgentsService {
+    
+    public static final String SERVICE_LABEL = "Agent Builder";
 
     public enum AgentType {
         RAG, TASK, TOOL

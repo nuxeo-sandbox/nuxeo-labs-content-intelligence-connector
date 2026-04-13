@@ -16,7 +16,7 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence.automation.agents;
+package org.nuxeo.labs.hyland.content.intelligence.automation.discovery;
 
 import java.util.Map;
 
@@ -28,38 +28,55 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
-import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService;
+import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService;
 
 /**
- * 
- * @since TODO
+ * Submit feedback (Good, Bad, or Retry) for a specific message in a conversation.
+ *
+ * @since 2025
  */
-@Operation(id = HylandAgentsGetAllAgentsOp.ID, category = "Hyland Agent Builder", label = "Get All Agents", description = ""
-        + "Returns a JSON blob holding  the result of the call. Call its getString() method then JSON.parse()."
-        + " See CIC documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
-        + " and the array of agents is in the 'response' property."
-        + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
+@Operation(id = HylandKDConversationFeedbackOp.ID, category = "Hyland Knowledge Discovery", label = "Submit Conversation Feedback", description = ""
+        + "Submits feedback for a specific message in a Knowledge Discovery conversation."
+        + " The result will have a 'responseCode' property that you should check (must be 200),"
+        + " and the returned result is in the 'response' property."
+        + " agentId => If empty, it is read from nuxeo.hyland.cic.discovery.default.agentId."
+        + " conversationId and messageId are required."
+        + " feedback must be one of: 'Good', 'Bad', or 'Retry'."
+        + " You can also pass extra headers in extraHeadersJsonStr as a stringified JSON object."
         + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
-public class HylandAgentsGetAllAgentsOp {
-    
-    public static final String ID = "HylandAgents.getAllAgents";
-    
+public class HylandKDConversationFeedbackOp {
+
+    public static final String ID = "HylandKnowledgeDiscovery.conversationFeedback";
+
     @Context
-    protected HylandAgentsService agentsService;
+    protected HylandKDService kdService;
+
+    @Param(name = "agentId", required = false)
+    protected String agentId;
+
+    @Param(name = "conversationId", required = true)
+    protected String conversationId;
+
+    @Param(name = "messageId", required = true)
+    protected String messageId;
+
+    @Param(name = "feedback", required = true)
+    protected String feedback;
 
     @Param(name = "extraHeadersJsonStr", required = false)
     protected String extraHeadersJsonStr;
 
     @Param(name = "configName", required = false)
     protected String configName;
-    
+
     @OperationMethod
     public Blob run() {
-        
+
         Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
-        
-        ServiceCallResult result = agentsService.getAllAgents(configName, extraHeaders);
-        
+
+        ServiceCallResult result = kdService.submitConversationFeedback(configName, agentId, conversationId,
+                messageId, feedback, extraHeaders);
+
         return Blobs.createJSONBlob(result.toJsonString());
     }
 

@@ -41,7 +41,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
         + " (See KE documentation for details, limitation, etc.)"
         + " Since KE V2, you can pass instructions as an object of objects, one per action "
         + " (see plugin doc for details.)"
-        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
 public class HylandKEEnrichOp {
 
     public static final String ID = "HylandKnowledgeEnrichment.Enrich";

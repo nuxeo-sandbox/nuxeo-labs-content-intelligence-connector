@@ -46,7 +46,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsSer
         + " guardrailsJsonArrayStr is optional. A JSON array of guardrails to apply."
         + " extraPayloadJsonStr is a stringified JSON Object, to be merged to the payload built by the service (if you need extra parameters)."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
-        + " configName is the name of the XML configuration to use (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
 public class HylandAgentsAskKDQuestionViaRagOp {
 
     public static final String ID = "HylandAgents.AskKDQuestionViaRAGAgent";

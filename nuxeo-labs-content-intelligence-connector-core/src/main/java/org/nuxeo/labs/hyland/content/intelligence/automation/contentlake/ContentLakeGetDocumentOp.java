@@ -16,7 +16,7 @@
  * Contributors:
  *     Thibaud Arguillere
  */
-package org.nuxeo.labs.hyland.content.intelligence.automation.ingest;
+package org.nuxeo.labs.hyland.content.intelligence.automation.contentlake;
 
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
@@ -26,28 +26,25 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
-import org.nuxeo.labs.hyland.content.intelligence.service.ingest.IngestService;
+import org.nuxeo.labs.hyland.content.intelligence.service.contentlake.ContentLakeService;
 
 /**
  * @since TODO
  */
-@Operation(id = IngestCheckDigestOp.ID, category = "Hyland CIC Ingest", label = "Check Document was Ingested", description = ""
-        + "input is a document. xpath is the xpath of the blob (file:content by default)."
+@Operation(id = ContentLakeGetDocumentOp.ID, category = "Hyland Content Lake", label = "Get a document in the Content Lake", description = ""
+        + "input is a document, used to check its counterpart in Content Lake."
         + " Returns a JSON blob holding the result of the call. Call its getString() method then JSON.parse()."
         + " See plugin documentation for possible values of the returned blob."
-        + " sourceId is optional. If not passed, we use nuxeo.hyland.cic.ingest.default.sourceId."
+        + " sourceId is optional. If not passed, we use nuxeo.hyland.cic.contentlake.default.sourceId."
         + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
-public class IngestCheckDigestOp {
+public class ContentLakeGetDocumentOp {
 
     public static final String ID = "HylandIngest.CheckDigest";
 
     @Context
-    protected IngestService ingestService;
+    protected ContentLakeService clService;
 
-    @Param(name = "xpath", required = false)
-    protected String xpath;
-
-    @Param(name = "sourceId", required = true)
+    @Param(name = "sourceId", required = false)
     protected String sourceId;
 
     @Param(name = "configName", required = false)
@@ -56,7 +53,7 @@ public class IngestCheckDigestOp {
     @OperationMethod
     public Blob run(DocumentModel doc) {
 
-        ServiceCallResult result = ingestService.checkDigest(configName, doc, xpath, sourceId);
+        ServiceCallResult result = clService.getDocument(configName, doc, sourceId);
 
         return Blobs.createJSONBlob(result.toJsonString());
     }

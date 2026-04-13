@@ -23,10 +23,10 @@ package org.nuxeo.labs.hyland.content.intelligence.authentication;
  * 
  * @since 2025.15/2023.18
  */
-public class AuthenticationTokenIngestion extends AuthenticationToken {
+public class AuthenticationTokenContentLake extends AuthenticationToken {
 
-    public AuthenticationTokenIngestion(String authFullUrl, AuthenticationTokenParams params) {
-        super(ServiceType.INGEST, authFullUrl, params);
+    public AuthenticationTokenContentLake(String authFullUrl, AuthenticationTokenParams params) {
+        super(ServiceType.CONTENTLAKE, authFullUrl, params);
     }
 
 }

@@ -133,13 +133,13 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
     }
 
     @Override
-    protected String getDescriptorExtensionPoint() {
+    public String getDescriptorExtensionPoint() {
         return EXT_POINT_KE;
     }
 
     @Override
-    protected String getServiceLabel() {
-        return "Knowledge Enrichment";
+    public String getServiceLabel() {
+        return HylandKEService.SERVICE_LABEL;
     }
 
     // ======================================================================

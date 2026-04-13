@@ -38,7 +38,7 @@ public class KEDescriptor extends AbstractServiceDescriptor {
 
     @Override
     protected String serviceLabel() {
-        return "Enrichment";
+        return HylandKEService.SERVICE_LABEL;
     }
     
     @Override

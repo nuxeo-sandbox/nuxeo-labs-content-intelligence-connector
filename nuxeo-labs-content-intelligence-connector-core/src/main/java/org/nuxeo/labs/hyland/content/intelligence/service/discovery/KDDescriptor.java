@@ -42,7 +42,7 @@ public class KDDescriptor extends AbstractServiceDescriptor {
 
     @Override
     protected String serviceLabel() {
-        return "Knowledge Discovery";
+        return HylandKDService.SERVICE_LABEL;
     }
     
     @Override
