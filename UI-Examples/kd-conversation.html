@@ -21,8 +21,9 @@ Example usage (e.g., in a slot or action):
         --nuxeo-dialog: {
           width: 680px;
           max-width: 95vw;
-          min-height: 500px;
-          max-height: 85vh;
+          height: calc(100vh - 90px);
+          top: 40px !important;
+          margin-top: 0 !important;
           display: flex;
           flex-direction: column;
         };
