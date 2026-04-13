@@ -214,10 +214,16 @@ Example usage (e.g., in a slot or action):
 
       .dialog-footer {
         display: flex;
-        justify-content: flex-end;
-        padding: 8px 16px;
+        justify-content: space-between;
+        /*padding: 8px 16px;*/
+        padding-left: 16px;
+        padding-right: 16px;
+        padding-top: 16px;
+        padding-bottom: 8px;
         border-top: 1px solid #e0e0e0;
         flex-shrink: 0;
+        margin-bottom: 12px;
+        margin-top: 12px;
       }
 
       .error-message {
@@ -302,15 +308,18 @@ Example usage (e.g., in a slot or action):
 
       <!-- Footer -->
       <div class="dialog-footer">
-        <paper-button dialog-dismiss on-tap="_closeDialog">Close</paper-button>
+        <paper-button class="secondary" on-tap="_clearForNewConversation" disabled$="[[_clearDisabled]]">Clear</paper-button>
+        <paper-button class="secondary" dialog-dismiss>Close</paper-button>
       </div>
 
     </nuxeo-dialog>
 
   </template>
 
-  <!-- Answers may contain markdown. Using https://github.com/markedjs/marked (MIT license).
-       Loaded dynamically in ready() to avoid CORS issues in Nuxeo Designer. -->
+  <!-- Load marked.js and DOMPurify for markdown rendering and XSS sanitization.
+       Kept in a separate .js file to avoid Designer's HTML validator issues. -->
+  <script src="kd-conversation-libs.js"></script>
+
   <script>
     Polymer({
       is: 'kd-conversation',
@@ -388,15 +397,10 @@ Example usage (e.g., in a slot or action):
           computed: '_computeSendDisabled(_selectedAgentId, _currentQuestion, _isThinking)'
         },
 
-        _markedLoaded: {
+        _clearDisabled: {
           type: Boolean,
-          value: false
+          computed: '_computeClearDisabled(_messages.length)'
         }
-      },
-
-      // ====================> Lifecycle
-      ready: function() {
-        this._loadMarkedJs();
       },
 
       // ====================> Computed properties
@@ -412,29 +416,24 @@ Example usage (e.g., in a slot or action):
         return !agentId || !question || !question.trim() || isThinking;
       },
 
-      // ====================> Load marked.js for markdown rendering
-      _loadMarkedJs: function() {
-        if (window.marked) {
-          this._markedLoaded = true;
-          return;
-        }
-        var script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/marked/marked.min.js';
-        script.onload = function() {
-          this._markedLoaded = true;
-        }.bind(this);
-        script.onerror = function() {
-          console.warn('kd-conversation: Could not load marked.js, answers will be displayed as plain text.');
-        }.bind(this);
-        document.head.appendChild(script);
+      _computeClearDisabled: function(length) {
+        return length === 0;
       },
 
       // ====================> Markdown to HTML
+      // Uses marked.js (loaded by kd-conversation-libs.js) for rendering,
+      // and DOMPurify for XSS sanitization. Falls back to escaped plain
+      // text if either library is not available.
       _markdownToHtml: function(text) {
         if (!text) return '';
-        if (this._markedLoaded && window.marked) {
+        if (window.marked) {
           try {
-            return window.marked.parse(text);
+            var html = window.marked.parse(text);
+            if (window.DOMPurify) {
+              return window.DOMPurify.sanitize(html);
+            }
+            // DOMPurify not available: fall through to safe plain-text rendering
+            console.warn('kd-conversation: DOMPurify not loaded, falling back to plain text for safety.');
           } catch(e) {
             console.warn('kd-conversation: marked.parse() failed, using plain text.', e);
           }
@@ -446,12 +445,10 @@ Example usage (e.g., in a slot or action):
 
       // ====================> Handle Dialog
       _toggleDialog: function() {
-        this._loadAgents();
+        if (!this.$.conversationDialog.opened) {
+          this._loadAgents();
+        }
         this.$.conversationDialog.toggle();
-      },
-
-      _closeDialog: function() {
-        this._clearConversation();
       },
 
       _dialogClosed: function() {
@@ -470,6 +467,16 @@ Example usage (e.g., in a slot or action):
         if (this.$.agentSelect) {
           this.$.agentSelect.value = '';
         }
+      },
+
+      _clearForNewConversation: function() {
+        this._messages = [];
+        this._conversationId = '';
+        this._conversationStarted = false;
+        this._currentQuestion = '';
+        this._isThinking = false;
+        this._errorMessage = '';
+        // Keep _selectedAgentId and agent selector unchanged
       },
 
       // ====================> Load agents

@@ -49,6 +49,17 @@ You can just import the element in your Studio project and then use it wherever 
 
 You can tune the element as you want, change the operation used, maybe always call the same agent, etc.: This element is an example of using the operations provided to have a conversation maintaining the context.
 
+#### Companion Script: `kd-conversation-libs.js`
+
+The element relies on a companion file, `UI-Examples/kd-conversation-libs.js`, which must also be added to your Studio project. This script dynamically loads two external libraries at runtime:
+
+* [**marked.js**](https://github.com/markedjs/marked) (MIT license) -- Converts the markdown returned by the agent into HTML for display in the chat.
+* [**DOMPurify**](https://github.com/cure53/DOMPurify) (Apache/MPL license) -- Sanitizes the rendered HTML to prevent XSS. Although answers come from the Hyland Content Intelligence Cloud API (not arbitrary user input), `marked.parse()` does not sanitize its output, so DOMPurify ensures no dangerous tags or attributes are injected into the DOM.
+
+The loading code is kept in a separate `.js` file because Nuxeo Studio Designer's HTML validator rejects `document.createElement('script')` inside a `<script>` block.
+
+If either library fails to load (e.g., no internet access, CDN unavailable), the element falls back gracefully to plain text rendering with escaped HTML and line breaks.
+
 <br>
 
 ## Sending Documents to CIC Knowledge Discovery: About Nuxeo HxAI connector
