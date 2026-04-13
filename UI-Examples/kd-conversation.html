@@ -1,0 +1,611 @@
+<!--
+`kd-conversation`
+@group Nuxeo UI
+@element kd-conversation
+
+A chat-like conversation element for Knowledge Discovery.
+Displays a button that opens a dialog where the user can select an agent,
+then start and continue a conversation.
+
+Example usage (e.g., in a slot or action):
+  <kd-conversation></kd-conversation>
+-->
+<dom-module id="kd-conversation">
+  <template>
+    <style include="nuxeo-action-button-styles nuxeo-styles">
+      :host {
+        display: inline-block;
+      }
+
+      nuxeo-dialog {
+        --nuxeo-dialog: {
+          width: 680px;
+          max-width: 95vw;
+          height: calc(100vh - 90px);
+          top: 40px !important;
+          margin-top: 0 !important;
+          display: flex;
+          flex-direction: column;
+        };
+      }
+
+      .dialog-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-bottom: 1px solid #e0e0e0;
+        flex-shrink: 0;
+      }
+
+      .dialog-header h2 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+      }
+
+      .agent-selector {
+        padding: 12px 16px;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+      }
+
+      .agent-selector label {
+        font-size: 13px;
+        font-weight: 500;
+        color: #555;
+        white-space: nowrap;
+      }
+
+      .agent-selector select {
+        flex: 1;
+        padding: 6px 8px;
+        font-size: 13px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: #fff;
+        color: #333;
+      }
+
+      .agent-selector select:disabled {
+        background: #f5f5f5;
+        color: #999;
+      }
+
+      .conversation-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-height: 200px;
+        background: #fafafa;
+      }
+
+      .message {
+        max-width: 80%;
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 13px;
+        line-height: 1.5;
+        word-wrap: break-word;
+      }
+
+      .message.user {
+        align-self: flex-end;
+        background: #0066cc;
+        color: #fff;
+        border-bottom-right-radius: 4px;
+      }
+
+      .message.agent {
+        align-self: flex-start;
+        background: #fff;
+        color: #333;
+        border: 1px solid #e0e0e0;
+        border-bottom-left-radius: 4px;
+      }
+
+      /* Style markdown content inside agent messages */
+      .message.agent p {
+        margin: 0 0 8px 0;
+      }
+      .message.agent p:last-child {
+        margin-bottom: 0;
+      }
+      .message.agent ul, .message.agent ol {
+        margin: 4px 0;
+        padding-left: 20px;
+      }
+      .message.agent code {
+        background: #f0f0f0;
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-size: 12px;
+      }
+      .message.agent pre {
+        background: #f0f0f0;
+        padding: 8px;
+        border-radius: 4px;
+        overflow-x: auto;
+      }
+      .message.agent pre code {
+        background: none;
+        padding: 0;
+      }
+
+      .thinking-indicator {
+        align-self: flex-start;
+        padding: 10px 14px;
+        font-size: 13px;
+        color: #999;
+        font-style: italic;
+      }
+
+      .empty-state {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-size: 13px;
+        font-style: italic;
+      }
+
+      .input-area {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        border-top: 1px solid #e0e0e0;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      .input-area input {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 13px;
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        outline: none;
+      }
+
+      .input-area input:focus {
+        border-color: #0066cc;
+      }
+
+      .input-area input:disabled {
+        background: #f5f5f5;
+        color: #999;
+      }
+
+      .send-button {
+        background: #0066cc;
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .send-button:hover {
+        background: #0052a3;
+      }
+
+      .send-button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      .send-button iron-icon {
+        width: 18px;
+        height: 18px;
+      }
+
+      .dialog-footer {
+        display: flex;
+        justify-content: flex-end;
+        padding: 8px 16px;
+        border-top: 1px solid #e0e0e0;
+        flex-shrink: 0;
+      }
+
+      .error-message {
+        align-self: center;
+        color: #d32f2f;
+        font-size: 12px;
+        padding: 6px 12px;
+        background: #fdecea;
+        border-radius: 4px;
+      }
+    </style>
+
+    <nuxeo-operation id="getAvailableAgentsOp" op="javascript.getAvailableAgents"></nuxeo-operation>
+
+    <nuxeo-operation id="startConversationOp" op="HylandKnowledgeDiscovery.startConversation"></nuxeo-operation>
+    <nuxeo-operation id="continueConversationOp" op="HylandKnowledgeDiscovery.continueConversation"></nuxeo-operation>
+
+    <div class="action" on-tap="_toggleDialog">
+      <paper-icon-button id="bt" icon="[[icon]]"></paper-icon-button>
+      <span class="label" hidden$="[[!showLabel]]">[[label]]</span>
+    </div>
+    <paper-tooltip for="bt">[[label]]</paper-tooltip>
+
+    <nuxeo-dialog id="conversationDialog" on-iron-overlay-closed="_dialogClosed" with-backdrop no-auto-focus>
+
+      <!-- Header -->
+      <div class="dialog-header">
+        <h2>Knowledge Discovery Conversation</h2>
+      </div>
+
+      <!-- Agent selector -->
+      <div class="agent-selector">
+        <label>Agent:</label>
+        <select id="agentSelect" value="{{_selectedAgentId::change}}" disabled$="[[_conversationStarted]]">
+          <option value="">-- Select an agent --</option>
+          <template is="dom-repeat" items="[[_agents]]">
+            <option value="[[item.agentId]]">[[item.title]]</option>
+          </template>
+        </select>
+      </div>
+
+      <!-- Conversation messages -->
+      <div id="conversationMessages" class="conversation-container">
+        <template is="dom-if" if="[[!_hasMessages]]">
+          <div class="empty-state">
+            <template is="dom-if" if="[[!_selectedAgentId]]">
+              Select an agent to start a conversation.
+            </template>
+            <template is="dom-if" if="[[_selectedAgentId]]">
+              Type a question below to start the conversation.
+            </template>
+          </div>
+        </template>
+        <template is="dom-repeat" items="[[_messages]]">
+          <div class$="message [[item.role]]">
+            <span inner-h-t-m-l="[[item.html]]"></span>
+          </div>
+        </template>
+        <template is="dom-if" if="[[_isThinking]]">
+          <div class="thinking-indicator">Agent is thinking...</div>
+        </template>
+        <template is="dom-if" if="[[_errorMessage]]">
+          <div class="error-message">[[_errorMessage]]</div>
+        </template>
+      </div>
+
+      <!-- Input area -->
+      <div class="input-area">
+        <input id="questionInput"
+               type="text"
+               placeholder="Type your question..."
+               value="{{_currentQuestion::input}}"
+               on-keydown="_handleKeyDown"
+               disabled$="[[_inputDisabled]]">
+        <button class="send-button"
+                on-tap="_sendQuestion"
+                disabled$="[[_sendDisabled]]"
+                title="Send">
+          <iron-icon icon="icons:send"></iron-icon>
+        </button>
+      </div>
+
+      <!-- Footer -->
+      <div class="dialog-footer">
+        <paper-button dialog-dismiss on-tap="_closeDialog">Close</paper-button>
+      </div>
+
+    </nuxeo-dialog>
+
+  </template>
+
+  <!-- Answers may contain markdown. Using https://github.com/markedjs/marked (MIT license).
+       Loaded dynamically in ready() to avoid CORS issues in Nuxeo Designer. -->
+  <script>
+    Polymer({
+      is: 'kd-conversation',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        label: {
+          type: String,
+          value: 'Ask Knowledge Discovery'
+        },
+
+        showLabel: {
+          type: Boolean,
+          value: false,
+        },
+
+        icon: {
+          type: String,
+          value: 'icons:question-answer'
+        },
+
+        /* ==================== Private properties ==================== */
+
+        _agents: {
+          type: Array,
+          value: function() { return []; }
+        },
+
+        _selectedAgentId: {
+          type: String,
+          value: ''
+        },
+
+        _messages: {
+          type: Array,
+          value: function() { return []; }
+        },
+
+        _hasMessages: {
+          type: Boolean,
+          computed: '_computeHasMessages(_messages.length)'
+        },
+
+        _conversationId: {
+          type: String,
+          value: ''
+        },
+
+        _conversationStarted: {
+          type: Boolean,
+          value: false
+        },
+
+        _currentQuestion: {
+          type: String,
+          value: ''
+        },
+
+        _isThinking: {
+          type: Boolean,
+          value: false
+        },
+
+        _errorMessage: {
+          type: String,
+          value: ''
+        },
+
+        _inputDisabled: {
+          type: Boolean,
+          computed: '_computeInputDisabled(_selectedAgentId, _isThinking)'
+        },
+
+        _sendDisabled: {
+          type: Boolean,
+          computed: '_computeSendDisabled(_selectedAgentId, _currentQuestion, _isThinking)'
+        },
+
+        _markedLoaded: {
+          type: Boolean,
+          value: false
+        }
+      },
+
+      // ====================> Lifecycle
+      ready: function() {
+        this._loadMarkedJs();
+      },
+
+      // ====================> Computed properties
+      _computeHasMessages: function(length) {
+        return length > 0;
+      },
+
+      _computeInputDisabled: function(agentId, isThinking) {
+        return !agentId || isThinking;
+      },
+
+      _computeSendDisabled: function(agentId, question, isThinking) {
+        return !agentId || !question || !question.trim() || isThinking;
+      },
+
+      // ====================> Load marked.js for markdown rendering
+      _loadMarkedJs: function() {
+        if (window.marked) {
+          this._markedLoaded = true;
+          return;
+        }
+        var script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/marked/marked.min.js';
+        script.onload = function() {
+          this._markedLoaded = true;
+        }.bind(this);
+        script.onerror = function() {
+          console.warn('kd-conversation: Could not load marked.js, answers will be displayed as plain text.');
+        }.bind(this);
+        document.head.appendChild(script);
+      },
+
+      // ====================> Markdown to HTML
+      _markdownToHtml: function(text) {
+        if (!text) return '';
+        if (this._markedLoaded && window.marked) {
+          try {
+            return window.marked.parse(text);
+          } catch(e) {
+            console.warn('kd-conversation: marked.parse() failed, using plain text.', e);
+          }
+        }
+        // Fallback: escape HTML and convert newlines
+        var escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return escaped.replace(/\n/g, '<br>');
+      },
+
+      // ====================> Handle Dialog
+      _toggleDialog: function() {
+        this._loadAgents();
+        this.$.conversationDialog.toggle();
+      },
+
+      _closeDialog: function() {
+        this._clearConversation();
+      },
+
+      _dialogClosed: function() {
+        this._clearConversation();
+      },
+
+      _clearConversation: function() {
+        this._messages = [];
+        this._conversationId = '';
+        this._conversationStarted = false;
+        this._currentQuestion = '';
+        this._isThinking = false;
+        this._errorMessage = '';
+        this._selectedAgentId = '';
+        // Reset the select element
+        if (this.$.agentSelect) {
+          this.$.agentSelect.value = '';
+        }
+      },
+
+      // ====================> Load agents
+      _loadAgents: function() {
+        this.$.getAvailableAgentsOp.execute().then(function(response) {
+          var jsonStr = response;
+          // The operation returns a Blob; calling getString() if needed
+          if (response && typeof response.getString === 'function') {
+            jsonStr = response.getString();
+          }
+          var agents;
+          if (typeof jsonStr === 'string') {
+            agents = JSON.parse(jsonStr);
+          } else {
+            agents = jsonStr;
+          }
+          this._agents = agents || [];
+        }.bind(this)).catch(function(err) {
+          console.error('kd-conversation: Error loading agents', err);
+          this._agents = [];
+        }.bind(this));
+      },
+
+      // ====================> Handle user input
+      _handleKeyDown: function(e) {
+        if (e.keyCode === 13 && !this._sendDisabled) {
+          this._sendQuestion();
+        }
+      },
+
+      _sendQuestion: function() {
+        var question = this._currentQuestion ? this._currentQuestion.trim() : '';
+        if (!question || !this._selectedAgentId) return;
+
+        // Add user message to the conversation
+        this._addMessage('user', question);
+        this._currentQuestion = '';
+        this._errorMessage = '';
+        this._isThinking = true;
+
+        if (!this._conversationStarted) {
+          this._doStartConversation(question);
+        } else {
+          this._doContinueConversation(question);
+        }
+      },
+
+      // ====================> Conversation operations
+      _doStartConversation: function(question) {
+        var op = this.$.startConversationOp;
+        op.params = {
+          agentId: this._selectedAgentId,
+          question: question
+        };
+        op.execute().then(function(response) {
+          var result = this._parseOperationResponse(response);
+          if (!result) return;
+
+          if (result.responseCode === 200) {
+            this._conversationId = result.response.conversation.id;
+            this._conversationStarted = true;
+            var answer = result.response.message.answer || '';
+            this._addMessage('agent', answer);
+          } else {
+            this._handleError('Unexpected response (code ' + result.responseCode + ')');
+          }
+        }.bind(this)).catch(function(err) {
+          this._handleError('Error starting conversation: ' + (err.message || err));
+        }.bind(this));
+      },
+
+      _doContinueConversation: function(question) {
+        var op = this.$.continueConversationOp;
+        op.params = {
+          agentId: this._selectedAgentId,
+          conversationId: this._conversationId,
+          question: question
+        };
+        op.execute().then(function(response) {
+          var result = this._parseOperationResponse(response);
+          if (!result) return;
+
+          if (result.responseCode === 200) {
+            var answer = result.response.answer || '';
+            this._addMessage('agent', answer);
+          } else {
+            this._handleError('Unexpected response (code ' + result.responseCode + ')');
+          }
+        }.bind(this)).catch(function(err) {
+          this._handleError('Error continuing conversation: ' + (err.message || err));
+        }.bind(this));
+      },
+
+      // ====================> Helpers
+      _parseOperationResponse: function(response) {
+        try {
+          var jsonStr = response;
+          if (response && typeof response.getString === 'function') {
+            jsonStr = response.getString();
+          }
+          if (typeof jsonStr === 'string') {
+            return JSON.parse(jsonStr);
+          }
+          return jsonStr;
+        } catch(e) {
+          this._handleError('Error parsing response');
+          return null;
+        }
+      },
+
+      _addMessage: function(role, text) {
+        var html;
+        if (role === 'agent') {
+          html = this._markdownToHtml(text);
+        } else {
+          // User messages: escape HTML
+          html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        this.push('_messages', { role: role, text: text, html: html });
+        this._isThinking = false;
+
+        // Scroll to bottom after DOM update
+        this.async(function() {
+          var container = this.$.conversationMessages;
+          if (container) {
+            container.scrollTop = container.scrollHeight;
+          }
+        }.bind(this), 100);
+      },
+
+      _handleError: function(message) {
+        console.error('kd-conversation:', message);
+        this._errorMessage = message;
+        this._isThinking = false;
+      }
+    });
+  </script>
+</dom-module>
