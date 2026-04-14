@@ -1,14 +1,45 @@
 <!--
 `kd-conversation`
-@group Nuxeo UI
-@element kd-conversation
-
 A chat-like conversation element for Knowledge Discovery.
 Displays a button that opens a dialog where the user can select an agent,
 then start and continue a conversation.
 
-Example usage (e.g., in a slot or action):
+Examples usage :
   <kd-conversation></kd-conversation>
+  <kd-conversation icon="icons:chat" show-label="true"></kd-conversation>
+
+====================
+INFO/WARNING/TODO
+====================
+* The JS code uses JS dependencies to display the markdown and sanitize it. 
+  These are loaded in a separate file kd-conversation-libs.js, to avoid issues with Designer's HTML validator.
+  If you want to use other libraries, or load them differently, you may need to adjust the code.
+
+* See _fetchDocumentTitles(). We use a NXQL that searches for UUIDs, but not only in ecm:uuid.
+  This is because this element is used in our (Hyland Nuxeo Presales) demos and the UUID sent to
+  discovery comes either from ecm:uuid or from this kdinfo:objectId field.
+  => Change the NXQL as needed.
+
+* We do our demos in several languages => Labels are key translation keys. Here are all the keys used:
+{
+  "label.ui.kd-agent": "Agent",
+  "label.ui.kd-conversation": "Knowledge Discovery Conversation",
+  "label.ui.kd-conversation.agent": "Agent",
+  "label.ui.kd-conversation.agent.select.prompt": "-- Select an agent --",
+  "label.ui.kd-conversation.agent.do.select": "Select an agent to start a conversation.",
+  "label.ui.kd-conversation.type.question": "Type a question below to start the conversation.",
+  "label.ui.kd-conversation.thinking": "Agent is thinking...",
+  "label.ui.kd-conversation.question.placeholder": "Type your question...",
+  "label.ui.kd-conversation.showReferences": "Show References",
+  "label.ui.kd-conversation.send": "Send",
+  "label.ui.kd-conversation.references": "References",
+  "label.ui.error.unexpected.response": "Unexpected response ",
+  "label.ui.error.starting.conversation": "Error starting conversation: ",
+  "label.ui.error.continuing.conversation": "Error continuing conversation: ",
+  "label.ui.error.parsing.response": "Error parsing response: ",
+  "label.ui.kd-ask.clear": "Clear",
+  "label.ui.kd-ask.close": "Close"
+}
 -->
 <dom-module id="kd-conversation">
   <template>
@@ -234,12 +265,70 @@ Example usage (e.g., in a slot or action):
         background: #fdecea;
         border-radius: 4px;
       }
+
+      .references-section {
+        margin-top: 10px;
+        padding-top: 8px;
+        border-top: 1px solid #e0e0e0;
+      }
+
+      .references-header {
+        font-size: 11px;
+        font-weight: 600;
+        color: #777;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+      }
+
+      .reference-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+        cursor: pointer;
+      }
+
+      .reference-item:hover {
+        background: #f0f4ff;
+        border-radius: 4px;
+      }
+
+      .reference-thumbnail {
+        width: 32px;
+        height: 32px;
+        object-fit: cover;
+        border-radius: 3px;
+        border: 1px solid #e0e0e0;
+        flex-shrink: 0;
+      }
+
+      .reference-title {
+        font-size: 12px;
+        color: #0066cc;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .show-references-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 13px;
+        color: #555;
+      }
+
+      .show-references-checkbox input[type="checkbox"]:disabled + span {
+        color: #bbb;
+      }
     </style>
 
     <nuxeo-operation id="getAvailableAgentsOp" op="javascript.getAvailableAgents"></nuxeo-operation>
 
     <nuxeo-operation id="startConversationOp" op="HylandKnowledgeDiscovery.startConversation"></nuxeo-operation>
     <nuxeo-operation id="continueConversationOp" op="HylandKnowledgeDiscovery.continueConversation"></nuxeo-operation>
+    <nuxeo-operation id="queryDocumentsOp" op="Repository.Query"></nuxeo-operation>
 
     <div class="action" on-tap="_toggleDialog">
       <paper-icon-button id="bt" icon="[[icon]]"></paper-icon-button>
@@ -251,14 +340,14 @@ Example usage (e.g., in a slot or action):
 
       <!-- Header -->
       <div class="dialog-header">
-        <h2>Knowledge Discovery Conversation</h2>
+        <h2>[[i18n('label.ui.kd-conversation')]]</h2>
       </div>
 
       <!-- Agent selector -->
       <div class="agent-selector">
-        <label>Agent:</label>
+        <label>[[i18n('label.ui.kd-conversation.agent')]]</label>
         <select id="agentSelect" value="{{_selectedAgentId::change}}" disabled$="[[_conversationStarted]]">
-          <option value="">-- Select an agent --</option>
+          <option value="">[[i18n('label.ui.kd-conversation.agent.select.prompt')]]</option>
           <template is="dom-repeat" items="[[_agents]]">
             <option value="[[item.agentId]]">[[item.title]]</option>
           </template>
@@ -270,20 +359,33 @@ Example usage (e.g., in a slot or action):
         <template is="dom-if" if="[[!_hasMessages]]">
           <div class="empty-state">
             <template is="dom-if" if="[[!_selectedAgentId]]">
-              Select an agent to start a conversation.
+              [[i18n('label.ui.kd-conversation.agent.do.select')]]
             </template>
             <template is="dom-if" if="[[_selectedAgentId]]">
-              Type a question below to start the conversation.
+              [[i18n('label.ui.kd-conversation.type.question')]]
             </template>
           </div>
         </template>
         <template is="dom-repeat" items="[[_messages]]">
           <div class$="message [[item.role]]">
             <span inner-h-t-m-l="[[item.html]]"></span>
+            <template is="dom-if" if="[[_shouldShowRefs(item.references, _showReferences)]]">
+              <div class="references-section">
+                <div class="references-header">[[i18n('label.ui.kd-conversation.references')]]</div>
+                <template is="dom-repeat" items="[[item.references]]" as="ref">
+                  <div class="reference-item" on-tap="_openDocument" data-doc-uid$="[[ref.uid]]">
+                    <img class="reference-thumbnail"
+                         src$="/nuxeo/api/v1/repo/default/id/[[ref.uid]]/@rendition/thumbnail"
+                         loading="lazy">
+                    <span class="reference-title">[[ref.title]]</span>
+                  </div>
+                </template>
+              </div>
+            </template>
           </div>
         </template>
         <template is="dom-if" if="[[_isThinking]]">
-          <div class="thinking-indicator">Agent is thinking...</div>
+          <div class="thinking-indicator">[[i18n('label.ui.kd-conversation.thinking')]]</div>
         </template>
         <template is="dom-if" if="[[_errorMessage]]">
           <div class="error-message">[[_errorMessage]]</div>
@@ -294,24 +396,27 @@ Example usage (e.g., in a slot or action):
       <div class="input-area">
         <input id="questionInput"
                type="text"
-               placeholder="Type your question..."
+               placeholder="[[i18n('label.ui.kd-conversation.question.placeholder')]]"
                value="{{_currentQuestion::input}}"
                on-keydown="_handleKeyDown"
                disabled$="[[_inputDisabled]]">
         <button class="send-button"
                 on-tap="_sendQuestion"
                 disabled$="[[_sendDisabled]]"
-                title="Send">
+                title="[[i18n('label.ui.kd-conversation.send')]]">
           <iron-icon icon="icons:send"></iron-icon>
         </button>
       </div>
 
       <!-- Footer -->
       <div class="dialog-footer">
-        <paper-button class="secondary" on-tap="_clearForNewConversation" disabled$="[[_clearDisabled]]">Clear</paper-button>
-        <paper-button class="secondary" dialog-dismiss>Close</paper-button>
+        <paper-button class="secondary" on-tap="_clearForNewConversation" disabled$="[[_clearDisabled]]">[[i18n('label.ui.kd-ask.clear')]]</paper-button>
+        <label class="show-references-checkbox">
+          <input type="checkbox" checked="{{_showReferences::change}}" disabled$="[[!_selectedAgentId]]">
+          <span>[[i18n('label.ui.kd-conversation.showReferences')]]</span>
+        </label>
+        <paper-button class="secondary" dialog-dismiss>[[i18n('label.ui.kd-ask.close')]]</paper-button>
       </div>
-
     </nuxeo-dialog>
 
   </template>
@@ -327,7 +432,7 @@ Example usage (e.g., in a slot or action):
       properties: {
         label: {
           type: String,
-          value: 'Ask Knowledge Discovery'
+          value: window.nuxeo.I18n.translate('label.ui.kd-conversation')
         },
 
         showLabel: {
@@ -400,6 +505,11 @@ Example usage (e.g., in a slot or action):
         _clearDisabled: {
           type: Boolean,
           computed: '_computeClearDisabled(_messages.length)'
+        },
+
+        _showReferences: {
+          type: Boolean,
+          value: false
         }
       },
 
@@ -418,6 +528,73 @@ Example usage (e.g., in a slot or action):
 
       _computeClearDisabled: function(length) {
         return length === 0;
+      },
+
+      // ====================> References helpers
+      _shouldShowRefs: function(references, showReferences) {
+        return showReferences && references && references.length > 0;
+      },
+
+      // Extract Nuxeo document UIDs from CIC documentReferences.
+      // Each documentId is "{sourceRepoId}__{nuxeoDocId}". Max 5 references.
+      _extractDocumentUids: function(documentReferences) {
+        if (!documentReferences || !documentReferences.length) return [];
+        var uids = [];
+        var max = Math.min(documentReferences.length, 5);
+        for (var i = 0; i < max; i++) {
+          var docId = documentReferences[i].documentId || '';
+          var parts = docId.split('__');
+          if (parts.length === 2 && parts[1]) {
+            uids.push(parts[1]);
+          }
+        }
+        return uids;
+      },
+
+      // Fetch document titles from Nuxeo for the given UIDs,
+      // then update the references on the message at messageIndex.
+      _fetchDocumentTitles: function(uids, messageIndex) {
+        if (!uids || !uids.length) return;
+
+        var quoted = uids.map(function(uid) { return "'" + uid + "'"; });
+        let quotedJoin = quoted.join(',');
+        // WARNING: kdinfo:objectId is a custom field, used in Nuxeo presales demo (we have several demos
+        // using the same documents sent fto KD, they are referenced in this field)
+        var query = 'SELECT * FROM Document WHERE ecm:uuid IN (' + quotedJoin + ') OR kdinfo:objectId IN (' + quotedJoin + ')';
+
+        var op = this.$.queryDocumentsOp;
+        op.params = { query: query, pageSIze: 5 };
+        op.execute().then(function(response) {
+          var docs = (response && response.entries) ? response.entries : [];
+          // Build the references array with resolved titles
+          var refs = [];
+         for (var i = 0; i < docs.length; i++) {
+            refs.push({
+              uid: docs[i].uid,
+              title: docs[i].title
+            });
+          }
+          this.set('_messages.' + messageIndex + '.references', refs);
+          // Scroll to bottom to show references
+          this.async(function() {
+            var container = this.$.conversationMessages;
+            if (container) {
+              container.scrollTop = container.scrollHeight;
+            }
+          }.bind(this), 100);
+        }.bind(this)).catch(function(err) {
+          console.error('kd-conversation: Error fetching document titles', err);
+          // Fallback: use UIDs as titles
+          var refs = uids.map(function(uid) { return { uid: uid, title: uid }; });
+          this.set('_messages.' + messageIndex + '.references', refs);
+        }.bind(this));
+      },
+
+      _openDocument: function(e) {
+        var uid = e.currentTarget.dataset.docUid;
+        if (uid) {
+          window.open('/nuxeo/ui/#!/doc/' + uid, '_blank');
+        }
       },
 
       // ====================> Markdown to HTML
@@ -539,12 +716,13 @@ Example usage (e.g., in a slot or action):
             this._conversationId = result.response.conversation.id;
             this._conversationStarted = true;
             var answer = result.response.message.answer || '';
-            this._addMessage('agent', answer);
+            var docRefs = result.response.message.documentReferences || [];
+            this._addMessage('agent', answer, docRefs);
           } else {
-            this._handleError('Unexpected response (code ' + result.responseCode + ')');
+            this._handleError(this.i18n('label.ui.error.unexpected.response') + "(code " + result.responseCode + ")");
           }
         }.bind(this)).catch(function(err) {
-          this._handleError('Error starting conversation: ' + (err.message || err));
+          this._handleError(this.i18n('label.ui.error.starting.conversation') + (err.message || err));
         }.bind(this));
       },
 
@@ -561,12 +739,13 @@ Example usage (e.g., in a slot or action):
 
           if (result.responseCode === 200) {
             var answer = result.response.answer || '';
-            this._addMessage('agent', answer);
+            var docRefs = result.response.documentReferences || [];
+            this._addMessage('agent', answer, docRefs);
           } else {
-            this._handleError('Unexpected response (code ' + result.responseCode + ')');
+            this._handleError(this.i18n('label.ui.error.unexpected.response') + "(code " + result.responseCode + ")");
           }
         }.bind(this)).catch(function(err) {
-          this._handleError('Error continuing conversation: ' + (err.message || err));
+          this._handleError(this.i18n('label.ui.error.continuing.conversation') + (err.message || err));
         }.bind(this));
       },
 
@@ -582,12 +761,12 @@ Example usage (e.g., in a slot or action):
           }
           return jsonStr;
         } catch(e) {
-          this._handleError('Error parsing response');
+          this._handleError(this.i18n('label.ui.error.parsing.response') + (e.message || e));
           return null;
         }
       },
 
-      _addMessage: function(role, text) {
+      _addMessage: function(role, text, documentReferences) {
         var html;
         if (role === 'agent') {
           html = this._markdownToHtml(text);
@@ -596,8 +775,18 @@ Example usage (e.g., in a slot or action):
           html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
-        this.push('_messages', { role: role, text: text, html: html });
+        // Extract document UIDs (always, so they are available if user toggles checkbox later)
+        var uids = this._extractDocumentUids(documentReferences);
+
+        // Add message with empty references (will be populated async)
+        this.push('_messages', { role: role, text: text, html: html, references: [] });
         this._isThinking = false;
+
+        // Fetch document titles if we have references
+        if (uids.length > 0) {
+          var messageIndex = this._messages.length - 1;
+          this._fetchDocumentTitles(uids, messageIndex);
+        }
 
         // Scroll to bottom after DOM update
         this.async(function() {
