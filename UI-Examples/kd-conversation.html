@@ -1,14 +1,45 @@
 <!--
 `kd-conversation`
-@group Nuxeo UI
-@element kd-conversation
-
 A chat-like conversation element for Knowledge Discovery.
 Displays a button that opens a dialog where the user can select an agent,
 then start and continue a conversation.
 
-Example usage (e.g., in a slot or action):
+Examples usage :
   <kd-conversation></kd-conversation>
+  <kd-conversation icon="icons:chat" show-label="true"></kd-conversation>
+
+====================
+INFO/WARNING/TODO
+====================
+* The JS code uses JS dependencies to display the markdown and sanitize it. 
+  These are loaded in a separate file kd-conversation-libs.js, to avoid issues with Designer's HTML validator.
+  If you want to use other libraries, or load them differently, you may need to adjust the code.
+
+* See _fetchDocumentTitles(). We use a NXQL that searches for UUIDs, but not only in ecm:uuid.
+  This is because this element is used in our (Hyland Nuxeo Presales) demos and the UUID sent to
+  discovery comes either from ecm:uuid or from this kdinfo:objectId field.
+  => Change the NXQL as needed.
+
+* We do our demos in several languages => Labels are key translation keys. Here are all the keys used:
+{
+  "label.ui.kd-agent": "Agent",
+  "label.ui.kd-conversation": "Knowledge Discovery Conversation",
+  "label.ui.kd-conversation.agent": "Agent",
+  "label.ui.kd-conversation.agent.select.prompt": "-- Select an agent --",
+  "label.ui.kd-conversation.agent.do.select": "Select an agent to start a conversation.",
+  "label.ui.kd-conversation.type.question": "Type a question below to start the conversation.",
+  "label.ui.kd-conversation.thinking": "Agent is thinking...",
+  "label.ui.kd-conversation.question.placeholder": "Type your question...",
+  "label.ui.kd-conversation.showReferences": "Show References",
+  "label.ui.kd-conversation.send": "Send",
+  "label.ui.kd-conversation.references": "References",
+  "label.ui.error.unexpected.response": "Unexpected response ",
+  "label.ui.error.starting.conversation": "Error starting conversation: ",
+  "label.ui.error.continuing.conversation": "Error continuing conversation: ",
+  "label.ui.error.parsing.response": "Error parsing response: ",
+  "label.ui.kd-ask.clear": "Clear",
+  "label.ui.kd-ask.close": "Close"
+}
 -->
 <dom-module id="kd-conversation">
   <template>
@@ -309,14 +340,14 @@ Example usage (e.g., in a slot or action):
 
       <!-- Header -->
       <div class="dialog-header">
-        <h2>Knowledge Discovery Conversation</h2>
+        <h2>[[i18n('label.ui.kd-conversation')]]</h2>
       </div>
 
       <!-- Agent selector -->
       <div class="agent-selector">
-        <label>Agent:</label>
+        <label>[[i18n('label.ui.kd-conversation.agent')]]</label>
         <select id="agentSelect" value="{{_selectedAgentId::change}}" disabled$="[[_conversationStarted]]">
-          <option value="">-- Select an agent --</option>
+          <option value="">[[i18n('label.ui.kd-conversation.agent.select.prompt')]]</option>
           <template is="dom-repeat" items="[[_agents]]">
             <option value="[[item.agentId]]">[[item.title]]</option>
           </template>
@@ -328,10 +359,10 @@ Example usage (e.g., in a slot or action):
         <template is="dom-if" if="[[!_hasMessages]]">
           <div class="empty-state">
             <template is="dom-if" if="[[!_selectedAgentId]]">
-              Select an agent to start a conversation.
+              [[i18n('label.ui.kd-conversation.agent.do.select')]]
             </template>
             <template is="dom-if" if="[[_selectedAgentId]]">
-              Type a question below to start the conversation.
+              [[i18n('label.ui.kd-conversation.type.question')]]
             </template>
           </div>
         </template>
@@ -340,7 +371,7 @@ Example usage (e.g., in a slot or action):
             <span inner-h-t-m-l="[[item.html]]"></span>
             <template is="dom-if" if="[[_shouldShowRefs(item.references, _showReferences)]]">
               <div class="references-section">
-                <div class="references-header">References</div>
+                <div class="references-header">[[i18n('label.ui.kd-conversation.references')]]</div>
                 <template is="dom-repeat" items="[[item.references]]" as="ref">
                   <div class="reference-item" on-tap="_openDocument" data-doc-uid$="[[ref.uid]]">
                     <img class="reference-thumbnail"
@@ -354,7 +385,7 @@ Example usage (e.g., in a slot or action):
           </div>
         </template>
         <template is="dom-if" if="[[_isThinking]]">
-          <div class="thinking-indicator">Agent is thinking...</div>
+          <div class="thinking-indicator">[[i18n('label.ui.kd-conversation.thinking')]]</div>
         </template>
         <template is="dom-if" if="[[_errorMessage]]">
           <div class="error-message">[[_errorMessage]]</div>
@@ -365,28 +396,27 @@ Example usage (e.g., in a slot or action):
       <div class="input-area">
         <input id="questionInput"
                type="text"
-               placeholder="Type your question..."
+               placeholder="[[i18n('label.ui.kd-conversation.question.placeholder')]]"
                value="{{_currentQuestion::input}}"
                on-keydown="_handleKeyDown"
                disabled$="[[_inputDisabled]]">
         <button class="send-button"
                 on-tap="_sendQuestion"
                 disabled$="[[_sendDisabled]]"
-                title="Send">
+                title="[[i18n('label.ui.kd-conversation.send')]]">
           <iron-icon icon="icons:send"></iron-icon>
         </button>
       </div>
 
       <!-- Footer -->
       <div class="dialog-footer">
-        <paper-button class="secondary" on-tap="_clearForNewConversation" disabled$="[[_clearDisabled]]">Clear</paper-button>
+        <paper-button class="secondary" on-tap="_clearForNewConversation" disabled$="[[_clearDisabled]]">[[i18n('label.ui.kd-ask.clear')]]</paper-button>
         <label class="show-references-checkbox">
           <input type="checkbox" checked="{{_showReferences::change}}" disabled$="[[!_selectedAgentId]]">
-          <span>Show References</span>
+          <span>[[i18n('label.ui.kd-conversation.showReferences')]]</span>
         </label>
-        <paper-button class="secondary" dialog-dismiss>Close</paper-button>
+        <paper-button class="secondary" dialog-dismiss>[[i18n('label.ui.kd-ask.close')]]</paper-button>
       </div>
-
     </nuxeo-dialog>
 
   </template>
@@ -402,7 +432,7 @@ Example usage (e.g., in a slot or action):
       properties: {
         label: {
           type: String,
-          value: 'Ask Knowledge Discovery'
+          value: window.nuxeo.I18n.translate('label.ui.kd-conversation')
         },
 
         showLabel: {
@@ -689,10 +719,10 @@ Example usage (e.g., in a slot or action):
             var docRefs = result.response.message.documentReferences || [];
             this._addMessage('agent', answer, docRefs);
           } else {
-            this._handleError('Unexpected response (code ' + result.responseCode + ')');
+            this._handleError(this.i18n('label.ui.error.unexpected.response') + "(code " + result.responseCode + ")");
           }
         }.bind(this)).catch(function(err) {
-          this._handleError('Error starting conversation: ' + (err.message || err));
+          this._handleError(this.i18n('label.ui.error.starting.conversation') + (err.message || err));
         }.bind(this));
       },
 
@@ -712,10 +742,10 @@ Example usage (e.g., in a slot or action):
             var docRefs = result.response.documentReferences || [];
             this._addMessage('agent', answer, docRefs);
           } else {
-            this._handleError('Unexpected response (code ' + result.responseCode + ')');
+            this._handleError(this.i18n('label.ui.error.unexpected.response') + "(code " + result.responseCode + ")");
           }
         }.bind(this)).catch(function(err) {
-          this._handleError('Error continuing conversation: ' + (err.message || err));
+          this._handleError(this.i18n('label.ui.error.continuing.conversation') + (err.message || err));
         }.bind(this));
       },
 
@@ -731,7 +761,7 @@ Example usage (e.g., in a slot or action):
           }
           return jsonStr;
         } catch(e) {
-          this._handleError('Error parsing response');
+          this._handleError(this.i18n('label.ui.error.parsing.response') + (e.message || e));
           return null;
         }
       },
