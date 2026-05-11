@@ -33,3 +33,5 @@ bin/
 nashorn_code_cache
 dev_null
 .vscode
+AGENTS.md
+.opencode
