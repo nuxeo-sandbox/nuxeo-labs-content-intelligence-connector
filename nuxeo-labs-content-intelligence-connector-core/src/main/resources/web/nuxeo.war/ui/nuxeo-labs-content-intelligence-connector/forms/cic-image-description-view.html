@@ -1,0 +1,38 @@
+<!--
+`cic-image-description-view`
+@group Nuxeo UI
+@element cic-image-description-view
+-->
+<dom-module id="cic-image-description-view">
+  <template>
+    <style include="nuxeo-styles"></style>
+
+    <template is="dom-if" if="[[hasFacet(document, 'CICImageDescription')]]">
+      <h5>
+        [[i18n('label.ui.imageDescription')]]
+      </h5>
+
+      <div role="widget">
+        <div name="description"
+             class="multiline"
+             style="word-break: keep-all">[[document.properties.cicimagedescription:description]]
+        </div>
+      </div>
+    </template>
+
+  </template>
+
+  <script>
+  Polymer({
+    is: 'cic-image-description-view',
+    behaviors: [Nuxeo.LayoutBehavior],
+    properties: {
+
+      document: {
+        type: Object
+      }
+    }
+
+  });
+  </script>
+</dom-module>

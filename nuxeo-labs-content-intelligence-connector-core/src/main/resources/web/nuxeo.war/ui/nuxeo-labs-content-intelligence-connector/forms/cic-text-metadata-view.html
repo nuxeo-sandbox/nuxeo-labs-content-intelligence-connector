@@ -1,0 +1,81 @@
+<!--
+`cic-text-metadata-view`
+@group Nuxeo UI
+@element cic-text-metadata-view
+-->
+<dom-module id="cic-text-metadata-view">
+  <template>
+    <style include="nuxeo-styles">
+      .marginLeft {
+        margin-left: 10px;
+      }
+      .maginBottom {
+        margin-bottom: 10px;
+      }
+    </style>
+
+    <template is="dom-if" if="[[hasFacet(document, 'CICTextMetadata')]]">
+      <h4>
+        [[i18n('label.ui.schema.textMetadata')]]
+      </h4>
+
+      <div class="marginLeft">
+        <div role="widget">
+          <label>[[i18n('label.ui.schema.textMetadata.company')]]</label>
+          <div name="company" class="marginLeft maginBottom">
+            <template is="dom-if" if="[[document.properties.cictextmetadata:company]]">
+              <nuxeo-tag>[[document.properties.cictextmetadata:company]]</nuxeo-tag>
+            </template>
+            <template is="dom-if" if="[[-document.properties.cictextmetadata:company]]">
+              &nbsp;
+            </template>
+          </div>
+        </div>
+
+        <div role="widget">
+          <label>[[i18n('label.ui.schema.textMetadata.owner')]]</label>
+          <div name="owner" class="marginLeft maginBottom">
+            <template is="dom-if" if="[[document.properties.cictextmetadata:owner]]">
+              <nuxeo-tag>[[document.properties.cictextmetadata:owner]]</nuxeo-tag>
+            </template>
+            <template is="dom-if" if="[[-document.properties.cictextmetadata:owner]]">
+              &nbsp;
+            </template>
+          </div>
+        </div>
+
+        <nuxeo-directory-suggestion value="[[document.properties.cictextmetadata:security]]"
+                                    label="[[i18n('label.ui.schema.textMetadata.security')]]"
+                                    readonly="true"
+                                    directory-name="cicSecurityLevel"
+                                    name="security"
+                                    role="widget"></nuxeo-directory-suggestion>
+
+        <div role="widget">
+          <label>[[i18n('label.ui.schema.textMetadata.keywords')]]</label>
+          <div name="keywords" class="marginLeft maginBottom">
+            <dom-repeat items="[[document.properties.cictextmetadata:keywords]]" as="keyword">
+              <template>
+                <nuxeo-tag>[[keyword]]</nuxeo-tag>
+              </template>
+            </dom-repeat>
+          </div>
+        </div>
+      </div>
+    </template>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'cic-text-metadata-view',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+
+        document: {
+          type: Object
+        }
+      }
+
+    });
+  </script>
+</dom-module>

@@ -1,0 +1,56 @@
+<!--
+`cic-text-metadata-edit`
+@group Nuxeo UI
+@element cic-text-metadata-edit
+-->
+<dom-module id="cic-text-metadata-edit">
+  <template>
+    <style include="nuxeo-styles"></style>
+
+    <template is="dom-if" if="[[hasFacet(document, 'CICTextMetadata')]]">
+      <nuxeo-input value="{{document.properties.cictextmetadata:company}}"
+                   label="[[i18n('label.ui.schema.textMetadata.company')]]"
+                   type="text" name="company" role="widget"></nuxeo-input>
+
+      <nuxeo-data-table role="widget" items="{{document.properties.cictextmetadata:keywords}}"
+                        orderable="true" editable="true" name="keywords">
+
+        <nuxeo-data-table-column name="[[i18n('label.ui.schema.textMetadata.keywords')]]">
+          <template>
+            [[item]]
+          </template>
+        </nuxeo-data-table-column>
+
+        <nuxeo-data-table-form>
+          <template>
+            <nuxeo-input value="{{item}}" label="[[i18n('label.ui.schema.textMetadata.keywords')]]" type="text" name="keywords"></nuxeo-input>
+          </template>
+        </nuxeo-data-table-form>
+      </nuxeo-data-table>
+
+      <nuxeo-input value="{{document.properties.cictextmetadata:owner}}"
+                   label="[[i18n('label.ui.schema.textMetadata.owner')]]"
+                   type="text" name="owner" role="widget"></nuxeo-input>
+
+      <nuxeo-directory-suggestion value="{{document.properties.cictextmetadata:security}}"
+                                  label="[[i18n('label.ui.schema.textMetadata.security')]]"
+                                  min-chars="0" directory-name="cicSecurityLevel"
+                                  name="security" role="widget"></nuxeo-directory-suggestion>
+    </template>
+
+  </template>
+
+  <script>
+  Polymer({
+    is: 'cic-text-metadata-edit',
+    behaviors: [Nuxeo.LayoutBehavior],
+    properties: {
+
+      document: {
+        type: Object
+      }
+    }
+
+  });
+  </script>
+</dom-module>

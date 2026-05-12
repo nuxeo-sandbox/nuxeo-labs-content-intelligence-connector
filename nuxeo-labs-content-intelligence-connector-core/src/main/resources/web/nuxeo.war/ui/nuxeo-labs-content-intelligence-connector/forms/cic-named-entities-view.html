@@ -1,0 +1,64 @@
+<!--
+`cic-named-entities-view`
+@group Nuxeo UI
+@element cic-named-entities-view
+-->
+<dom-module id="cic-named-entities-view">
+  <template>
+    <style include="nuxeo-styles">
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      th, td {
+        border: 1px solid darkgrey;
+        padding: 5px;
+        text-align: left;
+        vertical-align: top;
+      }
+    </style>
+
+    <template is="dom-if" if="[[hasFacet(document, 'CICNamedEntities')]]">
+      <h5>
+        [[i18n('label.ui.entities')]]
+      </h5>
+
+      <table>
+        <thead>
+          <tr>
+            <th>[[i18n('label.ui.entity')]]</th>
+            <th>[[i18n('label.ui.value')]]</th>
+          </tr>
+        </thead>
+        <tbody>
+          <template is="dom-repeat" items="[[document.properties.cicnamedentities:entities]]">
+            <tr>
+              <td>[[item.entity]]</td>
+              <td>
+                <template is="dom-repeat" items="[[item.values]]">
+                  [[item]]<br>
+                </template>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </template>
+
+  </template>
+
+  <script>
+  Polymer({
+    is: 'cic-named-entities-view',
+    behaviors: [Nuxeo.LayoutBehavior],
+    properties: {
+
+      document: {
+        type: Object
+      }
+    }
+
+  });
+  </script>
+</dom-module>

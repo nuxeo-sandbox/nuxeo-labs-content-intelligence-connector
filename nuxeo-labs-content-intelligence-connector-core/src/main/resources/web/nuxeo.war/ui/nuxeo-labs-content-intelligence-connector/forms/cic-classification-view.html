@@ -1,0 +1,52 @@
+<!--
+`cic-classification-view`
+@group Nuxeo UI
+@element cic-classification-view
+-->
+<dom-module id="cic-classification-view">
+  <template>
+    <style include="nuxeo-styles"></style>
+
+    <template is="dom-if" if="[[hasFacet(document, 'CICClassification')]]">
+      <h5>
+        [[i18n('label.ui.classification')]]
+      </h5>
+      <div role="widget">
+        <div name="class">
+          <template is="dom-if" if="[[hasFacet(document, 'Picture')]]">
+            <nuxeo-directory-suggestion value="[[document.properties.cicclassification:imageClass]]"
+                                        label=""
+                                        readonly="true"
+                                        directory-name="cicImageClassification"
+                                        name="imageClass"
+                                        role="widget"></nuxeo-directory-suggestion>
+          </template>
+          <template is="dom-if" if="[[!hasFacet(document, 'Picture')]]">
+            <nuxeo-directory-suggestion value="[[document.properties.cicclassification:textClass]]"
+                                        label=""
+                                        readonly="true"
+                                        directory-name="cicTextClassification"
+                                        name="textClass"
+                                        role="widget"></nuxeo-directory-suggestion>
+          </template>
+        </div>
+      </div>
+
+      <hr>
+    </template>
+  </template>
+
+  <script>
+  Polymer({
+    is: 'cic-classification-view',
+    behaviors: [Nuxeo.LayoutBehavior],
+    properties: {
+
+      document: {
+        type: Object
+      }
+    }
+
+  });
+  </script>
+</dom-module>
