@@ -28,6 +28,7 @@
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.discovery.HylandKDInvokeOp"/>
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.discovery.HylandKDGetAllAgentsOp"/>
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.discovery.HylandKDAskQuestionAndGetAnswerOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.discovery.CICKDAskQuestionForUIOp"/>
         <!-- Discovery Conversations -->
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.discovery.HylandKDStartConversationOp"/>
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.discovery.HylandKDContinueConversationOp"/>

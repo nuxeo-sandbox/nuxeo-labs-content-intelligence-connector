@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.labs.hyland.content.intelligence.ui.pageproviders">
+
+    <require>org.nuxeo.ecm.platform.query.api.PageProviderService</require>
+
+    <extension target="org.nuxeo.ecm.platform.query.api.PageProviderService" point="providers">
+
+        <!--
+            Page provider used by the kd-ask-question dialog (UI element kd-ask-question-shared)
+            to let the user pick a CICAgentAndConfig document. The dialog reads the selected
+            document's cicagentandconfig:configName and cicagentandconfig:agentId to build the
+            KD call.
+        -->
+        <coreQueryPageProvider name="SelectCICAgentAndConfig">
+            <pattern>
+                SELECT * FROM CICAgentAndConfig
+                WHERE ecm:isVersion = 0
+                  AND ecm:isTrashed = 0
+                  AND ecm:isProxy = 0
+                  AND ecm:mixinType != 'HiddenInNavigation'
+                  AND ecm:fulltext = '?'
+            </pattern>
+            <sort column="dc:title" ascending="true"/>
+            <pageSize>10</pageSize>
+        </coreQueryPageProvider>
+
+    </extension>
+
+</component>

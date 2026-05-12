@@ -1,0 +1,229 @@
+<!--
+`nuxeo-labs-content-intelligence-connector-bundle.html`
+
+Web UI slot contributions for the Hyland Content Intelligence Connector plugin.
+This bundle is appended to the `web-ui` Web Resources bundle by
+OSGI-INF/cic-ui-bundle-contrib.xml.
+
+All slot-content names are prefixed with `cic-` to avoid collisions with other bundles.
+All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json files).
+-->
+
+<link rel="import" href="elements/nuxeo-operation-button-with-spinner.html">
+<link rel="import" href="elements/kd-ask-question.html">
+<link rel="import" href="elements/kd-ask-question-with-selected.html">
+
+<!-- ==================== Agents (single-document actions) ==================== -->
+
+<!-- Lookup an agent definition and persist its data on a CICAgenticAgentAndConfig document.
+     Calls CIC.AgenticAgentLookup. -->
+<nuxeo-slot-content name="cic-agents-lookupAgent" slot="DOCUMENT_ACTIONS" order="1">
+  <template>
+    <nuxeo-filter document="[[document]]" permission="ReadWrite" type="CICAgenticAgentAndConfig" user="[[user]]">
+      <template>
+        <nuxeo-operation-button-with-spinner
+            event="document-updated"
+            icon="icons:announcement"
+            input="[[document]]"
+            label="label.ui.cic.agents.lookupAgent"
+            notification="label.ui.cic.agents.lookupAgent.done"
+            operation="CIC.AgenticAgentLookup">
+        </nuxeo-operation-button-with-spinner>
+      </template>
+    </nuxeo-filter>
+  </template>
+</nuxeo-slot-content>
+
+<!-- ==================== Knowledge Enrichment - Image actions ==================== -->
+
+<!-- Filter expression used by all KE image actions:
+     Picture facet, has file:content, not a version, not a proxy. -->
+
+<nuxeo-slot-content name="cic-ke-image-classify" slot="DOCUMENT_ACTIONS" order="1">
+  <template>
+    <nuxeo-filter document="[[document]]"
+                  expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
+                  facet="Picture" permission="ReadWrite" user="[[user]]">
+      <template>
+        <nuxeo-operation-button-with-spinner
+            event="document-updated"
+            icon="icons:class"
+            input="[[document]]"
+            label="label.ui.cic.ke.classify"
+            notification="label.ui.cic.ke.classify.done"
+            operation="CIC.ClassifyImage">
+        </nuxeo-operation-button-with-spinner>
+      </template>
+    </nuxeo-filter>
+  </template>
+</nuxeo-slot-content>
+
+<nuxeo-slot-content name="cic-ke-image-description" slot="DOCUMENT_ACTIONS" order="1">
+  <template>
+    <nuxeo-filter document="[[document]]"
+                  expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
+                  facet="Picture" permission="ReadWrite" user="[[user]]">
+      <template>
+        <nuxeo-operation-button-with-spinner
+            event="document-updated"
+            icon="icons:description"
+            input="[[document]]"
+            label="label.ui.cic.ke.image.description"
+            notification="label.ui.cic.ke.image.description.done"
+            operation="CIC.GetImageDescription">
+        </nuxeo-operation-button-with-spinner>
+      </template>
+    </nuxeo-filter>
+  </template>
+</nuxeo-slot-content>
+
+<nuxeo-slot-content name="cic-ke-image-metadata" slot="DOCUMENT_ACTIONS" order="1">
+  <template>
+    <nuxeo-filter document="[[document]]"
+                  expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
+                  facet="Picture" permission="ReadWrite" user="[[user]]">
+      <template>
+        <nuxeo-operation-button-with-spinner
+            event="document-updated"
+            icon="icons:note-add"
+            input="[[document]]"
+            label="label.ui.cic.ke.metadata"
+            notification="label.ui.cic.ke.metadata.done"
+            operation="CIC.GetImageMetadata">
+        </nuxeo-operation-button-with-spinner>
+      </template>
+    </nuxeo-filter>
+  </template>
+</nuxeo-slot-content>
+
+<nuxeo-slot-content name="cic-ke-image-named-entities" slot="DOCUMENT_ACTIONS" order="1">
+  <template>
+    <nuxeo-filter document="[[document]]"
+                  expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
+                  facet="Picture" permission="ReadWrite" user="[[user]]">
+      <template>
+        <nuxeo-operation-button-with-spinner
+            event="document-updated"
+            icon="icons:view-list"
+            input="[[document]]"
+            label="label.ui.cic.ke.namedEntities"
+            notification="label.ui.cic.ke.namedEntities.done"
+            operation="CIC.GetNamedEntitiesFromImage">
+        </nuxeo-operation-button-with-spinner>
+      </template>
+    </nuxeo-filter>
+  </template>
+</nuxeo-slot-content>
+
+<!-- ==================== Knowledge Enrichment - Text/File actions ==================== -->
+
+<nuxeo-slot-content name="cic-ke-text-metadata" slot="DOCUMENT_ACTIONS" order="1">
+  <template>
+    <nuxeo-filter document="[[document]]"
+                  expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
+                  type="File" permission="ReadWrite" user="[[user]]">
+      <template>
+        <nuxeo-operation-button-with-spinner
+            event="document-updated"
+            icon="icons:note-add"
+            input="[[document]]"
+            label="label.ui.cic.ke.metadata"
+            notification="label.ui.cic.ke.metadata.done"
+            operation="CIC.GetTextMetadata">
+        </nuxeo-operation-button-with-spinner>
+      </template>
+    </nuxeo-filter>
+  </template>
+</nuxeo-slot-content>
+
+<nuxeo-slot-content name="cic-ke-textfile-classify" slot="DOCUMENT_ACTIONS" order="1">
+  <template>
+    <nuxeo-filter document="[[document]]"
+                  expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
+                  type="File" permission="ReadWrite" user="[[user]]">
+      <template>
+        <nuxeo-operation-button-with-spinner
+            event="document-updated"
+            icon="icons:class"
+            input="[[document]]"
+            label="label.ui.cic.ke.classify"
+            notification="label.ui.cic.ke.classify.done"
+            operation="CIC.ClassifyTextFile">
+        </nuxeo-operation-button-with-spinner>
+      </template>
+    </nuxeo-filter>
+  </template>
+</nuxeo-slot-content>
+
+<nuxeo-slot-content name="cic-ke-textfile-embeddings" slot="DOCUMENT_ACTIONS" order="1">
+  <template>
+    <nuxeo-filter document="[[document]]"
+                  expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
+                  type="File" permission="ReadWrite" user="[[user]]">
+      <template>
+        <nuxeo-operation-button-with-spinner
+            event="document-updated"
+            icon="icons:fingerprint"
+            input="[[document]]"
+            label="label.ui.cic.ke.embeddings"
+            notification="label.ui.cic.ke.embeddings.done"
+            operation="CIC.GetTextEmbeddings">
+        </nuxeo-operation-button-with-spinner>
+      </template>
+    </nuxeo-filter>
+  </template>
+</nuxeo-slot-content>
+
+<nuxeo-slot-content name="cic-ke-textfile-named-entities" slot="DOCUMENT_ACTIONS" order="1">
+  <template>
+    <nuxeo-filter document="[[document]]"
+                  expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
+                  type="File" permission="ReadWrite" user="[[user]]">
+      <template>
+        <nuxeo-operation-button-with-spinner
+            event="document-updated"
+            icon="icons:view-list"
+            input="[[document]]"
+            label="label.ui.cic.ke.namedEntities"
+            notification="label.ui.cic.ke.namedEntities.done"
+            operation="CIC.GetNamedEntitiesFromText">
+        </nuxeo-operation-button-with-spinner>
+      </template>
+    </nuxeo-filter>
+  </template>
+</nuxeo-slot-content>
+
+<nuxeo-slot-content name="cic-ke-textfile-summarize" slot="DOCUMENT_ACTIONS" order="1">
+  <template>
+    <nuxeo-filter document="[[document]]"
+                  expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
+                  type="File" permission="ReadWrite" user="[[user]]">
+      <template>
+        <nuxeo-operation-button-with-spinner
+            event="document-updated"
+            icon="icons:account-balance-wallet"
+            input="[[document]]"
+            label="label.ui.cic.ke.summarize"
+            notification="label.ui.cic.ke.summarize.done"
+            operation="CIC.SummarizeText">
+        </nuxeo-operation-button-with-spinner>
+      </template>
+    </nuxeo-filter>
+  </template>
+</nuxeo-slot-content>
+
+<!-- ==================== Knowledge Discovery - Ask question ==================== -->
+
+<!-- Single-document context: open the dialog from the document toolbar. -->
+<nuxeo-slot-content name="cic-kd-ask-question" slot="DOCUMENT_ACTIONS" order="1">
+  <template>
+    <kd-ask-question icon="icons:question-answer"></kd-ask-question>
+  </template>
+</nuxeo-slot-content>
+
+<!-- Multi-document context: open the dialog from a results selection toolbar. -->
+<nuxeo-slot-content name="cic-kd-ask-question-with-selected" slot="RESULTS_SELECTION_ACTIONS" order="1">
+  <template>
+    <kd-ask-question-with-selected icon="icons:question-answer" selected-items="[[selectedItems]]"></kd-ask-question-with-selected>
+  </template>
+</nuxeo-slot-content>
