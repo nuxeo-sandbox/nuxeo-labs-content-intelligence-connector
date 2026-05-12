@@ -20,6 +20,7 @@ package org.nuxeo.labs.hyland.content.intelligence.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -117,7 +118,8 @@ public class TestXMLContributions {
 
         
         contribs = keService.getContribNames();
-        assertEquals(2, contribs.size());
+        // default + more-ke-1 + more-ke-with-embeddings
+        assertEquals(3, contribs.size());
         KEDescriptor keDesc = keService.getKEDescriptor("more-ke-1");
         assertNotNull(keDesc);
         assertTrue(keDesc.hasAllValues());
@@ -128,6 +130,35 @@ public class TestXMLContributions {
         DCDescriptor dcDesc = dcService.getDCDescriptor("more-dc-1");
         assertNotNull(dcDesc);
         assertTrue(dcDesc.hasAllValues());
+    }
+
+    /**
+     * Verify the optional embeddings* descriptor fields parse and are exposed via the service.
+     *
+     * @since 2025.18
+     */
+    @Test
+    @Deploy("nuxeo-hyland-content-intelligence-connector-core:more-mock-configs.xml")
+    public void embeddingsDescriptorFieldsParse() {
+        // default contrib leaves them blank
+        KEDescriptor defaultDesc = keService.getKEDescriptor(CICServiceConstants.CONFIG_DEFAULT);
+        assertNotNull(defaultDesc);
+        assertNull(defaultDesc.getEmbeddingsFacet());
+        assertNull(defaultDesc.getEmbeddingsImageXpath());
+        assertNull(defaultDesc.getEmbeddingsTextXpath());
+        assertNull(keService.getEmbeddingsFacet(CICServiceConstants.CONFIG_DEFAULT));
+
+        // more-ke-with-embeddings contrib sets them
+        KEDescriptor desc = keService.getKEDescriptor("more-ke-with-embeddings");
+        assertNotNull(desc);
+        assertEquals("Embeddings", desc.getEmbeddingsFacet());
+        assertEquals("embeddings:image", desc.getEmbeddingsImageXpath());
+        assertEquals("embeddings:text", desc.getEmbeddingsTextXpath());
+
+        // service convenience getters
+        assertEquals("Embeddings", keService.getEmbeddingsFacet("more-ke-with-embeddings"));
+        assertEquals("embeddings:image", keService.getEmbeddingsImageXpath("more-ke-with-embeddings"));
+        assertEquals("embeddings:text", keService.getEmbeddingsTextXpath("more-ke-with-embeddings"));
     }
     
 }

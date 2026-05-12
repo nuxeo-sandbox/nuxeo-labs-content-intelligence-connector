@@ -103,9 +103,10 @@ public class TestMiscAutomation {
         JSONObject resultJson = new JSONObject(resultJsonStr);
         
         JSONArray contribs = resultJson.getJSONArray("knowledgeEnrichment");
-        assertEquals(2, contribs.length());
+        assertEquals(3, contribs.length());
         contribs.toList().contains("default");
         contribs.toList().contains("more-ke-1");
+        contribs.toList().contains("more-ke-with-embeddings");
         
         contribs = resultJson.getJSONArray("dataCuration");
         assertEquals(2, contribs.length());

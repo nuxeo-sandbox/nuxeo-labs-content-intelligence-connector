@@ -12,4 +12,8 @@ Nuxeo-Component: OSGI-INF/service-enrichment-contrib.xml,
     OSGI-INF/service-ingest-contrib.xml,
     OSGI-INF/service-agents-contrib.xml,
     OSGI-INF/service-contentlake-contrib.xml,
-    OSGI-INF/automation-contrib.xml
+    OSGI-INF/automation-contrib.xml,
+    OSGI-INF/cic-ui-schemas-contrib.xml,
+    OSGI-INF/cic-ui-doctypes-contrib.xml,
+    OSGI-INF/cic-ui-directories-contrib.xml,
+    OSGI-INF/cic-enrichment-helper-contrib.xml

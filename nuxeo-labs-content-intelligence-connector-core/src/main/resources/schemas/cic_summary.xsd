@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:cicsummary="http://www.nuxeo.org/ecm/schemas/cic/summary"
+           targetNamespace="http://www.nuxeo.org/ecm/schemas/cic/summary">
+
+  <xs:element name="summary" type="xs:string"/>
+  <xs:element name="doneWithMaxWordCount" type="xs:integer"/>
+
+</xs:schema>

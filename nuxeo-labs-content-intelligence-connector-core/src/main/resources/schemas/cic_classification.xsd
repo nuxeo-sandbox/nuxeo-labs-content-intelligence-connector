@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:cicclassification="http://www.nuxeo.org/ecm/schemas/cic/classification"
+           targetNamespace="http://www.nuxeo.org/ecm/schemas/cic/classification">
+
+  <xs:element name="imageClass" type="xs:string"/>
+  <xs:element name="textClass" type="xs:string"/>
+
+</xs:schema>

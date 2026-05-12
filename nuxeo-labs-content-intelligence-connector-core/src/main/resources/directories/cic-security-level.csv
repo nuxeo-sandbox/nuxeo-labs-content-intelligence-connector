@@ -1,0 +1,5 @@
+"id","label","obsolete","ordering"
+"public","label.cic.security.public",0,10
+"internal","label.cic.security.internal",0,20
+"confidential","label.cic.security.confidential",0,30
+"restricted","label.cic.security.restricted",0,40

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:cicagentandconfig="http://www.nuxeo.org/ecm/schemas/cic/agentandconfig"
+           targetNamespace="http://www.nuxeo.org/ecm/schemas/cic/agentandconfig">
+
+  <xs:element name="agentId" type="xs:string"/>
+  <xs:element name="configName" type="xs:string"/>
+
+</xs:schema>

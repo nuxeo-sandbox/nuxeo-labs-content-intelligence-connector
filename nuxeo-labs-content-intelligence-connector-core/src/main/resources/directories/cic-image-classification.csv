@@ -1,0 +1,9 @@
+"id","label","obsolete","ordering"
+"photo","label.cic.imageclass.photo",0,10
+"illustration","label.cic.imageclass.illustration",0,20
+"diagram","label.cic.imageclass.diagram",0,30
+"screenshot","label.cic.imageclass.screenshot",0,40
+"document","label.cic.imageclass.document",0,50
+"logo","label.cic.imageclass.logo",0,60
+"chart","label.cic.imageclass.chart",0,70
+"other","label.cic.imageclass.other",0,80

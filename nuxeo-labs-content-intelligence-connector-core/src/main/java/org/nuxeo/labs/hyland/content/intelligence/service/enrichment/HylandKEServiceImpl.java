@@ -33,7 +33,10 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.Blob;
+import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.NuxeoException;
+import org.nuxeo.ecm.platform.picture.api.PictureView;
+import org.nuxeo.ecm.platform.picture.api.adapters.MultiviewPicture;
 import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationToken;
 import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationTokenEnrichment;
 import org.nuxeo.labs.hyland.content.intelligence.ContentToProcess;
@@ -78,7 +81,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
 
     protected static ServiceCall serviceCall = new ServiceCall();
 
-    protected static boolean useKEV2 = false;
+    protected static boolean useKEV2 = true;
 
     // ====================> Extensions points
     protected static final String EXT_POINT_KE = "knowledgeEnrichment";
@@ -114,7 +117,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         pullResultsSleepIntervalMS = ServicesUtils.configParamToInt(PULL_RESULTS_SLEEP_INTERVAL_PARAM,
                 PULL_RESULTS_SLEEP_INTERVAL_DEFAULT);
 
-        useKEV2 = ServicesUtils.configParamToBoolean(KE_USE_V2_PARAM, false);
+        useKEV2 = ServicesUtils.configParamToBoolean(KE_USE_V2_PARAM, true);
 
         logConfigurationInfo();
     }
@@ -603,6 +606,107 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
     @Override
     public KEDescriptor getKEDescriptor(String configName) {
         return super.getDescriptor(configName);
+    }
+
+    @Override
+    public String getEmbeddingsFacet(String configName) {
+        KEDescriptor d = getKEDescriptor(configName);
+        return d == null ? null : d.getEmbeddingsFacet();
+    }
+
+    @Override
+    public String getEmbeddingsImageXpath(String configName) {
+        KEDescriptor d = getKEDescriptor(configName);
+        return d == null ? null : d.getEmbeddingsImageXpath();
+    }
+
+    @Override
+    public String getEmbeddingsTextXpath(String configName) {
+        KEDescriptor d = getKEDescriptor(configName);
+        return d == null ? null : d.getEmbeddingsTextXpath();
+    }
+
+    @Override
+    public String getPictureRenditionName(String configName) {
+        KEDescriptor d = getKEDescriptor(configName);
+        return d == null ? KEDescriptor.DEFAULT_PICTURE_RENDITION_NAME : d.getPictureRenditionName();
+    }
+
+    /**
+     * Schema / facet constants for the {@code CICError} contract.
+     *
+     * @since 2025.18
+     */
+    public static final String CIC_ERROR_FACET = "CICError";
+
+    public static final String CIC_ERROR_SCHEMA = "cic_error";
+
+    public static final String CIC_ERROR_FIELD_SERVICE = "cic_error:service";
+
+    public static final String CIC_ERROR_FIELD_RESPONSE_CODE = "cic_error:responseCode";
+
+    public static final String CIC_ERROR_FIELD_RESPONSE_MESSAGE = "cic_error:responseMessage";
+
+    public static final String CIC_ERROR_FIELD_MESSAGE = "cic_error:message";
+
+    public static final String CIC_ERROR_FIELD_FULL_JSON = "cic_error:fullResponseJson";
+
+    @Override
+    public Blob getImageRenditionForCIC(DocumentModel doc, String configName, String renditionName,
+            boolean recordError) {
+        if (doc == null) {
+            throw new NuxeoException("doc is required");
+        }
+        String view = StringUtils.isBlank(renditionName) ? getPictureRenditionName(configName) : renditionName;
+        MultiviewPicture mvp = doc.getAdapter(MultiviewPicture.class);
+        if (mvp == null) {
+            if (recordError) {
+                setCICError(doc, SERVICE_LABEL, 0, "No picture adapter",
+                        "Document " + doc.getId() + " has no MultiviewPicture adapter (not a Picture)", null);
+            }
+            return null;
+        }
+        PictureView pv = mvp.getView(view);
+        if (pv == null) {
+            if (recordError) {
+                setCICError(doc, SERVICE_LABEL, 0, "Picture view not found",
+                        "Picture view '" + view + "' is not available on document " + doc.getId(), null);
+            }
+            return null;
+        }
+        return pv.getBlob();
+    }
+
+    @Override
+    public void clearCICError(DocumentModel doc) {
+        if (doc == null) {
+            return;
+        }
+        if (doc.hasFacet(CIC_ERROR_FACET)) {
+            doc.setPropertyValue(CIC_ERROR_FIELD_SERVICE, null);
+            doc.setPropertyValue(CIC_ERROR_FIELD_RESPONSE_CODE, null);
+            doc.setPropertyValue(CIC_ERROR_FIELD_RESPONSE_MESSAGE, null);
+            doc.setPropertyValue(CIC_ERROR_FIELD_MESSAGE, null);
+            doc.setPropertyValue(CIC_ERROR_FIELD_FULL_JSON, null);
+            doc.removeFacet(CIC_ERROR_FACET);
+        }
+    }
+
+    @Override
+    public void setCICError(DocumentModel doc, String service, int responseCode, String shortMessage,
+            String fullMessage, String fullJson) {
+        if (doc == null) {
+            throw new NuxeoException("doc is required");
+        }
+        if (!doc.hasFacet(CIC_ERROR_FACET)) {
+            doc.addFacet(CIC_ERROR_FACET);
+        }
+        doc.setPropertyValue(CIC_ERROR_FIELD_SERVICE, service);
+        // Schema declares xs:integer => use Long for safety.
+        doc.setPropertyValue(CIC_ERROR_FIELD_RESPONSE_CODE, (long) responseCode);
+        doc.setPropertyValue(CIC_ERROR_FIELD_RESPONSE_MESSAGE, shortMessage);
+        doc.setPropertyValue(CIC_ERROR_FIELD_MESSAGE, fullMessage);
+        doc.setPropertyValue(CIC_ERROR_FIELD_FULL_JSON, fullJson);
     }
 
     /**

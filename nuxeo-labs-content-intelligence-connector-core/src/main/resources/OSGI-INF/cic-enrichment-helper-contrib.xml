@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.labs.hyland.content.intelligence.CICEnrichmentHelper">
+
+    <implementation
+        class="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.CICEnrichmentHelperImpl" />
+
+    <service>
+        <provide
+            interface="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.CICEnrichmentHelper" />
+    </service>
+
+</component>

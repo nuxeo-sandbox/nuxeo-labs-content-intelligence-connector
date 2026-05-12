@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.labs.hyland.content.intelligence.ui.doctypes">
+
+  <require>org.nuxeo.labs.hyland.content.intelligence.ui.schemas</require>
+
+  <extension target="org.nuxeo.ecm.core.schema.TypeService" point="doctype">
+
+    <!-- ============================================================
+         Facets carrying the CIC enrichment/curation result schemas.
+         Added to existing doctypes (File, Picture, ...) by an admin
+         contribution or via the dedicated facets XML below.
+         ============================================================ -->
+
+    <facet name="CICSummary">
+      <schema name="cic_summary"/>
+    </facet>
+
+    <facet name="CICClassification">
+      <schema name="cic_classification"/>
+    </facet>
+
+    <facet name="CICNamedEntities">
+      <schema name="cic_named_entities"/>
+    </facet>
+
+    <facet name="CICMetadataDetection">
+      <schema name="cic_metadata_detection"/>
+    </facet>
+
+    <facet name="CICTextMetadata">
+      <schema name="cic_text_metadata"/>
+    </facet>
+
+    <facet name="CICImageDescription">
+      <schema name="cic_image_description"/>
+    </facet>
+
+    <facet name="CICError">
+      <schema name="cic_error"/>
+    </facet>
+
+    <!-- ============================================================
+         NOTE: CIC facets are NOT appended to standard doctypes here.
+         They are added dynamically at runtime by the CIC operations
+         (DocumentModel.addFacet("CICSummary"), etc.) right after the
+         service call succeeds, before saving the document.
+         ============================================================ -->
+
+    <!-- ============================================================
+         Agent / Agentic Agent doctypes (ported from the Studio demo).
+         Container types are simple Folders restricting their children.
+         ============================================================ -->
+
+    <doctype name="CICAgentAndConfig" extends="Document">
+      <schema name="common"/>
+      <schema name="dublincore"/>
+      <schema name="cic_agent_and_config"/>
+    </doctype>
+
+    <doctype name="CICAgenticAgentAndConfig" extends="Document">
+      <schema name="common"/>
+      <schema name="dublincore"/>
+      <schema name="cic_agentic_agent_and_config"/>
+    </doctype>
+
+    <doctype name="CICAgentsAndConfigs" extends="Folder">
+      <subtypes>
+        <type>CICAgentAndConfig</type>
+      </subtypes>
+    </doctype>
+
+    <doctype name="CICAgenticAgentsAndConfigs" extends="Folder">
+      <subtypes>
+        <type>CICAgenticAgentAndConfig</type>
+      </subtypes>
+    </doctype>
+
+  </extension>
+
+</component>

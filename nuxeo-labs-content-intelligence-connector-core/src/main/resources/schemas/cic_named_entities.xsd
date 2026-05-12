@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:nxs="http://www.nuxeo.org/ecm/schemas/cic/namedentities"
+           xmlns:cicnamedentities="http://www.nuxeo.org/ecm/schemas/cic/namedentities"
+           targetNamespace="http://www.nuxeo.org/ecm/schemas/cic/namedentities">
+
+  <xs:complexType name="namedEntityType">
+    <xs:sequence>
+      <xs:element name="entity" type="xs:string"/>
+      <xs:element name="values" type="cicnamedentities:stringList"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="stringList">
+    <xs:list itemType="xs:string"/>
+  </xs:simpleType>
+
+  <xs:complexType name="namedEntityListType">
+    <xs:sequence>
+      <xs:element name="item" type="cicnamedentities:namedEntityType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="entities" type="cicnamedentities:namedEntityListType"/>
+
+</xs:schema>
