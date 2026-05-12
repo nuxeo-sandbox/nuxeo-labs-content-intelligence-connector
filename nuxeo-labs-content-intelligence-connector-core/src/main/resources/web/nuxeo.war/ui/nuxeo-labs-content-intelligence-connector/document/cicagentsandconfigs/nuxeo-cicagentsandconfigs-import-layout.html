@@ -1,0 +1,31 @@
+<!--
+`nuxeo-cicagentsandconfigs-import-layout`
+@group Nuxeo UI
+@element nuxeo-cicagentsandconfigs-import-layout
+-->
+<dom-module id="nuxeo-cicagentsandconfigs-import-layout">
+  <template>
+    <style include="nuxeo-styles"></style>
+    <nuxeo-input role="widget" value="{{document.properties.dc:title}}" label="[[i18n('label.dublincore.title')]]" type="text" required="true" name="title"></nuxeo-input>
+
+    <nuxeo-input role="widget" value="{{document.properties.dc:description}}" label="[[i18n('label.dublincore.description')]]" type="text" name="description"></nuxeo-input>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-cicagentsandconfigs-import-layout',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+
+        /**
+         * @doctype CICAgentsAndConfigs
+         */
+        document: {
+          type: Object,
+        },
+
+      }
+    });
+  </script>
+</dom-module>

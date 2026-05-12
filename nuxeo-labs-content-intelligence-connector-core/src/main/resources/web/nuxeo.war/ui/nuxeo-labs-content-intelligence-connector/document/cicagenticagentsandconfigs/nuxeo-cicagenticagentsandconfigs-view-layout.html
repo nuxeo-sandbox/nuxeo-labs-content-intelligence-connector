@@ -1,0 +1,167 @@
+<!--
+`nuxeo-cicagenticagentsandconfigs-view-layout`
+@group Nuxeo UI
+@element nuxeo-cicagenticagentsandconfigs-view-layout
+-->
+<dom-module id="nuxeo-cicagenticagentsandconfigs-view-layout">
+  <template>
+    <style include="nuxeo-styles">
+      :host {
+        display: block;
+      }
+      .results {
+        @apply --layout-vertical;
+        @apply --layout-flex;
+        --nuxeo-results-view-height: var(
+          --nuxeo-document-content-height,
+          var(--nuxeo-document-content-min-height, calc(100vh - 216px - var(--nuxeo-app-top)))
+        );
+        margin-bottom: var(--nuxeo-document-content-margin-bottom, 0);
+      }
+      .results.dragging{
+        border: 2px dashed var(--nuxeo-primary-color);
+      }
+
+      .ellipsis {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        display: block;
+        width: calc(100% - 38px);
+      }
+
+      .capitalize {
+        text-transform: capitalize;
+      }
+
+      nuxeo-tag {
+        margin-right: 2px;
+      }
+
+      nuxeo-justified-grid {
+        height: calc(100vh - 10em);
+      }
+
+    </style>
+    <nuxeo-page-provider id="nxProvider" provider="advanced_document_content" page-size="40"
+                         aggregations="{{aggregations}}" enrichers="thumbnail, permissions"
+                         params="[[params]]"
+                         schemas="dublincore,common,uid,file,cic_agentic_agent_and_config"
+                         headers='{ "X-NXfetch-document": "properties", "X-NXtranslate-directoryEntry": "label" }'
+                         fetch-aggregates>
+    </nuxeo-page-provider>
+
+    <nuxeo-card>
+      <p>[[i18n('label.ui.cicagenticagentsandconfigs.viewInfo')]]</p>
+    </nuxeo-card>
+
+    <nuxeo-results id="results" display-mode="table" name="[[document.uid]]" nx-provider="[[nxProvider]]"
+                   selected-items="{{selectedItems}}" document="[[document]]" display-quick-filters
+                   display-sort="[[_canSort(document, sortOptions)]]" sort-options="[[sortOptions]]" role="widget">
+
+      <nuxeo-data-table role="widget" settings-enabled="true" multi-selection="true" class="results"
+                        selection-enabled on-row-clicked="_navigate"
+                        draggable$="[[_hasWritePermission(document)]]" drop-target-filter="[[_dropTargetFilter]]"
+                        icon="nuxeo:view-list" name="table">
+        <nuxeo-data-table-column name="[[i18n('documentContentView.datatable.header.title')]]" field="dc:title"
+                                 sort-by="[[_displaySort(document, 'dc:title')]]" filter-by="title">
+          <template>
+            <a class="title ellipsis" href$="[[urlFor(item)]]" on-tap="_navigate">
+              [[item.title]]
+            </a>
+          </template>
+        </nuxeo-data-table-column>
+
+        <nuxeo-data-table-column name="[[i18n('label.ui.cicagenticagentandconfig.agentId')]]"
+                                 field="cicagenticagentandconfig:agentId" sort-by="cicagenticagentandconfig:agentId">
+          <template>
+            [[item.properties.cicagenticagentandconfig:agentId]]
+          </template>
+        </nuxeo-data-table-column>
+
+        <nuxeo-data-table-column name="[[i18n('label.ui.cicagenticagentandconfig.configName')]]"
+                                 field="cicagenticagentandconfig:configName" sort-by="cicagenticagentandconfig:configName">
+          <template>
+            [[item.properties.cicagenticagentandconfig:configName]]
+          </template>
+        </nuxeo-data-table-column>
+
+        <nuxeo-data-table-column name="[[i18n('label.dublincore.description')]]" field="dc:description"
+                                 sort-by="dc:description">
+          <template>
+            [[item.properties.dc:description]]
+          </template>
+        </nuxeo-data-table-column>
+
+        <nuxeo-data-table-column name="[[i18n('documentContentView.datatable.header.lastContributor')]]"
+                                 filter-by="dc_last_contributor_agg" field="dc:lastContributor"
+                                 sort-by="[[_displaySort(document, 'dc:lastContributor')]]" flex="50" hidden>
+          <template is="header">
+            <nuxeo-dropdown-aggregation placeholder="[[i18n('documentContentView.datatable.header.lastContributor')]]"
+                                        data="[[aggregations.dc_last_contributor_agg]]"
+                                        value="{{column.filterValue}}" multiple>
+            </nuxeo-dropdown-aggregation>
+          </template>
+          <template>
+            <nuxeo-user-tag user="[[item.properties.dc:lastContributor]]"></nuxeo-user-tag>
+          </template>
+        </nuxeo-data-table-column>
+
+        <nuxeo-data-table-column name="[[i18n('documentContentView.datatable.header.state')]]"
+                                 field="currentLifeCycleState" hidden>
+          <template>
+            <span class="capitalize">[[formatLifecycleState(item.state)]]</span>
+          </template>
+        </nuxeo-data-table-column>
+
+        <nuxeo-data-table-column name="[[i18n('documentContentView.datatable.header.version')]]"
+                                 field="versionLabel" hidden>
+          <template>[[formatVersion(item)]]</template>
+        </nuxeo-data-table-column>
+
+        <nuxeo-data-table-column name="[[i18n('documentContentView.datatable.header.created')]]"
+                                 field="dc:created" sort-by="[[_displaySort(document, 'dc:created')]]"
+                                 flex="50" hidden>
+          <template>
+            <nuxeo-date datetime="[[item.properties.dc:created]]"></nuxeo-date>
+          </template>
+        </nuxeo-data-table-column>
+
+        <nuxeo-data-table-column name="[[i18n('documentContentView.datatable.header.author')]]"
+                                 field="dc:creator" sort-by="[[_displaySort(document, 'dc:creator')]]" hidden>
+          <template>
+            <nuxeo-user-tag user="[[item.properties.dc:creator]]"></nuxeo-user-tag>
+          </template>
+        </nuxeo-data-table-column>
+      </nuxeo-data-table>
+
+      <nuxeo-data-grid name="grid" icon="nuxeo:view-thumbnails" class="results" selection-enabled
+                       draggable$="[[_hasWritePermission(document)]]" drop-target-filter="[[_dropTargetFilter]]">
+        <template>
+          <nuxeo-document-grid-thumbnail class="grid-box" tabindex$="{{tabIndex}}" selected$="{{selected}}"
+                                         index="[[index]]" doc="[[item]]" on-navigate="_navigate"
+                                         selected-items="[[selectedItems]]">
+          </nuxeo-document-grid-thumbnail>
+        </template>
+      </nuxeo-data-grid>
+
+    </nuxeo-results>
+  </template>
+
+  <script>
+  Polymer({
+    is: 'nuxeo-cicagenticagentsandconfigs-view-layout',
+    behaviors: [Nuxeo.DocumentContentBehavior],
+    properties: {
+
+      /**
+       * @doctype CICAgenticAgentsAndConfigs
+       */
+      document: {
+        type: Object,
+      },
+
+    }
+  });
+  </script>
+</dom-module>

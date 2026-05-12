@@ -1,0 +1,37 @@
+<!--
+`nuxeo-cicagentsandconfigs-metadata-layout`
+@group Nuxeo UI
+@element nuxeo-cicagentsandconfigs-metadata-layout
+-->
+<dom-module id="nuxeo-cicagentsandconfigs-metadata-layout">
+  <template>
+    <style include="nuxeo-styles"></style>
+    <div role="widget">
+      <label>[[i18n('label.dublincore.title')]]</label>
+      <div name="title">[[document.properties.dc:title]]</div>
+    </div>
+
+    <div role="widget">
+      <label>[[i18n('label.dublincore.description')]]</label>
+      <div name="description">[[document.properties.dc:description]]</div>
+    </div>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-cicagentsandconfigs-metadata-layout',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+
+        /**
+         * @doctype CICAgentsAndConfigs
+         */
+        document: {
+          type: Object,
+        },
+
+      }
+    });
+  </script>
+</dom-module>

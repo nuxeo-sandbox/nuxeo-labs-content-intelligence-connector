@@ -1,0 +1,57 @@
+<!--
+`nuxeo-cicagentandconfig-view-layout`
+@group Nuxeo UI
+@element nuxeo-cicagentandconfig-view-layout
+-->
+<dom-module id="nuxeo-cicagentandconfig-view-layout">
+  <template>
+    <style include="nuxeo-styles"></style>
+
+    <nuxeo-card>
+
+      <div role="widget">
+        <label>[[i18n('label.dublincore.title')]]</label>
+        <div name="title">[[document.properties.dc:title]]</div>
+      </div>
+
+      <div role="widget">
+        <label>[[i18n('label.dublincore.description')]]</label>
+        <div name="description">[[document.properties.dc:description]]</div>
+      </div>
+
+      <div role="widget">
+        <label>[[i18n('label.ui.cicagentandconfig.configName')]]</label>
+        <div name="configName">[[document.properties.cicagentandconfig:configName]]</div>
+
+        <div style="font-size: smaller; display: flex; align-items: center; width:90%">
+          <span style="margin-right: 8px;">&#9432;</span>
+          <span style="text-align: left;">[[i18n('label.ui.cicagentandconfig.configNameHelp')]]</span>
+        </div>
+      </div>
+
+      <div role="widget">
+        <label>[[i18n('label.ui.cicagentandconfig.agentId')]]</label>
+        <div name="agentId">[[document.properties.cicagentandconfig:agentId]]</div>
+      </div>
+
+    </nuxeo-card>
+
+  </template>
+
+  <script>
+  Polymer({
+    is: 'nuxeo-cicagentandconfig-view-layout',
+    behaviors: [Nuxeo.LayoutBehavior],
+    properties: {
+
+      /**
+       * @doctype CICAgentAndConfig
+       */
+      document: {
+        type: Object,
+      },
+
+    }
+  });
+  </script>
+</dom-module>
