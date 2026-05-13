@@ -690,11 +690,9 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
             return;
         }
         if (doc.hasFacet(CIC_ERROR_FACET)) {
-            doc.setPropertyValue(CIC_ERROR_FIELD_SERVICE, null);
-            doc.setPropertyValue(CIC_ERROR_FIELD_RESPONSE_CODE, null);
-            doc.setPropertyValue(CIC_ERROR_FIELD_RESPONSE_MESSAGE, null);
-            doc.setPropertyValue(CIC_ERROR_FIELD_MESSAGE, null);
-            doc.setPropertyValue(CIC_ERROR_FIELD_FULL_JSON, null);
+            for (String key : doc.getProperties(CIC_ERROR_SCHEMA).keySet()) {
+                doc.setProperty(CIC_ERROR_SCHEMA, key, null);
+            }
             doc.removeFacet(CIC_ERROR_FACET);
         }
     }
