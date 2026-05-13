@@ -32,7 +32,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDServ
 
 /**
  * 
- * @since TODO
+ * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
 @Operation(id = HylandKDInvokeOp.ID, category = "Hyland Knowledge Discovery", label = "Call Hyland Knowledge Discovery Service", description = ""
         + "Invoke the Hyland Content Intelligence/Discovery API."

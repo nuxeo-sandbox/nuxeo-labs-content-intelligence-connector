@@ -25,7 +25,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.AbstractServiceDescrip
 
 /**
  * 
- * @since TODO
+ * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
 @XObject("agent")
 public class AgentDescriptor extends AbstractServiceDescriptor {

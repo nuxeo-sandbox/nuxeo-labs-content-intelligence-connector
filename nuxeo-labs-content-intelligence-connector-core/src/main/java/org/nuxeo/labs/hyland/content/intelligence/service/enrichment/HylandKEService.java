@@ -67,7 +67,7 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
  * }
  * </pre>
  * 
- * @since TODO
+ * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
 @SuppressWarnings("rawtypes")
 public interface HylandKEService {
@@ -79,13 +79,13 @@ public interface HylandKEService {
      * It can be set at startup with the HylandKEServiceImpl#KE_USE_V2_PARAM configuration parameter
      * 
      * @param value
-     * @since TODO
+     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public void setUseKEV2(boolean value);
 
     /**
      * @return the value of current setting.
-     * @since TODO
+     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public boolean getUseKEV2();
 

@@ -34,7 +34,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService;
 
 /**
- * @since TODO
+ * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
 @Operation(id = HylandKDAskQuestionAndGetAnswerOp.ID, category = "Hyland Knowledge Discovery", label = "Ask Question and Get Answer", description = ""
         + "Returns a JSON blob holding  the result of the call. Call its getString() method then JSON.parse()."
@@ -71,7 +71,7 @@ public class HylandKDAskQuestionAndGetAnswerOp {
     protected String configName;
 
     @OperationMethod
-    public Blob run() throws InterruptedException {
+    public Blob run() {
 
         ArrayList<String> contextObjectIds = null;
         if (StringUtils.isNotBlank(contextObjectIdsJsonArrayStr)) {

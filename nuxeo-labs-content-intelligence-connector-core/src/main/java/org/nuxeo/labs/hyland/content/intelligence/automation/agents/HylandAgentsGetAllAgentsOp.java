@@ -32,7 +32,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsSer
 
 /**
  * 
- * @since TODO
+ * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
 @Operation(id = HylandAgentsGetAllAgentsOp.ID, category = "Hyland Agent Builder", label = "Get All Agents", description = ""
         + "Returns a JSON blob holding  the result of the call. Call its getString() method then JSON.parse()."

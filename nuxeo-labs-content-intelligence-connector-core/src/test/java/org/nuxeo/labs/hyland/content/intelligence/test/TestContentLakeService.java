@@ -38,7 +38,7 @@ import org.nuxeo.runtime.test.runner.FeaturesRunner;
 import jakarta.inject.Inject;
 
 /**
- * @since TODO
+ * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
 @RunWith(FeaturesRunner.class)
 @Features({ PlatformFeature.class, ConfigCheckerFeature.class })

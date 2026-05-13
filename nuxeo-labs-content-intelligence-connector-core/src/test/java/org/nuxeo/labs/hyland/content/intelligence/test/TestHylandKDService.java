@@ -181,8 +181,6 @@ public class TestHylandKDService {
             String answer = response.getString("answer");
             assertFalse(StringUtils.isBlank(answer));
 
-            // System.out.println("\n\n" + answer + "\n\n");
-
             String answerAgentId = response.getString("agentId");
             assertEquals(agentId, answerAgentId);
         } else {

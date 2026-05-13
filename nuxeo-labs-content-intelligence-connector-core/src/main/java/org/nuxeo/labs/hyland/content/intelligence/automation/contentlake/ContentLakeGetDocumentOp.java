@@ -29,7 +29,7 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.contentlake.ContentLakeService;
 
 /**
- * @since TODO
+ * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
 @Operation(id = ContentLakeGetDocumentOp.ID, category = "Hyland Content Lake", label = "Get a document in the Content Lake", description = ""
         + "input is a document, used to check its counterpart in Content Lake."

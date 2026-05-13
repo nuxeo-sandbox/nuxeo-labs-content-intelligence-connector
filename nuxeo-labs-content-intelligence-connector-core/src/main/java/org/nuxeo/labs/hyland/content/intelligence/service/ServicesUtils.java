@@ -70,7 +70,7 @@ public class ServicesUtils {
      * @param param
      * @param defaultValue
      * @return
-     * @since TODO
+     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public static int configParamToInt(String param, int defaultValue) {
 
@@ -93,7 +93,7 @@ public class ServicesUtils {
      * @param param
      * @param defaultValue
      * @return
-     * @since TODO
+     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public static boolean configParamToBoolean(String param, boolean defaultValue) {
 
@@ -119,7 +119,7 @@ public class ServicesUtils {
      * @param instructionsV2JsonStr
      * @param extraPayloadJsonStr
      * @return
-     * @since TODO
+     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public static String addInstructionsToExtraPayload(String instructionsV2JsonStr, String extraPayloadJsonStr) {
 
@@ -152,7 +152,7 @@ public class ServicesUtils {
      * So we use one that is able to display INFO.
      * @param clazz
      * @param message
-     * @since TODO
+     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public static void forceLogInfo(Class<?> clazz, String message) {
         

@@ -282,7 +282,7 @@ public class HylandDCServiceImpl extends AbstractCICServiceComponent<DCDescripto
                     result = new ServiceCallResult("{}", -2, msg);
                 } else {
                     String status = resultJson.getString("status");
-                    if (status.toLowerCase().equals("done")) {
+                    if ("done".equalsIgnoreCase(status)) {
                         // Just GET at the presigned URL, no headers required
                         result = serviceCall.get(getUrl, null);
                         if (result.callWasSuccesful()) {

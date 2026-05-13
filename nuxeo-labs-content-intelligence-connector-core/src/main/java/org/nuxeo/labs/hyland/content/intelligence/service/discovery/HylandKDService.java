@@ -83,7 +83,7 @@ public interface HylandKDService {
      * @param configName
      * @param extraHeaders
      * @return
-     * @since TODO
+     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public ServiceCallResult getAllAgents(String configName, Map<String, String> extraHeaders);
 
@@ -122,8 +122,7 @@ public interface HylandKDService {
      * @return
      * @since 2023
      */
-    public ServiceCallResult getAnswer(String configName, String questionId, Map<String, String> extraHeaders)
-            throws InterruptedException;
+    public ServiceCallResult getAnswer(String configName, String questionId, Map<String, String> extraHeaders);
 
     /**
      * Only question is required:
@@ -143,8 +142,7 @@ public interface HylandKDService {
      * @since 2023
      */
     public ServiceCallResult askQuestionAndGetAnswer(String configName, String agentId, String question,
-            List<String> contextObjectIds, String extraPayloadJsonStr, Map<String, String> extraHeaders)
-            throws InterruptedException;
+            List<String> contextObjectIds, String extraPayloadJsonStr, Map<String, String> extraHeaders);
     
     /**
      * 

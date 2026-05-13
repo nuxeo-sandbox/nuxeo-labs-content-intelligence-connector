@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2025 Hyland (http://hyland.com/)  and others.
+ * (C) Copyright 2025 Hyland (http://hyland.com/) and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@ public class CICKDAskQuestionForUIOp {
     protected String configName;
 
     @OperationMethod
-    public Blob run(DocumentModelList input) throws InterruptedException {
+    public Blob run(DocumentModelList input) {
 
         // Build KD context object ids from input docs (kdinfo:objectId preferred over uuid)
         ArrayList<String> objKeys = new ArrayList<>();

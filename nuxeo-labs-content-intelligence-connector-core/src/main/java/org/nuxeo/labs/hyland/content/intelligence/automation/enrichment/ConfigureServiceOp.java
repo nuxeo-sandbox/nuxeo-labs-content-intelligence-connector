@@ -26,10 +26,18 @@ import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
 import org.nuxeo.ecm.automation.core.annotations.Param;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 
+/**
+ * Configure runtime tuning of the Knowledge Enrichment service.
+ *
+ * @since 2025.16 the {@code useKEV2} parameter is ignored: the plugin always uses Knowledge Enrichment v2
+ *        because v1 is deprecated and will be removed. Passing {@code useKEV2=false} logs a WARN.
+ */
 @Operation(id = ConfigureServiceOp.ID, category = "Hyland Knowledge Enrichment", label = "Configure Calls to Service", description = ""
         + "Allows for dynamically changing some settings when calling the service."
-        + " maxTries and sleepIntervalMS: if a value is 0 => reset to configuration or default value. If -1 (or not passed) => do not change."
-        + " useKEV2 is deprecated and ignored since plugin version 2025.16: the plugin always uses Knowledge Enrichment v2 because v1 is deprecated and will be removed."
+        + " maxTries and sleepIntervalMS: if a value is 0 => reset to configuration or default value."
+        + " If -1 (or not passed) => do not change."
+        + " useKEV2 is deprecated and ignored since plugin version 2025.16: the plugin always uses"
+        + " Knowledge Enrichment v2 because v1 is deprecated and will be removed."
         + " Passing useKEV2=false will be ignored and a WARN will be logged.")
 public class ConfigureServiceOp {
 

@@ -30,7 +30,7 @@ import org.json.JSONObject;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 
 /**
- * @since TODO
+ * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
 public interface HylandAgentsService {
     
@@ -48,7 +48,7 @@ public interface HylandAgentsService {
      * @param configName
      * @param extraHeaders, optional
      * @return
-     * @since TODO
+     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public ServiceCallResult getAllAgents(String configName, Map<String, String> extraHeaders);
 
@@ -63,7 +63,7 @@ public interface HylandAgentsService {
      * @param versionId
      * @param extraHeaders
      * @return
-     * @since TODO
+     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public ServiceCallResult lookupAgent(String configName, String agentId, String versionId,
             Map<String, String> extraHeaders);
@@ -80,7 +80,7 @@ public interface HylandAgentsService {
      * @param payloadJsonStr, required
      * @param extraHeaders, optional
      * @return
-     * @since TODO
+     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public ServiceCallResult invokeAgent(AgentType agentType, String configName, String agentId, String versionId,
             String payloadJsonStr, Map<String, String> extraHeaders);
@@ -115,7 +115,7 @@ public interface HylandAgentsService {
      * @param question
      * @param contextObjectIdsJsonArrayStr. optional
      * @return a JSON paylod ready to be sent to Agent Builder for this KD purpose
-     * @since TODO
+     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     static JSONObject formatJsonPayloadForKDQuestion(String question, String contextObjectIdsJsonArrayStr,
             String guardrailsJsonArrayStr) {
@@ -251,7 +251,7 @@ public interface HylandAgentsService {
      * 
      * @param response
      * @return
-     * @since TODO
+     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     static JSONObject simplifyResponse(JSONObject response) {
 
