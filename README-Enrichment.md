@@ -34,12 +34,16 @@ To summarize, every call returns a Blob, stringified JSON object that has at lea
 
 ## About Knowledge Enrichment V2
 
-Since versions 2025.9/2023.12, the plugin supports the new API V2 of Knowledge Enrichment, allowing for passing/using "instructions". As this requests to send the json payload in a [different format](https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/Reference/Context%20API/migration-guide-v1-to-v2), the plugin uses the following to decide between v1 or v2 format:
+Since versions 2025.9/2023.12, the plugin supports the new API V2 of Knowledge Enrichment, allowing for passing/using "instructions". As this requires sending the JSON payload in a [different format](https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/Reference/Context%20API/migration-guide-v1-to-v2):
 
-* By default, it sues the v1, original, format
-* To use V2 you need to explicitely tell it to do so:
-  * Set the `nuxeo.hyland.cic.enrichment.v2` Nuxeo configuration parameter to `true`: `nuxeo.hyland.cic.enrichment.v2=true`. This will make the plugin use V2 for every call.
-  * Use the `HylandKnowledgeEnrichment.Configure` operation and set the `useKEV2` parameter to `true`. (see its doc. below)
+* **Since plugin version 2025.16, the default value is `true` (V2 is used)**, because the v1 API of Knowledge Enrichment is deprecated and will be removed at some point. Earlier plugin versions defaulted to v1.
+* The plugin uses only v2 everywhere
+  * For example, the `HylandKnowledgeEnrichment.Configure` will ignore the `useKEV2` parameter
+* You don't need to use the `nuxeo.hyland.cic.enrichment.v2` parameter at all => remove it from your nuxeo.conf
+* If your Nuxeo Studio project still relies on the KE V1 API, **you must change it**:
+  * Change all dash-based actions (`text-summarization`, `image-description`, ...) to lowerCamelCase (`textSummarization`, `imageDescription`, ...)
+  * Check the returned value (the plugin handles the v2 JSON formatting)
+  * See the [Knowledge Enrichment Migration Guide v1 to v2](https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/Reference/Context%20API/migration-guide-v1-to-v2) for more details.
 
 <br>
 
