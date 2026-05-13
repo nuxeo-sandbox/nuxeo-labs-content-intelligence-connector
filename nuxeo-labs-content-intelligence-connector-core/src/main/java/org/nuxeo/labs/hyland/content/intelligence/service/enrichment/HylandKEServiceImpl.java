@@ -152,6 +152,11 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
     // ======================================================================
     @Override
     public void setUseKEV2(boolean value) {
+
+        if (!value) {
+            throw new NuxeoException(
+                    "Sionce verison 2025.16 of the plugin, it is not possible to use KE API in its version 1, that is deprecated.");
+        }
         useKEV2 = value;
 
         logConfigurationInfo();
@@ -718,9 +723,8 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
     @Override
     public void start(ComponentContext context) {
 
-        enrichmentAuthTokens = initAuthTokens(
-                desc -> new AuthenticationTokenEnrichment(
-                        desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
+        enrichmentAuthTokens = initAuthTokens(desc -> new AuthenticationTokenEnrichment(
+                desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
                 desc.getAuthenticationTokenParams()));
     }
 
