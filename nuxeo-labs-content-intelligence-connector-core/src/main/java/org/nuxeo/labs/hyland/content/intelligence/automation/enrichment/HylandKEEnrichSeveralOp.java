@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.automation.enrichment;
 
@@ -87,7 +87,7 @@ public class HylandKEEnrichSeveralOp {
         BlobList blobs = new BlobList();
 
         if (StringUtils.isBlank(sourceIds)) {
-            List<String> ids = new ArrayList<String>();
+            List<String> ids = new ArrayList<>();
             for (DocumentModel doc : docs) {
                 ids.add(doc.getId());
             }
@@ -114,7 +114,7 @@ public class HylandKEEnrichSeveralOp {
         }
 
         @SuppressWarnings("rawtypes")
-        List<ContentToProcess> contentToProcess = new ArrayList<ContentToProcess>();
+        List<ContentToProcess> contentToProcess = new ArrayList<>();
         int idx = -1;
         for (Blob blob : blobs) {
             idx += 1;

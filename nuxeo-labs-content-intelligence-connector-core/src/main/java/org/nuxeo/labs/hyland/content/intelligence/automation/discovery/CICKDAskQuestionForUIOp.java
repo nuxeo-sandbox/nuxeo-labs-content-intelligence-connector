@@ -14,14 +14,17 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.automation.discovery;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.nuxeo.ecm.automation.core.annotations.Context;
@@ -71,6 +74,8 @@ import org.nuxeo.runtime.api.Framework;
         + " Returns a JSON blob with {responseCode, responseMessage, response:{question, answer, references, noReferencesMessage}}."
         + " On error the upstream envelope is returned unchanged.")
 public class CICKDAskQuestionForUIOp {
+
+    private static final Logger log = LogManager.getLogger(CICKDAskQuestionForUIOp.class);
 
     public static final String ID = "CIC.KDAskQuestionForUI";
 
@@ -138,7 +143,15 @@ public class CICKDAskQuestionForUIOp {
                 if (StringUtils.isBlank(objectId)) {
                     continue;
                 }
-                ids.add(extractNuxeoDocID(objectId));
+                String docId = extractNuxeoDocID(objectId);
+                // Validate as UUID to avoid NXQL injection (KD-controlled input)
+                try {
+                    UUID.fromString(docId);
+                } catch (IllegalArgumentException e) {
+                    log.warn("Skipping non-UUID objectId from KD response: {}", docId);
+                    continue;
+                }
+                ids.add(docId);
             }
         }
 

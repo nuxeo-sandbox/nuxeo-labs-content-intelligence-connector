@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.service.agents;
 
@@ -25,6 +25,7 @@ import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 
@@ -296,7 +297,7 @@ public interface HylandAgentsService {
                 simplified.put("originalResponse", response);
             }
 
-        } catch (Exception e) {
+        } catch (JSONException e) {
             simplified = new JSONObject();
             simplified.put("simplifiedProcessingSuccess", false);
             simplified.put("originalResponse", response);

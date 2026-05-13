@@ -15,7 +15,7 @@
  *
  * Contributors:
  *     Michael Vachette
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.test;
 
@@ -30,6 +30,8 @@ import java.util.Map;
 import jakarta.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -57,6 +59,8 @@ import org.nuxeo.runtime.test.runner.FeaturesRunner;
 @Features({ AutomationFeature.class, ConfigCheckerFeature.class })
 @Deploy("nuxeo-hyland-content-intelligence-connector-core")
 public class TestHylandKDOperations {
+
+    private static final Logger log = LogManager.getLogger(TestHylandKDOperations.class);
 
     @Inject
     protected CoreSession session;
@@ -129,7 +133,7 @@ public class TestHylandKDOperations {
         
         String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID);
         if(StringUtils.isBlank(agentId)) {
-            System.out.println("Missing the " + ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID + " env. variable => ignoring the test.");
+            log.info("Missing the {} env. variable => ignoring the test.", ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID);
             return;
         }
 
@@ -169,8 +173,8 @@ public class TestHylandKDOperations {
 
         String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID);
         if (StringUtils.isBlank(agentId)) {
-            System.out.println("Missing the " + ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID
-                    + " env. variable => ignoring the test.");
+            log.info("Missing the {} env. variable => ignoring the test.",
+                    ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID);
             return;
         }
 
@@ -212,8 +216,8 @@ public class TestHylandKDOperations {
 
         String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID);
         if (StringUtils.isBlank(agentId)) {
-            System.out.println("Missing the " + ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID
-                    + " env. variable => ignoring the test.");
+            log.info("Missing the {} env. variable => ignoring the test.",
+                    ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID);
             return;
         }
 
@@ -264,8 +268,8 @@ public class TestHylandKDOperations {
 
         String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID);
         if (StringUtils.isBlank(agentId)) {
-            System.out.println("Missing the " + ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID
-                    + " env. variable => ignoring the test.");
+            log.info("Missing the {} env. variable => ignoring the test.",
+                    ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID);
             return;
         }
 

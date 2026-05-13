@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.authentication;
 
@@ -82,7 +82,7 @@ public class AuthenticationToken {
             return token;
         }
 
-        Map<String, String> headers = new HashMap<String, String>();
+        Map<String, String> headers = new HashMap<>();
         headers.put("Accept", "*/*");
         headers.put("Accept-Encoding", "gzip, deflate, br");
         if (serviceType == ServiceType.DISCOVERY || serviceType == ServiceType.INGEST) {
@@ -120,7 +120,7 @@ public class AuthenticationToken {
                 tokenExpiration = Instant.now().plusSeconds(expiresIn - 15);
             }
         } else {
-            log.error("Error getting an auth token:\n" + result.toJsonString(2));
+            log.error("Error getting an auth token:\n{}", result.toJsonString(2));
             token = null;
         }
 

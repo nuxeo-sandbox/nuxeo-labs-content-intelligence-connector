@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.test;
 
@@ -22,6 +22,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +44,8 @@ import jakarta.inject.Inject;
 @Features({ PlatformFeature.class, ConfigCheckerFeature.class })
 @Deploy("nuxeo-hyland-content-intelligence-connector-core")
 public class TestContentLakeService {
+
+    private static final Logger log = LogManager.getLogger(TestContentLakeService.class);
 
     @Inject
     protected CoreSession session;
@@ -81,9 +85,9 @@ public class TestContentLakeService {
         String DOC_ID = "3121a5b9-4c0a-400a-b9ab-b49dd5a8c95d";
         ServiceCallResult result = clService.getDocument(null, DOC_ID, sourceId);
         if (result.getResponseCode() == 200) {
-            System.out.println("TestContentLakeService#shouldFindDocument => SUCCESS");
+            log.info("TestContentLakeService#shouldFindDocument => SUCCESS");
         } else {
-            System.out.println("TestContentLakeService#shouldFindDocument => FAILURE\n" + result.toJsonString(2));
+            log.info("TestContentLakeService#shouldFindDocument => FAILURE\n{}", result.toJsonString(2));
         }
     }
     
@@ -96,9 +100,9 @@ public class TestContentLakeService {
         String DOC_ID = "3121a5b9-4c0a-400a-b9ab-b49dd5a8c95d";
         ServiceCallResult result = clService.getDocument(null, DOC_ID, "abc");
         if (result.getResponseCode() == 404) {
-            System.out.println("TestContentLakeService#shouldFailOnWrongSourceId => SUCCESS");
+            log.info("TestContentLakeService#shouldFailOnWrongSourceId => SUCCESS");
         } else {
-            System.out.println("TestContentLakeService#shouldFailOnWrongSourceId => FAILURE\n" + result.toJsonString(2));
+            log.info("TestContentLakeService#shouldFailOnWrongSourceId => FAILURE\n{}", result.toJsonString(2));
         }
     }
     
@@ -115,9 +119,9 @@ public class TestContentLakeService {
         String DOC_ID = "whatever";
         ServiceCallResult result = clService.getDocument(null, DOC_ID, "abc");
         if (result.getResponseCode() == 404) {
-            System.out.println("TestContentLakeService#shouldFailOnWrongSourceId => SUCCESS");
+            log.info("TestContentLakeService#shouldFailOnWrongSourceId => SUCCESS");
         } else {
-            System.out.println("TestContentLakeService#shouldFailOnWrongSourceId => FAILURE\n" + result.toJsonString(2));
+            log.info("TestContentLakeService#shouldFailOnWrongSourceId => FAILURE\n{}", result.toJsonString(2));
         }
     }
 

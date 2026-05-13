@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.test;
 
@@ -26,6 +26,8 @@ import static org.junit.Assert.assertTrue;
 import jakarta.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assume;
@@ -43,6 +45,8 @@ import org.nuxeo.runtime.test.runner.FeaturesRunner;
 @Features({ PlatformFeature.class, ConfigCheckerFeature.class })
 @Deploy("nuxeo-hyland-content-intelligence-connector-core")
 public class TestHylandKDService {
+
+    private static final Logger log = LogManager.getLogger(TestHylandKDService.class);
 
     @Inject
     protected HylandKDService hylandKDService;
@@ -152,8 +156,8 @@ public class TestHylandKDService {
         do {
             count += 1;
             if (count > 2) {
-                System.out.println("shouldAskQuestionAndGetAnswer, trying to get an answer to question ID " + questionId
-                        + ", call " + count + "/" + MAXTRIES + ".");
+                log.info("shouldAskQuestionAndGetAnswer, trying to get an answer to question ID {}, call {}/{}.",
+                        questionId, count, MAXTRIES);
             }
 
             result = hylandKDService.invokeDiscovery(null, "GET", endPoint, null);
@@ -182,7 +186,7 @@ public class TestHylandKDService {
             String answerAgentId = response.getString("agentId");
             assertEquals(agentId, answerAgentId);
         } else {
-            System.out.println("\n\n" + result.toJsonString(2));
+            log.info("\n\n{}", result.toJsonString(2));
         }
 
     }
@@ -221,7 +225,7 @@ public class TestHylandKDService {
             assertFalse(StringUtils.isBlank(answer));
             assertEquals("Answered", message.getString("status"));
         } else {
-            System.out.println("shouldStartConversation - unexpected response:\n" + result.toJsonString(2));
+            log.info("shouldStartConversation - unexpected response:\n{}", result.toJsonString(2));
         }
     }
 
@@ -260,7 +264,7 @@ public class TestHylandKDService {
             assertFalse(StringUtils.isBlank(answer));
             assertEquals("Answered", followUpResponse.getString("status"));
         } else {
-            System.out.println("shouldContinueConversation - unexpected response:\n" + result.toJsonString(2));
+            log.info("shouldContinueConversation - unexpected response:\n{}", result.toJsonString(2));
         }
     }
 

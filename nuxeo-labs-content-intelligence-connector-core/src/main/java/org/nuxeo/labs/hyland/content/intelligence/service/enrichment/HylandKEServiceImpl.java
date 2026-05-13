@@ -14,7 +14,7 @@ i * (C) Copyright 2025 Hyland (http://hyland.com/) and others.
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.service.enrichment;
 
@@ -218,7 +218,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         }
 
         @SuppressWarnings("rawtypes")
-        List<ContentToProcess> contentToProcess = new ArrayList<ContentToProcess>();
+        List<ContentToProcess> contentToProcess = new ArrayList<>();
         ContentToProcess<Blob> oneContent = new ContentToProcess<Blob>(sourceId, blob);
         contentToProcess.add(oneContent);
 
@@ -239,7 +239,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         }
 
         @SuppressWarnings("rawtypes")
-        List<ContentToProcess> contentToProcess = new ArrayList<ContentToProcess>();
+        List<ContentToProcess> contentToProcess = new ArrayList<>();
         ContentToProcess<File> oneContent = new ContentToProcess<File>(sourceId, file);
         contentToProcess.add(oneContent);
 
@@ -392,7 +392,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         String sourceId = getCustomUUID();
 
         @SuppressWarnings("rawtypes")
-        List<ContentToProcess> contentToProcess = new ArrayList<ContentToProcess>();
+        List<ContentToProcess> contentToProcess = new ArrayList<>();
         ContentToProcess<Blob> oneContent = new ContentToProcess<Blob>(sourceId, blob);
         contentToProcess.add(oneContent);
 
@@ -495,7 +495,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         String sourceId = getCustomUUID();
 
         @SuppressWarnings("rawtypes")
-        List<ContentToProcess> contentToProcess = new ArrayList<ContentToProcess>();
+        List<ContentToProcess> contentToProcess = new ArrayList<>();
         ContentToProcess<File> oneContent = new ContentToProcess<File>(sourceId, file);
         contentToProcess.add(oneContent);
 
@@ -510,26 +510,27 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         ServiceCallResult result;
         int count = 1;
 
-        log.info("pullEnrichmentResults for Job ID '" + resultId + "'.");
+        log.info("pullEnrichmentResults for Job ID '{}'.", resultId);
 
         do {
             if (count > 1) {
                 try {
                     Thread.sleep(pullResultsSleepIntervalMS);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
+                    throw new NuxeoException("Interrupted while polling Enrichment results", e);
                 }
             }
 
             if (count == pullResultsMaxTries) {
-                log.warn("Pulling Enrichment results is taking time. This is the last try,  " + count + "/"
-                        + pullResultsMaxTries);
+                log.warn("Pulling Enrichment results is taking time. This is the last try,  {}/{}", count,
+                        pullResultsMaxTries);
             } else if (count == 5 || (count > 5 && (count - 5) % 2 == 0)) {
-                log.warn("Pulling Enrichment results is taking time. This is the call #" + count + " (max calls: "
-                        + pullResultsMaxTries + ")");
+                log.warn("Pulling Enrichment results is taking time. This is the call #{} (max calls: {})", count,
+                        pullResultsMaxTries);
                 if (count == 5) {
                     KEDescriptor config = getKEDescriptor(configName);
-                    log.warn("(Pulling job ID '" + resultId + "', configuration '" + config.getName() + "')");
+                    log.warn("(Pulling job ID '{}', configuration '{}')", resultId, config.getName());
                 }
             }
 
@@ -563,7 +564,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         targetUrl += endpoint;
 
         // Headers
-        Map<String, String> headers = new HashMap<String, String>();
+        Map<String, String> headers = new HashMap<>();
         headers.put("Accept", "*/*");
         headers.put("Authorization", "Bearer " + bearer);
         if (endpoint.startsWith("/content/process")) {

@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.http;
 
@@ -70,7 +70,7 @@ public class ServiceCall {
             result = readResponse(connection);
 
         } catch (IOException | URISyntaxException e) {
-            log.error("Error: " + e.getMessage());
+            log.error("Error: {}", e.getMessage());
             result = new ServiceCallResult("{}", -1, e.getClass().getSimpleName() + ": " + e.getMessage());
         } finally {
             if (connection != null) {
@@ -113,7 +113,7 @@ public class ServiceCall {
             result = readResponse(connection);
 
         } catch (IOException | URISyntaxException e) {
-            log.error("Error: " + e.getMessage());
+            log.error("Error: {}", e.getMessage());
             result = new ServiceCallResult("{}", -1, e.getClass().getSimpleName() + ": " + e.getMessage());
         } finally {
             if (connection != null) {
@@ -183,7 +183,7 @@ public class ServiceCall {
             return result;
 
         } catch (IOException  | URISyntaxException e) {
-            log.error("Error uploading file with PUT", e.getClass().getSimpleName() + ": " + e);
+            log.error("Error uploading file with PUT {}: {}", e.getClass().getSimpleName(), e);
             result = new ServiceCallResult("{}", -1, e.getClass().getSimpleName() + ": " + e.getMessage());
         }
 

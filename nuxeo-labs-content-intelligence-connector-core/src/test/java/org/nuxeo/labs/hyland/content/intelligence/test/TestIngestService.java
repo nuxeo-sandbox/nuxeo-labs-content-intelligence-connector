@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.test;
 
@@ -22,6 +22,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.junit.Assume;
 import org.junit.Test;
@@ -43,6 +45,8 @@ import jakarta.inject.Inject;
 @Features({ PlatformFeature.class, ConfigCheckerFeature.class })
 @Deploy("nuxeo-hyland-content-intelligence-connector-core")
 public class TestIngestService {
+
+    private static final Logger log = LogManager.getLogger(TestIngestService.class);
 
     @Inject
     protected CoreSession session;
@@ -84,9 +88,9 @@ public class TestIngestService {
         // Using unexistant doc in the ContentLake
         ServiceCallResult result = ingestService.checkDigest(null, DOC_ID, DIGEST, sourceId);
         if (result.getResponseCode() == 404) {
-            System.out.println("TestIngestService#shouldNotFindDocument_ingest => SUCCESS");
+            log.info("TestIngestService#shouldNotFindDocument_ingest => SUCCESS");
         } else {
-            System.out.println("TestIngestService#shouldNotFindDocument_ingest => FAILURE");
+            log.info("TestIngestService#shouldNotFindDocument_ingest => FAILURE");
         }
     }
 
@@ -106,43 +110,34 @@ public class TestIngestService {
         ServiceCallResult result = ingestService.checkDigest(null, DOC_ID, digest, sourceId);
         JSONObject responseJson = result.getResponseAsJSONObject();
         boolean goOn = false;
-        try {
-            if (result.getResponseCode() == 200) {
-                if (responseJson.getBoolean("exists")) {
-                    System.out.println("TestIngestService#testHasDocumentAndBlob-1 => SUCCESS");
-                    goOn = true;
-                } else {
-                    System.out.println(
-                            "TestIngestService#testHasDocumentAndBlob-1 => FAILURE (exists should be false)");
-                }
+        if (result.getResponseCode() == 200) {
+            if (responseJson.getBoolean("exists")) {
+                log.info("TestIngestService#testHasDocumentAndBlob-1 => SUCCESS");
+                goOn = true;
             } else {
-                System.out.println("TestIngestService#testHasDocumentAndBlob-1 => FAILURE with responseCode "
-                        + result.getResponseCode());
+                log.info("TestIngestService#testHasDocumentAndBlob-1 => FAILURE (exists should be false)");
             }
-        } catch (Exception e) {
-            //
-        } finally {
-            if (!goOn) {
-                return;
-            }
+        } else {
+            log.info("TestIngestService#testHasDocumentAndBlob-1 => FAILURE with responseCode {}",
+                    result.getResponseCode());
+        }
+        if (!goOn) {
+            return;
         }
 
         // Invalid digest
         digest = "abcdef1234567890abcdef1234567890";
         result = ingestService.checkDigest(null, DOC_ID, digest, sourceId);
         responseJson = result.getResponseAsJSONObject();
-        goOn = false;
         if (result.getResponseCode() == 200) {
             if (!responseJson.getBoolean("exists")) {
-                System.out.println("TestIngestService#testHasDocumentAndBlob-2 => SUCCESS");
-                goOn = true;
+                log.info("TestIngestService#testHasDocumentAndBlob-2 => SUCCESS");
             } else {
-                System.out.println(
-                        "TestIngestService#testHasDocumentAndBlob-2 => FAILURE (exists should be false)");
+                log.info("TestIngestService#testHasDocumentAndBlob-2 => FAILURE (exists should be false)");
             }
         } else {
-            System.out.println("TestIngestService#testHasDocumentAndBlob-2 => FAILURE with responseCode "
-                    + result.getResponseCode());
+            log.info("TestIngestService#testHasDocumentAndBlob-2 => FAILURE with responseCode {}",
+                    result.getResponseCode());
         }
     }
 

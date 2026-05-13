@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.service;
 
@@ -53,7 +53,7 @@ public class ServicesUtils {
 
         JSONObject jsonObject = new JSONObject(jsonObjectStr);
 
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         Iterator<String> keys = jsonObject.keys();
         while (keys.hasNext()) {
             String key = keys.next();
@@ -80,7 +80,7 @@ public class ServicesUtils {
         try {
             value = Integer.parseInt(paramValue);
         } catch (NumberFormatException e) {
-            log.error("Parameter <" + param + "> is not a valid integer. Using default value");
+            log.error("Parameter <{}> is not a valid integer. Using default value", param);
             value = defaultValue;
         }
 
@@ -103,7 +103,7 @@ public class ServicesUtils {
         try {
             value = Boolean.parseBoolean(paramValue);
         } catch (NumberFormatException e) {
-            log.error("Parameter <" + param + "> is not a valid boolean. Using default value");
+            log.error("Parameter <{}> is not a valid boolean. Using default value", param);
             value = defaultValue;
         }
 

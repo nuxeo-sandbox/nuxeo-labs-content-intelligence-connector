@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.service.datacuration;
 
@@ -198,7 +198,7 @@ public class HylandDCServiceImpl extends AbstractCICServiceComponent<DCDescripto
         String targetUrl = config.getBaseUrl();
         targetUrl += "/presign";
 
-        Map<String, String> headers = new HashMap<String, String>();
+        Map<String, String> headers = new HashMap<>();
         headers.put("Accept", "*/*");
         headers.put("Authorization", "Bearer " + bearer);
         // headers.put("Content-Type", "application/json");
@@ -250,12 +250,13 @@ public class HylandDCServiceImpl extends AbstractCICServiceComponent<DCDescripto
                 try {
                     Thread.sleep(pullResultsSleepIntervalMS);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
+                    throw new NuxeoException("Interrupted while polling Data Curation results", e);
                 }
             }
             if (count > (pullResultsMaxTries / 2)) {
-                log.warn("Pulling Data Curation results is taking time. This is the call #" + count + " (max calls: "
-                        + pullResultsMaxTries + ")");
+                log.warn("Pulling Data Curation results is taking time. This is the call #{} (max calls: {})", count,
+                        pullResultsMaxTries);
             }
 
             String bearer = getDCToken(configName);
@@ -265,7 +266,7 @@ public class HylandDCServiceImpl extends AbstractCICServiceComponent<DCDescripto
                                 + "'.");
             }
 
-            Map<String, String> headers = new HashMap<String, String>();
+            Map<String, String> headers = new HashMap<>();
             headers.put("Authorization", "Bearer " + bearer);
 
             result = serviceCall.get(targetUrl, headers);
@@ -288,7 +289,7 @@ public class HylandDCServiceImpl extends AbstractCICServiceComponent<DCDescripto
                             gotIt = true;
                         }
                     } else {
-                        log.info("Pulling Data Curation status for job " + jobId + ", status: " + status);
+                        log.info("Pulling Data Curation status for job {}, status: {}", jobId, status);
                     }
                 }
             }
