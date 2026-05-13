@@ -155,7 +155,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
 
         if (!value) {
             throw new NuxeoException(
-                    "Sionce verison 2025.16 of the plugin, it is not possible to use KE API in its version 1, that is deprecated.");
+                    "Since verison 2025.16 of the plugin, it is not possible to use KE API in its version 1, that is deprecated.");
         }
         useKEV2 = value;
 
@@ -634,8 +634,9 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
 
     @Override
     public String getPictureRenditionName(String configName) {
-        KEDescriptor d = getKEDescriptor(configName);
-        return d == null ? KEDescriptor.DEFAULT_PICTURE_RENDITION_NAME : d.getPictureRenditionName();
+        KEDescriptor desc = getKEDescriptor(configName);
+        String rendition = desc == null ? KEDescriptor.DEFAULT_PICTURE_RENDITION_NAME : desc.getPictureRenditionName();
+        return StringUtils.isBlank(rendition) ? KEDescriptor.DEFAULT_PICTURE_RENDITION_NAME : rendition;
     }
 
     /**
