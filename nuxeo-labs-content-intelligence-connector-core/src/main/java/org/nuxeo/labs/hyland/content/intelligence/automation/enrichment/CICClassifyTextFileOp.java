@@ -28,7 +28,6 @@ import org.nuxeo.ecm.automation.core.annotations.Param;
 import org.nuxeo.ecm.automation.core.util.StringList;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
-import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.CICEnrichmentHelper;
 import org.nuxeo.runtime.api.Framework;
 
@@ -93,7 +92,7 @@ public class CICClassifyTextFileOp extends AbstractCICTextEnrichmentOp {
     }
 
     @Override
-    protected void applyResult(DocumentModel doc, Object actionResult, ServiceCallResult fullResult) {
+    protected void applyResult(DocumentModel doc, Object actionResult) {
         CICEnrichmentHelper helper = Framework.getService(CICEnrichmentHelper.class);
         String value = extractClassValue(actionResult);
         helper.writeClassification(doc, "textClass", value);

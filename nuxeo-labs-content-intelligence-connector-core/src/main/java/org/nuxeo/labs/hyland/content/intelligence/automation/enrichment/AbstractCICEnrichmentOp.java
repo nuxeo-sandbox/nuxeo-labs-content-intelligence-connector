@@ -43,13 +43,16 @@ import org.nuxeo.runtime.api.Framework;
  * <p>
  * Subclasses implement the action-specific bits (action name, blob acquisition, result writer)
  * via {@link #getActionName()}, {@link #getBlob(DocumentModel)}, and
- * {@link #applyResult(DocumentModel, Object, ServiceCallResult)}. This base class handles:
+ * {@link #applyResult(DocumentModel, Object)}. This base class handles:
  * <ul>
  * <li>Calling {@link HylandKEService#enrich} with the proper {@code extraJsonPayloadStr} (built from
  * {@code instructionsV2JsonStr} via {@link ServicesUtils#addInstructionsToExtraPayload}).</li>
  * <li>Recognising failures (non-200 response code, or {@code response.status != "SUCCESS"}, or an
  * action-level {@code error}) and recording them via
- * {@link HylandKEService#setCICError(DocumentModel, String, int, String, String, String)}.</li>
+ * {@link HylandKEService#setCICError(DocumentModel, String, int, String, String, String)}. On
+ * upstream failures the full {@link ServiceCallResult} envelope JSON (HTTP code, message, response
+ * body, optional object key mapping) is stored in {@code cic_error:fullResponseJson} via
+ * {@link ServiceCallResult#toJsonString()}.</li>
  * <li>Clearing any previous {@code CICError} when the call succeeds.</li>
  * <li>Optionally saving the document.</li>
  * </ul>
@@ -79,9 +82,8 @@ public abstract class AbstractCICEnrichmentOp {
      * @param doc           the input document
      * @param actionResult  the {@code response.results[0].<resultKey>.result} value (already
      *                      extracted by the base class)
-     * @param fullResult    the full upstream {@code ServiceCallResult} (for advanced cases)
      */
-    protected abstract void applyResult(DocumentModel doc, Object actionResult, ServiceCallResult fullResult);
+    protected abstract void applyResult(DocumentModel doc, Object actionResult);
 
     /**
      * Returns the optional {@code classes} list for classification. Default is {@code null}.
@@ -161,7 +163,7 @@ public abstract class AbstractCICEnrichmentOp {
         // Top-level response code
         if (result.getResponseCode() != 200) {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, result.getResponseCode(),
-                    "KE call failed", result.getResponseMessage(), result.getResponse());
+                    "KE call failed", result.getResponseMessage(), result.toJsonString());
             if (saveDocument) {
                 session.saveDocument(doc);
             }
@@ -172,7 +174,7 @@ public abstract class AbstractCICEnrichmentOp {
         JSONObject envelope = helper.parseEnrichmentResponse(result.toJsonString());
         if (envelope == null) {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Invalid envelope",
-                    "Could not parse KE envelope", result.getResponse());
+                    "Could not parse KE envelope", result.toJsonString());
             if (saveDocument) {
                 session.saveDocument(doc);
             }
@@ -184,7 +186,7 @@ public abstract class AbstractCICEnrichmentOp {
         if (response == null || !"SUCCESS".equals(status)) {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200,
                     "KE response not SUCCESS",
-                    "status=" + status, result.getResponse());
+                    "status=" + status, result.toJsonString());
             if (saveDocument) {
                 session.saveDocument(doc);
             }
@@ -197,7 +199,7 @@ public abstract class AbstractCICEnrichmentOp {
         JSONObject actionWrapper = resultEntry == null ? null : resultEntry.optJSONObject(getResultKey());
         if (actionWrapper == null) {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200,
-                    "Missing action result", "Result key not found: " + getResultKey(), result.getResponse());
+                    "Missing action result", "Result key not found: " + getResultKey(), result.toJsonString());
             if (saveDocument) {
                 session.saveDocument(doc);
             }
@@ -207,7 +209,7 @@ public abstract class AbstractCICEnrichmentOp {
         Object actionError = actionWrapper.opt("error");
         if (actionError != null && actionError != JSONObject.NULL && !String.valueOf(actionError).isEmpty()) {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Action error",
-                    String.valueOf(actionError), result.getResponse());
+                    String.valueOf(actionError), result.toJsonString());
             if (saveDocument) {
                 session.saveDocument(doc);
             }
@@ -217,7 +219,7 @@ public abstract class AbstractCICEnrichmentOp {
         Object actionResult = actionWrapper.opt("result");
         if (actionResult == null || actionResult == JSONObject.NULL) {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Empty action result",
-                    "Action returned no result", result.getResponse());
+                    "Action returned no result", result.toJsonString());
             if (saveDocument) {
                 session.saveDocument(doc);
             }
@@ -225,12 +227,12 @@ public abstract class AbstractCICEnrichmentOp {
         }
 
         try {
-            applyResult(doc, actionResult, result);
+            applyResult(doc, actionResult);
             ke.clearCICError(doc);
         } catch (RuntimeException ex) {
             LOG.warn("applyResult failed for action {}: {}", getActionName(), ex.getMessage(), ex);
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Failed writing result",
-                    ex.getMessage(), result.getResponse());
+                    ex.getMessage(), result.toJsonString());
         }
 
         if (saveDocument) {
