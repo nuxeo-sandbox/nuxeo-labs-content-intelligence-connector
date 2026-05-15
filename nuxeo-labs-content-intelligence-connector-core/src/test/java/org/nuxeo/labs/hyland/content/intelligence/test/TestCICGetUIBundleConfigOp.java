@@ -217,25 +217,19 @@ public class TestCICGetUIBundleConfigOp {
         assertNotNull(result);
 
         JSONObject envelope = new JSONObject(result.getString());
-        assertTrue("Envelope must carry responseCode", envelope.has("responseCode"));
-        assertTrue("Envelope must carry responseMessage", envelope.has("responseMessage"));
-        int code = envelope.getInt("responseCode");
+        assertEquals("Envelope must carry responseCode=200 (op falls back to web/ classpath in test mode)",
+                200, envelope.getInt("responseCode"));
+        assertEquals("OK", envelope.getString("responseMessage"));
 
-        // In the unit-test runtime, FileUtils.getResourceFileFromContext("nuxeo.war/...")
-        // typically does NOT resolve to the deployed war (the war isn't deployed in this
-        // test mode). The op then returns 500 with a clear message. If it does resolve
-        // (e.g. some future test feature stages the war), it returns 200 with a populated
-        // response. Both outcomes are acceptable here; we just assert the envelope is sane.
-        assertTrue("responseCode must be 200 or 500, got " + code, code == 200 || code == 500);
-        if (code == 200) {
-            JSONObject response = envelope.getJSONObject("response");
-            assertNotNull(response.getString("bundlePath"));
-            assertNotNull(response.getString("pluginVersion"));
-            assertNotNull(response.getJSONArray("buttons"));
-        } else {
-            assertTrue("Error message must mention the bundle path",
-                    envelope.getString("responseMessage").contains("nuxeo.war"));
-        }
+        JSONObject response = envelope.getJSONObject("response");
+        assertNotNull(response.getString("bundlePath"));
+        assertNotNull(response.getString("pluginVersion"));
+
+        JSONArray buttons = response.getJSONArray("buttons");
+        assertTrue("Expected at least 10 cic-* buttons via the op, got " + buttons.length(),
+                buttons.length() >= 10);
+        assertNotNull("cic-kd-conversation must be exposed by the op",
+                findByName(buttons, "cic-kd-conversation"));
     }
 
     protected static JSONObject findByName(JSONArray arr, String name) {

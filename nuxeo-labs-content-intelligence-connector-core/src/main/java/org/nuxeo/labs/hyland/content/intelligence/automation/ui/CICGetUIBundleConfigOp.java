@@ -123,7 +123,14 @@ public class CICGetUIBundleConfigOp {
         var envelope = new JSONObject();
 
         try {
+            // 1. Standard Nuxeo runtime API: resolves the deployed nuxeo.war/... in production.
             File bundle = FileUtils.getResourceFileFromContext(BUNDLE_REL_PATH);
+            // 2. Unit-test fallback: in test mode the deployed war is not staged, but the
+            //    bundle file IS on the test classpath under the "web/" prefix (Maven copies
+            //    src/main/resources/web/... into the JAR root preserving the "web/" segment).
+            if (bundle == null || !bundle.isFile()) {
+                bundle = FileUtils.getResourceFileFromContext("web" + File.separator + BUNDLE_REL_PATH);
+            }
             if (bundle == null || !bundle.isFile()) {
                 envelope.put("responseCode", 500);
                 envelope.put("responseMessage",
