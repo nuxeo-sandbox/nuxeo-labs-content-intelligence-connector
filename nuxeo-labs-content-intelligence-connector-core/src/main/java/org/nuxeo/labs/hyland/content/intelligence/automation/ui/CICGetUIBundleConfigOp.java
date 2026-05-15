@@ -176,8 +176,10 @@ public class CICGetUIBundleConfigOp {
      * Parses every top-level {@code <nuxeo-slot-content>} block whose {@code name} attribute starts
      * with {@code cic-} (skipping the admin-page wiring entries themselves), and returns a JSON array
      * of button descriptors.
+     * <p>
+     * Exposed as {@code public static} for unit tests.
      */
-    protected JSONArray parseButtons(String content) {
+    public static JSONArray parseButtons(String content) {
         var buttons = new JSONArray();
         Matcher m = SLOT_CONTENT_PATTERN.matcher(content);
         while (m.find()) {
