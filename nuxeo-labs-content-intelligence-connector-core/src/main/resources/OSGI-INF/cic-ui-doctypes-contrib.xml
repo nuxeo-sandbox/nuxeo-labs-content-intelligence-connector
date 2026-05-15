@@ -73,6 +73,78 @@
       </subtypes>
     </doctype>
 
+    <!-- ============================================================
+         Where can the two container doctypes be created?
+         Append CICAgentsAndConfigs and CICAgenticAgentsAndConfigs to
+         the subtypes of Root, Domain, Workspace and Folder.
+         ============================================================ -->
+
+    <doctype name="Root" append="true">
+      <subtypes>
+        <type>CICAgentsAndConfigs</type>
+        <type>CICAgenticAgentsAndConfigs</type>
+      </subtypes>
+    </doctype>
+
+    <doctype name="Domain" append="true">
+      <subtypes>
+        <type>CICAgentsAndConfigs</type>
+        <type>CICAgenticAgentsAndConfigs</type>
+      </subtypes>
+    </doctype>
+
+    <doctype name="Workspace" append="true">
+      <subtypes>
+        <type>CICAgentsAndConfigs</type>
+        <type>CICAgenticAgentsAndConfigs</type>
+      </subtypes>
+    </doctype>
+
+    <doctype name="Folder" append="true">
+      <subtypes>
+        <type>CICAgentsAndConfigs</type>
+        <type>CICAgenticAgentsAndConfigs</type>
+      </subtypes>
+    </doctype>
+
+  </extension>
+
+  <!-- ============================================================
+       Web UI / Type Service icons and labels for the four CIC
+       Agent-related doctypes. PNG and SVG icon files are shipped
+       under web/nuxeo.war/img/ and copied to nuxeo.war/img/ at
+       runtime by the deployment-fragment.
+       ============================================================ -->
+  <extension target="org.nuxeo.ecm.platform.types.TypeService" point="types">
+
+    <type id="CICAgentAndConfig">
+      <label>label.ui.cic.doctype.CICAgentAndConfig</label>
+      <icon>/img/share-setting.png</icon>
+      <bigIcon>/img/share-setting.png</bigIcon>
+      <description>label.ui.cic.doctype.CICAgentAndConfig.description</description>
+    </type>
+
+    <type id="CICAgenticAgentAndConfig">
+      <label>label.ui.cic.doctype.CICAgenticAgentAndConfig</label>
+      <icon>/img/business-setting.png</icon>
+      <bigIcon>/img/business-setting.png</bigIcon>
+      <description>label.ui.cic.doctype.CICAgenticAgentAndConfig.description</description>
+    </type>
+
+    <type id="CICAgentsAndConfigs">
+      <label>label.ui.cic.doctype.CICAgentsAndConfigs</label>
+      <icon>/img/folder-setting.png</icon>
+      <bigIcon>/img/folder-setting.png</bigIcon>
+      <description>label.ui.cic.doctype.CICAgentsAndConfigs.description</description>
+    </type>
+
+    <type id="CICAgenticAgentsAndConfigs">
+      <label>label.ui.cic.doctype.CICAgenticAgentsAndConfigs</label>
+      <icon>/img/box-view-setting.png</icon>
+      <bigIcon>/img/box-view-setting.png</bigIcon>
+      <description>label.ui.cic.doctype.CICAgenticAgentsAndConfigs.description</description>
+    </type>
+
   </extension>
 
 </component>

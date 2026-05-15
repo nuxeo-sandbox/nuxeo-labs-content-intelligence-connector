@@ -1,4 +1,13 @@
 {
+  "label.ui.cic.doctype.CICAgentAndConfig": "KD Agent and Config",
+  "label.ui.cic.doctype.CICAgentAndConfig.description": "A Knowledge Discovery agent (id + per-agent settings) used by the Conversation and Ask-Question UI.",
+  "label.ui.cic.doctype.CICAgenticAgentAndConfig": "Agentic Agent and Config",
+  "label.ui.cic.doctype.CICAgenticAgentAndConfig.description": "An Agentic agent (id + per-agent settings) invoked by the CIC Agents service.",
+  "label.ui.cic.doctype.CICAgentsAndConfigs": "KD Agents-Configs",
+  "label.ui.cic.doctype.CICAgentsAndConfigs.description": "Container for Knowledge Discovery agent definitions.",
+  "label.ui.cic.doctype.CICAgenticAgentsAndConfigs": "Agentic Agents-Configs",
+  "label.ui.cic.doctype.CICAgenticAgentsAndConfigs.description": "Container for Agentic agent definitions.",
+
   "label.ui.cic.agents.lookupAgent": "Lookup Agent",
   "label.ui.cic.agents.lookupAgent.done": "Lookup Agent: Done",
 
