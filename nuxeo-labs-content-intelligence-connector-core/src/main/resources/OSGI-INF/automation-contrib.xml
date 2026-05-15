@@ -52,6 +52,9 @@
 
         <!-- All -->
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.HylandCIGetContributionNamesOp"/>
+
+        <!-- UI helpers -->
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.ui.CICGetUIBundleConfigOp"/>
     </extension>
 
 </component>

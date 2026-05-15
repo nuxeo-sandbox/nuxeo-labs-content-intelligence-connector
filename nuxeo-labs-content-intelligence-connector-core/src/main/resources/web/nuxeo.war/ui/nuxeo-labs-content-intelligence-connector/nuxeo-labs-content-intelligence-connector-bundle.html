@@ -13,6 +13,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
 <link rel="import" href="elements/kd-ask-question.html">
 <link rel="import" href="elements/kd-ask-question-with-selected.html">
 <link rel="import" href="elements/kd-conversation.html">
+<link rel="import" href="elements/cic-ui-config-page.html">
 
 <!-- ==================== Agents (single-document actions) ==================== -->
 
@@ -266,5 +267,32 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
 <nuxeo-slot-content name="cic-kd-conversation" slot="DOCUMENT_ACTIONS" order="2">
   <template>
     <kd-conversation icon="icons:forum"></kd-conversation>
+  </template>
+</nuxeo-slot-content>
+
+<!-- ==================== Admin: CIC UI Config helper ==================== -->
+
+<!-- Drawer entry (visible to administrators only). Routes to administration:cic-ui-config. -->
+<nuxeo-slot-content name="cicUIConfigMenuItem" slot="ADMINISTRATION_MENU" order="100">
+  <template>
+    <nuxeo-filter document="[[document]]" expression="user.isAdministrator" user="[[user]]">
+      <template>
+        <nuxeo-menu-item name="cic-ui-config"
+                         label="label.ui.cic.ui-config.menu"
+                         route="administration:cic-ui-config">
+        </nuxeo-menu-item>
+      </template>
+    </nuxeo-filter>
+  </template>
+</nuxeo-slot-content>
+
+<!-- Page registered for the route above. -->
+<nuxeo-slot-content name="cicUIConfigPage" slot="ADMINISTRATION_PAGES">
+  <template>
+    <nuxeo-filter document="[[document]]" expression="user.isAdministrator" user="[[user]]">
+      <template>
+        <cic-ui-config-page name="cic-ui-config"></cic-ui-config-page>
+      </template>
+    </nuxeo-filter>
   </template>
 </nuxeo-slot-content>

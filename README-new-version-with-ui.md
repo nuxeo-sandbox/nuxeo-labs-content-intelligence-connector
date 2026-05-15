@@ -259,6 +259,44 @@ The `show-label="true"` attribute makes the button display its localized label (
 
 <br>
 
+## Configuring which CIC buttons are visible (presales helper page)
+
+The plugin ships a small admin page that lets an administrator quickly customize which CIC buttons are visible (and in which order), without writing XML by hand. It is meant primarily for **presales demos** — opening a prospect-specific scenario where only some buttons should be shown.
+
+### Where to find it
+
+* Log in as administrator.
+* Open the **Administration drawer** (top-right user menu → Administration).
+* In the left navigation, click **CIC UI Config** (entry registered at `ADMINISTRATION_MENU` order=100).
+
+### What it does
+
+The page calls the `CIC.GetUIBundleConfig` operation, which reads **this plugin's own bundle file** (`nuxeo.war/ui/nuxeo-labs-content-intelligence-connector/nuxeo-labs-content-intelligence-connector-bundle.html`) and returns the list of CIC slot-contents declared there, with their slot, order, disabled state, icon, label key, and full template body.
+
+The page renders them grouped by category (KE Image, KE Text, KD, Agents) with one row per button:
+
+| Icon | Slot-content name | Label | Slot | Default order | Enabled | Order |
+
+You can:
+
+* toggle **Enabled** to disable a button;
+* type a new integer in **Order** to reorder buttons within the same slot;
+* click **Generate (all buttons)** to produce a Studio Web UI override snippet covering every row;
+* click **Generate (changed only)** to produce a snippet only for the rows you actually modified;
+* click **Copy to clipboard** to paste the snippet into your Studio project's Web UI Resources.
+
+> ⚠️ **The page reads only this plugin's bundle.** It does NOT detect overrides coming from your Studio project, third-party plugins, or hand-edited bundles. The page intentionally keeps things simple: it shows you the plugin defaults, not the merged runtime state. A warning banner at the top of the page makes this explicit. If your runtime UI does not match what the page shows, another contribution is overriding the plugin's defaults — which is exactly what the generated snippet is meant to express.
+
+### What the generated snippet looks like
+
+Each generated `<nuxeo-slot-content>` re-emits the **full** template body verbatim (so the override is complete regardless of the Web UI's slot-content patch-vs-replace semantics). A header comment records the plugin version, generation timestamp, source bundle path, and whether the snippet covers all buttons or only the changed ones. Paste the snippet as-is into a Studio Designer Web UI Resources HTML file (or any custom-bundle.html) — no further editing required.
+
+### Nothing is persisted
+
+The page does not save its state on the server. Your changes only exist in the browser until you click Generate and copy the result. This is intentional: the workflow is "open the page → tweak for this demo → copy → paste in Studio → forget".
+
+<br>
+
 ## Reusable form elements (`forms/cic-*-view.html`, `forms/cic-*-edit.html`)
 
 For every CIC schema/facet the plugin persists, a small Polymer element is shipped under `web/nuxeo.war/ui/nuxeo-labs-content-intelligence-connector/forms/`. Drop one into any document layout (your Studio project, this plugin's layouts, or anywhere else) to render — or edit — the CIC field without rewriting the markup yourself.
