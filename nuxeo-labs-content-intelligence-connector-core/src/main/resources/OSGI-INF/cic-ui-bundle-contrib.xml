@@ -1,15 +1,6 @@
 <?xml version="1.0"?>
 <component name="org.nuxeo.labs.hyland.content.intelligence.ui.bundle">
 
-    <require>org.nuxeo.web.ui</require>
-
-    <documentation>
-        Registers the Web UI bundle for the Hyland Content Intelligence Connector plugin
-        and appends it to the `web-ui` Web Resources bundle so it gets loaded by the
-        Web UI shell.
-        @since 2025.16
-    </documentation>
-
     <!-- Register the bundle entry-point HTML as a web resource -->
     <extension target="org.nuxeo.ecm.platform.WebResources" point="resources">
         <resource name="nuxeo-labs-content-intelligence-connector-bundle.html" type="import">
