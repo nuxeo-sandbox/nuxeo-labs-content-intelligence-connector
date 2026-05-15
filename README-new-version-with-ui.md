@@ -102,7 +102,7 @@ The plugin **does not** ship an embeddings facet/schema, so embeddings calls (`C
 <embeddingsTextXpath>embeddings:text</embeddingsTextXpath>
 ```
 
-If any of the three is missing the API call still runs and the JSON response is still returned, but no field is written. This keeps cross-plugin compatibility (e.g. `nuxeo-hxai-connector` keeps owning the storage).
+If `embeddingsFacet` is missing, **or** the matching `embeddingsImageXpath` / `embeddingsTextXpath` is missing, the corresponding `CIC.GetImageEmbeddings` / `CIC.GetTextEmbeddings` operation **skips the remote CIC call entirely**, logs a WARN, and returns the document unchanged. This keeps cross-plugin compatibility (e.g. `nuxeo-hxai-connector` keeps owning the storage) and avoids paying for a call whose result has nowhere to land.
 
 > [!TIP]
 > Storing the embeddings is to be used, likely, with the [Nuxeo Custom Page Providers](https://github.com/nuxeo-sandbox/nuxeo-custom-page-providers) that allows for using Vector Search ith OpenSearch (so , based on embeddis, you can set up similar search or semantic search for example).
@@ -161,10 +161,11 @@ Visible on documents with the `Picture` facet, with a `file:content` blob, that 
 
 | Slot-content name | Icon (Polymer `iron-icons`) | Operation | Stored on |
 | --- | --- | --- | --- |
-| `cic-ke-image-classify` | `icons:class` | `CIC.ClassifyImage` | `CICClassification` facet |
 | `cic-ke-image-description` | `icons:description` | `CIC.GetImageDescription` | `CICImageDescription` facet |
+| `cic-ke-image-classify` | `icons:class` | `CIC.ClassifyImage` | `CICClassification` facet |
 | `cic-ke-image-metadata` | `icons:note-add` | `CIC.GetImageMetadata` | `CICMetadataDetection` facet |
 | `cic-ke-image-named-entities` | `icons:view-list` | `CIC.GetNamedEntitiesFromImage` | `CICNamedEntities` facet |
+| `cic-ke-image-embeddings` | `icons:fingerprint` | `CIC.GetImageEmbeddings` | configured embeddings xpath (see above) |
 
 ### Knowledge Enrichment — text/file actions
 
@@ -172,11 +173,11 @@ Visible on documents of type `File`, with a `file:content` blob, not version/pro
 
 | Slot-content name | Icon | Operation | Stored on |
 | --- | --- | --- | --- |
-| `cic-ke-text-metadata` | `icons:note-add` | `CIC.GetTextMetadata` | `CICTextMetadata` facet |
-| `cic-ke-textfile-classify` | `icons:class` | `CIC.ClassifyTextFile` | `CICClassification` facet |
-| `cic-ke-textfile-embeddings` | `icons:fingerprint` | `CIC.GetTextEmbeddings` | configured embeddings xpath (see above) |
-| `cic-ke-textfile-named-entities` | `icons:view-list` | `CIC.GetNamedEntitiesFromText` | `CICNamedEntities` facet |
 | `cic-ke-textfile-summarize` | `icons:account-balance-wallet` | `CIC.SummarizeText` | `CICSummary` facet |
+| `cic-ke-textfile-classify` | `icons:class` | `CIC.ClassifyTextFile` | `CICClassification` facet |
+| `cic-ke-text-metadata` | `icons:note-add` | `CIC.GetTextMetadata` | `CICTextMetadata` facet |
+| `cic-ke-textfile-named-entities` | `icons:view-list` | `CIC.GetNamedEntitiesFromText` | `CICNamedEntities` facet |
+| `cic-ke-textfile-embeddings` | `icons:fingerprint` | `CIC.GetTextEmbeddings` | configured embeddings xpath (see above) |
 
 ### Knowledge Discovery — Ask a question
 
@@ -197,6 +198,70 @@ The dialog lets the user:
 | `cic-agents-lookupAgent` | `DOCUMENT_ACTIONS` | `icons:announcement` | `CIC.AgenticAgentLookup` | `CICAgenticAgentAndConfig` documents (`ReadWrite`) |
 
 > Polymer `iron-icons` are part of the standard Web UI icon set; previews live at https://www.webcomponents.org/element/@polymer/iron-icons/demo/demo/index.html.
+
+<br>
+
+## Reusable form elements (`forms/cic-*-view.html`, `forms/cic-*-edit.html`)
+
+For every CIC schema/facet the plugin persists, a small Polymer element is shipped under `web/nuxeo.war/ui/nuxeo-labs-content-intelligence-connector/forms/`. Drop one into any document layout (your Studio project, this plugin's layouts, or anywhere else) to render — or edit — the CIC field without rewriting the markup yourself.
+
+### Available elements
+
+| File | Tag | Reads / writes | Notes |
+| --- | --- | --- | --- |
+| `forms/cic-summary-view.html` | `<cic-summary-view>` | `cic_summary:summary` | Renders the text summary if the `CICSummary` facet is present. |
+| `forms/cic-image-description-view.html` | `<cic-image-description-view>` | `cic_image_description:description` | Renders the image description if the `CICImageDescription` facet is present. |
+| `forms/cic-classification-view.html` | `<cic-classification-view>` | `cic_classification:imageClass` / `:textClass` | Read-only label of the chosen class. |
+| `forms/cic-classification-edit.html` | `<cic-classification-edit>` | same | Editable picker bound to the `cicImageClassification` / `cicTextClassification` vocabulary. |
+| `forms/cic-named-entities-view.html` | `<cic-named-entities-view>` | `cic_named_entities:entities` | Renders the entities list. |
+| `forms/cic-metadata-detection-view.html` | `<cic-metadata-detection-view>` | `cic_metadata_detection:metadata` | Renders the `field/value` items extracted from images. |
+| `forms/cic-metadata-detection-edit.html` | `<cic-metadata-detection-edit>` | same | Editable variant. |
+| `forms/cic-text-metadata-view.html` | `<cic-text-metadata-view>` | `cic_text_metadata:*` | Renders `company`, `owner`, `security`, `keywords`, `moreMetadata`. |
+| `forms/cic-text-metadata-edit.html` | `<cic-text-metadata-edit>` | same | Editable variant. |
+
+All elements take a single `document` property (the standard Nuxeo Web UI `document` object) and silently render nothing when the underlying facet/field is missing — safe to drop unconditionally into a layout.
+
+### How to use them in a Studio layout
+
+Example: display the text summary in the metadata layout of the `File` document type.
+
+1. In **Studio Designer**, go to **Layouts > Built-in Document Types > File** and configure the `nuxeo-file-metadata-layout`.
+2. Then go to **Resources > document > file** and open `nuxeo-file-metadata-layout.html`.
+3. In this file:
+   * import the CIC plugin form you need;
+   * use it where you want it to appear.
+
+```html
+<!-- nuxeo-file-metadata-layout -->
+<!-- Display the CIC summary if available -->
+<link rel="import" href="../../nuxeo-labs-content-intelligence-connector/forms/cic-summary-view.html">
+
+<dom-module id="nuxeo-file-metadata-layout">
+  <template>
+    ...
+    <cic-summary-view document="[[document]]"></cic-summary-view>
+    ...
+  </template>
+</dom-module>
+```
+
+The same pattern applies to every form listed above. For example, on a `Picture` document:
+
+```html
+<link rel="import" href="../../nuxeo-labs-content-intelligence-connector/forms/cic-image-description-view.html">
+<link rel="import" href="../../nuxeo-labs-content-intelligence-connector/forms/cic-classification-view.html">
+<link rel="import" href="../../nuxeo-labs-content-intelligence-connector/forms/cic-named-entities-view.html">
+...
+<cic-image-description-view document="[[document]]"></cic-image-description-view>
+<cic-classification-view document="[[document]]"></cic-classification-view>
+<cic-named-entities-view document="[[document]]"></cic-named-entities-view>
+```
+
+### Tips
+
+* Use `*-view.html` in `view` / `metadata` layouts; use `*-edit.html` in `edit` layouts when you want users to override the value computed by CIC.
+* Combine with the per-button override mechanism (see "Show / hide buttons per project") if you want to wire your own automation chain instead of the default `CIC.*` operation while keeping the same UI.
+* The plugin's own document layouts (under `document/<doctype>/nuxeo-<doctype>-<mode>-layout.html`) use these same form elements — read them as live examples.
 
 <br>
 
