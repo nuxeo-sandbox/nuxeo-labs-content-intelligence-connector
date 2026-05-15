@@ -8,19 +8,17 @@ The plugin connects [Nuxeo](https://www.hyland.com/solutions/products/nuxeo-plat
 
 > [!NOTE]
 > Starting at version 2025.16, this plugin brings:
-> * Buttons buttons to call CIC
-> * schemas, facets, etc. needed to store the results
+> * Buttons to call CIC
+> * Schemas, facets, etc. needed to store the results
 > * Layouts to display these results
 > 
-> All operation IDs were preserved form previous versions, so an existing Studio project that calls `HylandKnowledgeEnrichment.*`, `HylandKnowledgeDiscovery.*`, etc. keeps working as-is. Just, if you already have buttons and UI, disabled the ones deployed by the plugin (see below, "Show / hide buttons per project")
+> All operation IDs were preserved from previous versions, so an existing Studio project that calls `HylandKnowledgeEnrichment.*`, `HylandKnowledgeDiscovery.*`, etc. keeps working as-is. If you already have buttons and UI, just disable the ones deployed by the plugin (see below, "Show / hide buttons per project").
 
 
 Also:
 
 > [!WARNING]
-> This documentation references calls to the CIC Ingest API and the Content Lake API: Please note that these are currencly Work in Progress and may are not fully implemented. We are in a Nuxeo presales Sandbox Plugin, so, this is acceptable, but we discourage prospects/customers to use it "as is".
-> 
-> All operation IDs were preserved form previous versions, so an existing Studio project that calls `HylandKnowledgeEnrichment.*`, `HylandKnowledgeDiscovery.*`, etc. keeps working as-is. Just, i
+> This documentation references calls to the CIC Ingest API and the Content Lake API: please note that these are currently Work In Progress and are not fully implemented. We are in a Nuxeo presales Sandbox plugin, so this is acceptable, but we discourage prospects/customers from using it "as is".
 
 <br>
 
@@ -94,7 +92,7 @@ Then call any operation with `configName: "tenantA"`. The list of registered nam
 
 ### Optional: where to persist embeddings (KE only)
 
-The plugin **does not** ship an embeddings facet/schema, so embeddings calls (`CIC.GetTextEmbeddings`, `CIC.GetImageDescriptionAndEmbeddings`, `CIC.ImageGetAll`) only persist the vector when you tell them where. Uncomment and set on the KE descriptor:
+The plugin **does not** ship an embeddings facet/schema, so the embeddings operations (`CIC.GetTextEmbeddings`, `CIC.GetImageEmbeddings`) only persist the vector when you tell them where. Uncomment and set on the KE descriptor:
 
 ```xml
 <embeddingsFacet>Embeddings</embeddingsFacet>
@@ -105,8 +103,8 @@ The plugin **does not** ship an embeddings facet/schema, so embeddings calls (`C
 If `embeddingsFacet` is missing, **or** the matching `embeddingsImageXpath` / `embeddingsTextXpath` is missing, the corresponding `CIC.GetImageEmbeddings` / `CIC.GetTextEmbeddings` operation **skips the remote CIC call entirely**, logs a WARN, and returns the document unchanged. This keeps cross-plugin compatibility (e.g. `nuxeo-hxai-connector` keeps owning the storage) and avoids paying for a call whose result has nowhere to land.
 
 > [!TIP]
-> Storing the embeddings is to be used, likely, with the [Nuxeo Custom Page Providers](https://github.com/nuxeo-sandbox/nuxeo-custom-page-providers) that allows for using Vector Search ith OpenSearch (so , based on embeddis, you can set up similar search or semantic search for example).
-> Nuxeo Custom Page Providers proveds misc. Configuration Templates usings these names.
+> Storing embeddings is typically used together with the [Nuxeo Custom Page Providers](https://github.com/nuxeo-sandbox/nuxeo-custom-page-providers) plugin, which enables Vector Search with OpenSearch (so, based on embeddings, you can set up similarity search or semantic search, for example).
+> Nuxeo Custom Page Providers ships several Configuration Templates that use these names.
 
 <br>
 
@@ -292,9 +290,9 @@ For example, to **hide** the "Ask a question" button on documents:
 </nuxeo-slot-content>
 ```
 
-To hide all KD entries: do the same for `cic-kd-ask-question-with-selected`. To hide all KE image actions: do the same for the four `cic-ke-image-*` entries. Etc.
+To hide all KD entries: do the same for `cic-kd-ask-question-with-selected`. To hide all KE image actions: do the same for the five `cic-ke-image-*` entries. Etc.
 
-The Studio bundle is loaded **after** the plugin bundle, so a same-name `<nuxeo-slot-content>` in `YOUR-PROJECT-IDcustom-bundle.html` wins.
+The Studio bundle is loaded **after** the plugin bundle, so a same-name `<nuxeo-slot-content>` in `YOUR-PROJECT-ID-custom-bundle.html` wins.
 
 <br>
 
@@ -317,7 +315,7 @@ Always check `responseCode` is in 200-299 before reading `response`. On failure,
 
 ## Installation / Deployment
 
-The plugin is published on the [Nuxeo MarketPlace](https://connect.nuxeo.com/nuxeo/site/marketplace/package/nuxeo-labs-content-intelligence-connector). Add it as a Studio project dependency, set it in a Docker `NUXEO_PACKAGES` set up, or install it manually:
+The plugin is published on the [Nuxeo MarketPlace](https://connect.nuxeo.com/nuxeo/site/marketplace/package/nuxeo-labs-content-intelligence-connector). Add it as a Studio project dependency, set it in a Docker `NUXEO_PACKAGES` setup, or install it manually:
 
 ```
 nuxeoctl mp-install nuxeo-labs-content-intelligence-connector
