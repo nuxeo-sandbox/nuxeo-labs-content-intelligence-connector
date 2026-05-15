@@ -18,6 +18,9 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.automation.enrichment;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
 import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
@@ -25,22 +28,27 @@ import org.nuxeo.ecm.automation.core.annotations.Param;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.CICEnrichmentHelper;
+import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 import org.nuxeo.runtime.api.Framework;
 
 /**
- * Computes image embeddings for the document's picture rendition. Embeddings are written only if
- * the KE descriptor is configured with {@code embeddingsFacet} and {@code embeddingsImageXpath};
- * otherwise the call still runs but no field is written.
+ * Computes image embeddings for the document's picture rendition. If the KE descriptor for the
+ * resolved {@code configName} does not declare both {@code embeddingsFacet} and
+ * {@code embeddingsImageXpath}, the call is skipped (a WARN is logged) and the document is
+ * returned unchanged \u2014 no remote CIC call is made.
  *
  * @since 2025.18
  */
 @Operation(id = CICGetImageEmbeddingsOp.ID, category = "CIC", label = "CIC: Get Image Embeddings", description = ""
         + "Calls Hyland Knowledge Enrichment imageEmbeddings on the document's picture rendition. Writes embeddings"
-        + " to the descriptor-configured embeddings facet/xpath. No-op writer when the descriptor does not configure"
-        + " embeddings.")
+        + " to the descriptor-configured embeddings facet/xpath. If the descriptor does not configure"
+        + " embeddingsFacet + embeddingsImageXpath, the call is skipped (a WARN is logged) and the document is"
+        + " returned unchanged.")
 public class CICGetImageEmbeddingsOp extends AbstractCICImageEnrichmentOp {
 
     public static final String ID = "CIC.GetImageEmbeddings";
+
+    private static final Logger LOG = LogManager.getLogger(CICGetImageEmbeddingsOp.class);
 
     @Context
     protected CoreSession session;
@@ -59,6 +67,15 @@ public class CICGetImageEmbeddingsOp extends AbstractCICImageEnrichmentOp {
 
     @OperationMethod
     public DocumentModel run(DocumentModel doc) {
+        HylandKEService ke = Framework.getService(HylandKEService.class);
+        String facet = ke.getEmbeddingsFacet(configNameParam);
+        String xpath = ke.getEmbeddingsImageXpath(configNameParam);
+        if (StringUtils.isBlank(facet) || StringUtils.isBlank(xpath)) {
+            LOG.warn(
+                    "CIC.GetImageEmbeddings skipped: KE descriptor '{}' has no embeddingsFacet/embeddingsImageXpath configured. Document {} returned unchanged (no CIC call).",
+                    configNameParam == null ? "default" : configNameParam, doc.getId());
+            return doc;
+        }
         this.configName = configNameParam;
         this.renditionName = renditionNameParam;
         return runForDocument(session, doc, configNameParam, instructionsV2JsonStr, saveDocument);

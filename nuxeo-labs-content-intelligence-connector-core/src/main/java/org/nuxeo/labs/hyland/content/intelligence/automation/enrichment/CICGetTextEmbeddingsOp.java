@@ -18,6 +18,9 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.automation.enrichment;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
 import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
@@ -25,21 +28,26 @@ import org.nuxeo.ecm.automation.core.annotations.Param;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.CICEnrichmentHelper;
+import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 import org.nuxeo.runtime.api.Framework;
 
 /**
- * Computes text embeddings for the document's text blob. Embeddings are written only if the KE
- * descriptor is configured with {@code embeddingsFacet} and {@code embeddingsTextXpath}; otherwise
- * the call still runs but no field is written.
+ * Computes text embeddings for the document's text blob. If the KE descriptor for the resolved
+ * {@code configName} does not declare both {@code embeddingsFacet} and {@code embeddingsTextXpath},
+ * the call is skipped (a WARN is logged) and the document is returned unchanged \u2014 no remote
+ * CIC call is made.
  *
  * @since 2025.18
  */
 @Operation(id = CICGetTextEmbeddingsOp.ID, category = "CIC", label = "CIC: Get Text Embeddings", description = ""
         + "Calls Hyland Knowledge Enrichment textEmbeddings. Writes embeddings to the descriptor-configured"
-        + " embeddings facet/xpath. No-op writer when the descriptor does not configure embeddings.")
+        + " embeddings facet/xpath. If the descriptor does not configure embeddingsFacet + embeddingsTextXpath,"
+        + " the call is skipped (a WARN is logged) and the document is returned unchanged.")
 public class CICGetTextEmbeddingsOp extends AbstractCICTextEnrichmentOp {
 
     public static final String ID = "CIC.GetTextEmbeddings";
+
+    private static final Logger LOG = LogManager.getLogger(CICGetTextEmbeddingsOp.class);
 
     @Context
     protected CoreSession session;
@@ -60,6 +68,15 @@ public class CICGetTextEmbeddingsOp extends AbstractCICTextEnrichmentOp {
 
     @OperationMethod
     public DocumentModel run(DocumentModel doc) {
+        HylandKEService ke = Framework.getService(HylandKEService.class);
+        String facet = ke.getEmbeddingsFacet(configName);
+        String xpath = ke.getEmbeddingsTextXpath(configName);
+        if (StringUtils.isBlank(facet) || StringUtils.isBlank(xpath)) {
+            LOG.warn(
+                    "CIC.GetTextEmbeddings skipped: KE descriptor '{}' has no embeddingsFacet/embeddingsTextXpath configured. Document {} returned unchanged (no CIC call).",
+                    configName == null ? "default" : configName, doc.getId());
+            return doc;
+        }
         this.xpath = xpathParam;
         this.currentConfigName = configName;
         return runForDocument(session, doc, configName, instructionsV2JsonStr, saveDocument);

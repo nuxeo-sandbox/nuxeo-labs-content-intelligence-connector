@@ -119,6 +119,26 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
   </template>
 </nuxeo-slot-content>
 
+<nuxeo-slot-content name="cic-ke-image-embeddings" slot="DOCUMENT_ACTIONS" order="5">
+  <template>
+    <nuxeo-filter document="[[document]]"
+                  expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
+                  facet="Picture" permission="ReadWrite" user="[[user]]">
+      <template>
+        <nuxeo-operation-button-with-spinner
+            event="document-updated"
+            icon="icons:fingerprint"
+            input="[[document]]"
+            label="label.ui.cic.ke.embeddings"
+            notification="label.ui.cic.ke.embeddings.done"
+            params="{&quot;saveDocument&quot;: true}"
+            operation="CIC.GetImageEmbeddings">
+        </nuxeo-operation-button-with-spinner>
+      </template>
+    </nuxeo-filter>
+  </template>
+</nuxeo-slot-content>
+
 <!-- ==================== Knowledge Enrichment - Text/File actions ==================== -->
 
 <nuxeo-slot-content name="cic-ke-text-metadata" slot="DOCUMENT_ACTIONS" order="3">
