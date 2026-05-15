@@ -324,7 +324,7 @@ INFO/WARNING/TODO
       }
     </style>
 
-    <nuxeo-operation id="getAvailableAgentsOp" op="javascript.getAvailableAgents"></nuxeo-operation>
+    <nuxeo-operation id="getAvailableAgentsOp" op="HylandKD.AvailableAgents"></nuxeo-operation>
 
     <nuxeo-operation id="startConversationOp" op="HylandKnowledgeDiscovery.startConversation"></nuxeo-operation>
     <nuxeo-operation id="continueConversationOp" op="HylandKnowledgeDiscovery.continueConversation"></nuxeo-operation>
@@ -558,9 +558,14 @@ INFO/WARNING/TODO
 
         var quoted = uids.map(function(uid) { return "'" + uid + "'"; });
         let quotedJoin = quoted.join(',');
-        // WARNING: kdinfo:objectId is a custom field, used in Nuxeo presales demo (we have several demos
-        // using the same documents sent fto KD, they are referenced in this field)
-        var query = 'SELECT * FROM Document WHERE ecm:uuid IN (' + quotedJoin + ') OR kdinfo:objectId IN (' + quotedJoin + ')';
+        // TODO: re-introduce kdinfo:objectId support cleanly. Background: when a Nuxeo doc
+        // is sent to KD its UUID becomes the KD objectId; in some demos we persist that
+        // KD objectId on the source doc (kdinfo:objectId) so we can avoid re-sending the
+        // same content on subsequent runs. The kdinfo schema is NOT shipped by this plugin
+        // (it is presales-demo material), so the clause is disabled by default to avoid
+        // NXQL errors. When the schema IS registered, the original query was:
+        //   SELECT * FROM Document WHERE ecm:uuid IN (...) OR kdinfo:objectId IN (...)
+        var query = 'SELECT * FROM Document WHERE ecm:uuid IN (' + quotedJoin + ')';
 
         var op = this.$.queryDocumentsOp;
         op.params = { query: query, pageSIze: 5 };

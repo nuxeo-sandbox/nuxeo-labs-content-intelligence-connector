@@ -12,6 +12,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
 <link rel="import" href="elements/nuxeo-operation-button-with-spinner.html">
 <link rel="import" href="elements/kd-ask-question.html">
 <link rel="import" href="elements/kd-ask-question-with-selected.html">
+<link rel="import" href="elements/kd-conversation.html">
 
 <!-- ==================== Agents (single-document actions) ==================== -->
 
@@ -254,5 +255,16 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
 <nuxeo-slot-content name="cic-kd-ask-question-with-selected" slot="RESULTS_SELECTION_ACTIONS" order="1">
   <template>
     <kd-ask-question-with-selected icon="icons:question-answer" selected-items="[[selectedItems]]"></kd-ask-question-with-selected>
+  </template>
+</nuxeo-slot-content>
+
+<!-- ==================== Knowledge Discovery - Conversation ==================== -->
+
+<!-- Open a multi-turn KD conversation dialog. The agent picker is populated by
+     HylandKD.AvailableAgents which queries local CICAgentAndConfig documents
+     (only those the current user can READ). -->
+<nuxeo-slot-content name="cic-kd-conversation" slot="DOCUMENT_ACTIONS" order="2">
+  <template>
+    <kd-conversation icon="icons:forum"></kd-conversation>
   </template>
 </nuxeo-slot-content>

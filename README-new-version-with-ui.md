@@ -189,6 +189,20 @@ The dialog lets the user:
 * type a question;
 * see the answer + the **Nuxeo documents** matching the agent's `objectReferences` (resolved via `CIC.KDAskQuestionForUI`, which extracts the trailing UUID and runs an NXQL `IN (...)` lookup).
 
+### Knowledge Discovery — Conversation
+
+| Slot-content name | Slot | Icon | Element |
+| --- | --- | --- | --- |
+| `cic-kd-conversation` | `DOCUMENT_ACTIONS` | `icons:forum` | `<kd-conversation>` |
+
+The dialog lets the user have a multi-turn conversation with a Knowledge Discovery agent:
+* pick an agent from the picker (populated by `HylandKD.AvailableAgents`);
+* send a first question (calls `HylandKnowledgeDiscovery.startConversation`);
+* keep typing follow-up questions in the same conversation (calls `HylandKnowledgeDiscovery.continueConversation`);
+* optionally toggle "Show References" to see the Nuxeo documents the agent cited.
+
+> **Agent picker = local CICAgentAndConfig documents.** `HylandKD.AvailableAgents` runs an NXQL query on `CICAgentAndConfig` using the **current user's** session, so each user only sees agents on which they have READ permission. This lets a Nuxeo administrator control who can use which agent simply by granting/revoking READ on the corresponding `CICAgentAndConfig` documents — no need to declare every CIC platform agent in Nuxeo. (The full CIC platform agent list is available via `HylandKnowledgeDiscovery.getAllAgents`, but is intentionally NOT what drives this UI.)
+
 ### Agents
 
 | Slot-content name | Slot | Icon | Operation | Visible on |
