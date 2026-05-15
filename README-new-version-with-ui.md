@@ -203,6 +203,52 @@ The dialog lets the user have a multi-turn conversation with a Knowledge Discove
 
 > **Agent picker = local CICAgentAndConfig documents.** `HylandKD.AvailableAgents` runs an NXQL query on `CICAgentAndConfig` using the **current user's** session, so each user only sees agents on which they have READ permission. This lets a Nuxeo administrator control who can use which agent simply by granting/revoking READ on the corresponding `CICAgentAndConfig` documents — no need to declare every CIC platform agent in Nuxeo. (The full CIC platform agent list is available via `HylandKnowledgeDiscovery.getAllAgents`, but is intentionally NOT what drives this UI.)
 
+#### Adding the Conversation button to the Home page
+
+The conversation is not bound to a current document or a selection, so it also makes sense to expose it from the Home page.
+
+* In **Studio Designer > UI**, click **Dashboard** — this opens the full default `nuxeo-home.html` file.
+* Import the element at the top, then drop `<kd-conversation>` wherever you want. In the example below it is centered in the page header:
+
+```html
+<link rel="import" href="nuxeo-labs-content-intelligence-connector/elements/kd-conversation.html">
+<dom-module id="nuxeo-home">
+  <template>
+    <style include="nuxeo-styles">
+      . . .
+
+      /* Center our conversation button */
+      [slot="header"] {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .header-center {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        margin-right: 45px;
+      }
+    </style>
+
+    <nuxeo-connection id="nx"></nuxeo-connection>
+    <nuxeo-page>
+      <div slot="header">
+        <div> <!-- Add this div around nuxeo-repositories -->
+          <nuxeo-repositories></nuxeo-repositories>
+          [[i18n('home.dashboard')]]
+        </div>
+        <!-- conversation -->
+        <div class="header-center">
+          <kd-conversation icon="icons:question-answer" show-label="true"></kd-conversation>
+        </div>
+      </div>
+      . . .
+```
+
+The `show-label="true"` attribute makes the button display its localized label (`label.ui.cic.kd-conversation`) next to the icon — useful in a header where there is room for it (the default in `DOCUMENT_ACTIONS` is icon-only).
+
 ### Agents
 
 | Slot-content name | Slot | Icon | Operation | Visible on |
