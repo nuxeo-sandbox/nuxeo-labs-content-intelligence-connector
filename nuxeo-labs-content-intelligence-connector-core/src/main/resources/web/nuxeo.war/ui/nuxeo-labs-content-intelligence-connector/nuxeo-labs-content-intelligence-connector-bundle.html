@@ -39,7 +39,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
 <!-- Filter expression used by all KE image actions:
      Picture facet, has file:content, not a version, not a proxy. -->
 
-<nuxeo-slot-content name="cic-ke-image-classify" slot="DOCUMENT_ACTIONS" order="1">
+<nuxeo-slot-content name="cic-ke-image-classify" slot="DOCUMENT_ACTIONS" order="2">
   <template>
     <nuxeo-filter document="[[document]]"
                   expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
@@ -51,6 +51,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
             input="[[document]]"
             label="label.ui.cic.ke.classify"
             notification="label.ui.cic.ke.classify.done"
+            params="{&quot;saveDocument&quot;: true}"
             operation="CIC.ClassifyImage">
         </nuxeo-operation-button-with-spinner>
       </template>
@@ -70,6 +71,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
             input="[[document]]"
             label="label.ui.cic.ke.image.description"
             notification="label.ui.cic.ke.image.description.done"
+            params="{&quot;saveDocument&quot;: true}"
             operation="CIC.GetImageDescription">
         </nuxeo-operation-button-with-spinner>
       </template>
@@ -77,7 +79,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
   </template>
 </nuxeo-slot-content>
 
-<nuxeo-slot-content name="cic-ke-image-metadata" slot="DOCUMENT_ACTIONS" order="1">
+<nuxeo-slot-content name="cic-ke-image-metadata" slot="DOCUMENT_ACTIONS" order="3">
   <template>
     <nuxeo-filter document="[[document]]"
                   expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
@@ -89,6 +91,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
             input="[[document]]"
             label="label.ui.cic.ke.metadata"
             notification="label.ui.cic.ke.metadata.done"
+            params="{&quot;saveDocument&quot;: true}"
             operation="CIC.GetImageMetadata">
         </nuxeo-operation-button-with-spinner>
       </template>
@@ -96,7 +99,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
   </template>
 </nuxeo-slot-content>
 
-<nuxeo-slot-content name="cic-ke-image-named-entities" slot="DOCUMENT_ACTIONS" order="1">
+<nuxeo-slot-content name="cic-ke-image-named-entities" slot="DOCUMENT_ACTIONS" order="4">
   <template>
     <nuxeo-filter document="[[document]]"
                   expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
@@ -108,6 +111,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
             input="[[document]]"
             label="label.ui.cic.ke.namedEntities"
             notification="label.ui.cic.ke.namedEntities.done"
+            params="{&quot;saveDocument&quot;: true}"
             operation="CIC.GetNamedEntitiesFromImage">
         </nuxeo-operation-button-with-spinner>
       </template>
@@ -117,7 +121,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
 
 <!-- ==================== Knowledge Enrichment - Text/File actions ==================== -->
 
-<nuxeo-slot-content name="cic-ke-text-metadata" slot="DOCUMENT_ACTIONS" order="1">
+<nuxeo-slot-content name="cic-ke-text-metadata" slot="DOCUMENT_ACTIONS" order="3">
   <template>
     <nuxeo-filter document="[[document]]"
                   expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
@@ -129,6 +133,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
             input="[[document]]"
             label="label.ui.cic.ke.metadata"
             notification="label.ui.cic.ke.metadata.done"
+            params="{&quot;saveDocument&quot;: true}"
             operation="CIC.GetTextMetadata">
         </nuxeo-operation-button-with-spinner>
       </template>
@@ -136,7 +141,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
   </template>
 </nuxeo-slot-content>
 
-<nuxeo-slot-content name="cic-ke-textfile-classify" slot="DOCUMENT_ACTIONS" order="1">
+<nuxeo-slot-content name="cic-ke-textfile-classify" slot="DOCUMENT_ACTIONS" order="2">
   <template>
     <nuxeo-filter document="[[document]]"
                   expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
@@ -148,6 +153,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
             input="[[document]]"
             label="label.ui.cic.ke.classify"
             notification="label.ui.cic.ke.classify.done"
+            params="{&quot;saveDocument&quot;: true}"
             operation="CIC.ClassifyTextFile">
         </nuxeo-operation-button-with-spinner>
       </template>
@@ -155,7 +161,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
   </template>
 </nuxeo-slot-content>
 
-<nuxeo-slot-content name="cic-ke-textfile-embeddings" slot="DOCUMENT_ACTIONS" order="1">
+<nuxeo-slot-content name="cic-ke-textfile-embeddings" slot="DOCUMENT_ACTIONS" order="5">
   <template>
     <nuxeo-filter document="[[document]]"
                   expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
@@ -167,6 +173,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
             input="[[document]]"
             label="label.ui.cic.ke.embeddings"
             notification="label.ui.cic.ke.embeddings.done"
+            params="{&quot;saveDocument&quot;: true}"
             operation="CIC.GetTextEmbeddings">
         </nuxeo-operation-button-with-spinner>
       </template>
@@ -174,7 +181,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
   </template>
 </nuxeo-slot-content>
 
-<nuxeo-slot-content name="cic-ke-textfile-named-entities" slot="DOCUMENT_ACTIONS" order="1">
+<nuxeo-slot-content name="cic-ke-textfile-named-entities" slot="DOCUMENT_ACTIONS" order="4">
   <template>
     <nuxeo-filter document="[[document]]"
                   expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
@@ -186,6 +193,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
             input="[[document]]"
             label="label.ui.cic.ke.namedEntities"
             notification="label.ui.cic.ke.namedEntities.done"
+            params="{&quot;saveDocument&quot;: true}"
             operation="CIC.GetNamedEntitiesFromText">
         </nuxeo-operation-button-with-spinner>
       </template>
@@ -205,6 +213,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
             input="[[document]]"
             label="label.ui.cic.ke.summarize"
             notification="label.ui.cic.ke.summarize.done"
+            params="{&quot;saveDocument&quot;: true}"
             operation="CIC.SummarizeText">
         </nuxeo-operation-button-with-spinner>
       </template>

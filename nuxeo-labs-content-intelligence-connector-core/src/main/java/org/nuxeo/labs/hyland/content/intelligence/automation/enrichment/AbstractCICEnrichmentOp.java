@@ -140,7 +140,7 @@ public abstract class AbstractCICEnrichmentOp {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 0, "No blob",
                     "No blob available for action " + getActionName() + " on " + doc.getId(), null);
             if (saveDocument) {
-                session.saveDocument(doc);
+                doc = session.saveDocument(doc);
             }
             return doc;
         }
@@ -155,7 +155,7 @@ public abstract class AbstractCICEnrichmentOp {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 0, "IO error calling KE",
                     e.getMessage(), null);
             if (saveDocument) {
-                session.saveDocument(doc);
+                doc = session.saveDocument(doc);
             }
             return doc;
         }
@@ -165,7 +165,7 @@ public abstract class AbstractCICEnrichmentOp {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, result.getResponseCode(),
                     "KE call failed", result.getResponseMessage(), result.toJsonString());
             if (saveDocument) {
-                session.saveDocument(doc);
+                doc = session.saveDocument(doc);
             }
             return doc;
         }
@@ -176,7 +176,7 @@ public abstract class AbstractCICEnrichmentOp {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Invalid envelope",
                     "Could not parse KE envelope", result.toJsonString());
             if (saveDocument) {
-                session.saveDocument(doc);
+                doc = session.saveDocument(doc);
             }
             return doc;
         }
@@ -188,7 +188,7 @@ public abstract class AbstractCICEnrichmentOp {
                     "KE response not SUCCESS",
                     "status=" + status, result.toJsonString());
             if (saveDocument) {
-                session.saveDocument(doc);
+                doc = session.saveDocument(doc);
             }
             return doc;
         }
@@ -201,7 +201,7 @@ public abstract class AbstractCICEnrichmentOp {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200,
                     "Missing action result", "Result key not found: " + getResultKey(), result.toJsonString());
             if (saveDocument) {
-                session.saveDocument(doc);
+                doc = session.saveDocument(doc);
             }
             return doc;
         }
@@ -211,7 +211,7 @@ public abstract class AbstractCICEnrichmentOp {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Action error",
                     String.valueOf(actionError), result.toJsonString());
             if (saveDocument) {
-                session.saveDocument(doc);
+                doc = session.saveDocument(doc);
             }
             return doc;
         }
@@ -221,7 +221,7 @@ public abstract class AbstractCICEnrichmentOp {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Empty action result",
                     "Action returned no result", result.toJsonString());
             if (saveDocument) {
-                session.saveDocument(doc);
+                doc = session.saveDocument(doc);
             }
             return doc;
         }
@@ -236,7 +236,7 @@ public abstract class AbstractCICEnrichmentOp {
         }
 
         if (saveDocument) {
-            session.saveDocument(doc);
+            doc = session.saveDocument(doc);
         }
         return doc;
     }

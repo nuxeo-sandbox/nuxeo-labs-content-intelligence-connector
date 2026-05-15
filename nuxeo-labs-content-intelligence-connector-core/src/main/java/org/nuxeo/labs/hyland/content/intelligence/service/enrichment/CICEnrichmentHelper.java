@@ -32,7 +32,8 @@ import org.nuxeo.ecm.core.api.DocumentModel;
  * this plugin (summary, classification, named entities, metadata detection, image description, text
  * metadata, embeddings).</li>
  * </ul>
- * The helper does NOT save the document; callers are responsible for {@code session.saveDocument(doc)}.
+ * The helper does NOT save the document; callers are responsible for {@code doc = session.saveDocument(doc)}
+ * (always reassign so the in-memory model reflects the saved state for any subsequent reads).
  * <p>
  * Embeddings writers are no-ops unless the enrichment descriptor is configured with
  * {@code embeddingsFacet} + {@code embeddingsImageXpath} / {@code embeddingsTextXpath} (see
