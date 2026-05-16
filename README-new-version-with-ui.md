@@ -394,33 +394,39 @@ The Studio bundle is loaded **after** the plugin bundle, so a same-name `<nuxeo-
 
 <br>
 
-## Automatic enrichment (via event handlers in your Studio project)
+## Automatic Enrichment (via event handlers in your Studio project)
 
 The plugin intentionally ships only **synchronous, on-demand buttons** (visibility and filters tunable from your Studio project — see [Show / hide buttons per project](#show--hide-buttons-per-project) and [Configuring which CIC buttons are visible (presales helper page)](#configuring-which-cic-buttons-are-visible-presales-helper-page)). It does NOT ship listeners that automatically push every `File` or `Picture` to CIC. The reason is simple: deciding **which** documents to enrich is a business decision (cost, throughput, lifecycle, ACLs, metadata flags, container path, user, document subtype, …) and varies per project. Calling CIC for every newly created document is rarely what you want.
 
 That said, wiring automatic enrichment yourself is straightforward. Every operation the plugin exposes (`CIC.*`, `HylandKnowledgeEnrichment.*`, `HylandKnowledgeDiscovery.*`, etc.) is a regular Nuxeo automation operation, so a few minutes in Studio are enough:
 
 1. Create an **Event Handler** in your Studio project.
-2. Bind it to the right event (see below), set it **asynchronous**, and add the usual rule filters (`hasType`, `hasFacet`, lifecycle, …).
-3. Point it at a JavaScript automation chain that applies **your** business rule (folder, metadata, user, …) and, when it matches, calls the plugin's operation(s).
+2. Bind it to the right event (see below), we recommend to set it **asynchronous** since calls to CIC can take time, and add the usual rule filters (`hasType`, `hasFacet`, lifecycle, not immutable, …).
+3. Point it at an automation chain (regular or JS) that applies **your** business rule (folder, metadata, user, …) and, when it matches, calls the plugin's operation(s).
+
+> [!TIP]
+> Do not forget to set the `saveDocument` parameter to `true` when it makes sense.
 
 Recommended event hooks:
 
-* **Regular `File` documents** → bind to **`documentCreated`** (filter: `hasType == File`).
-* **`Picture`-facet documents** → bind to **`pictureViewsGenerationDone`** (NOT `documentCreated`). By the time this event fires, `picture:views` is populated and you can pass any rendition (typically the **`FullHD`** view) to CIC — useful when the original is huge, RAW, or otherwise unsuitable.
+* **Non rich-media documents** (`File`, or your custom `Contract`, etc...) → typically bind to **`documentCreated`** (filter: `hasType == Contract`, is not a version, …).
+* **`Picture`-facet documents** → bind to **`pictureViewsGenerationDone`** (avoid `documentCreated`). By the time this event fires, `picture:views` is populated and you can pass any rendition (typically the **`FullHD`** view) to CIC — useful when the original is huge, RAW, or otherwise unsuitable.
 
 Shape of such a chain (illustrative):
 
 ```js
-// Bound to pictureViewsGenerationDone, async, filter: hasFacet == Picture
+// Bound to pictureViewsGenerationDone, async, filter: hasFacet == Picture, regular document
 function run(input, params) {
   if (!shouldEnrich(input)) {        // your business rule
     return input;
   }
   // picture:views is now populated — pass the FullHD rendition to CIC
   // instead of the original (which may be too large or unsupported).
-  input = CIC.GetImageDescriptionAndEmbeddings(input, {
-    /* xpath pointing at the FullHD view's blob, e.g. picture:views/<index>/content */
+  input = CIC.GetImageDescription(input, {
+    //"configName" => using default
+    //"renditionName" => not passed => plugin uses the XML config of FullHD if nothing set
+    //"instructionsV2JsonStr" => if you need special instructions
+    "saveDocument": true
   });
   return input;
 }
