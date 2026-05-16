@@ -394,6 +394,40 @@ The Studio bundle is loaded **after** the plugin bundle, so a same-name `<nuxeo-
 
 <br>
 
+## Automatic enrichment (via event handlers in your Studio project)
+
+The plugin intentionally ships only **synchronous, on-demand buttons** (visibility and filters tunable from your Studio project — see [Show / hide buttons per project](#show--hide-buttons-per-project) and [Configuring which CIC buttons are visible (presales helper page)](#configuring-which-cic-buttons-are-visible-presales-helper-page)). It does NOT ship listeners that automatically push every `File` or `Picture` to CIC. The reason is simple: deciding **which** documents to enrich is a business decision (cost, throughput, lifecycle, ACLs, metadata flags, container path, user, document subtype, …) and varies per project. Calling CIC for every newly created document is rarely what you want.
+
+That said, wiring automatic enrichment yourself is straightforward. Every operation the plugin exposes (`CIC.*`, `HylandKnowledgeEnrichment.*`, `HylandKnowledgeDiscovery.*`, etc.) is a regular Nuxeo automation operation, so a few minutes in Studio are enough:
+
+1. Create an **Event Handler** in your Studio project.
+2. Bind it to the right event (see below), set it **asynchronous**, and add the usual rule filters (`hasType`, `hasFacet`, lifecycle, …).
+3. Point it at a JavaScript automation chain that applies **your** business rule (folder, metadata, user, …) and, when it matches, calls the plugin's operation(s).
+
+Recommended event hooks:
+
+* **Regular `File` documents** → bind to **`documentCreated`** (filter: `hasType == File`).
+* **`Picture`-facet documents** → bind to **`pictureViewsGenerationDone`** (NOT `documentCreated`). By the time this event fires, `picture:views` is populated and you can pass any rendition (typically the **`FullHD`** view) to CIC — useful when the original is huge, RAW, or otherwise unsuitable.
+
+Shape of such a chain (illustrative):
+
+```js
+// Bound to pictureViewsGenerationDone, async, filter: hasFacet == Picture
+function run(input, params) {
+  if (!shouldEnrich(input)) {        // your business rule
+    return input;
+  }
+  // picture:views is now populated — pass the FullHD rendition to CIC
+  // instead of the original (which may be too large or unsupported).
+  input = CIC.GetImageDescriptionAndEmbeddings(input, {
+    /* xpath pointing at the FullHD view's blob, e.g. picture:views/<index>/content */
+  });
+  return input;
+}
+```
+
+<br>
+
 ## Response envelope (still applies in both usage levels)
 
 All `CIC.*` and `Hyland*.*` operations return a `Blob` containing a JSON object with this canonical shape:
