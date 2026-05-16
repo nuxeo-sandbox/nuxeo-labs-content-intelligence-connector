@@ -75,6 +75,32 @@ public interface HylandKEService {
     public static final String SERVICE_LABEL = "Knowledge Enrichment";
 
     /**
+     * Configuration parameter name controlling the default batch size used by multi-document KE
+     * operations (e.g. {@code CIC.GetImageDescription} when invoked with a {@code DocumentModelList}
+     * input).
+     *
+     * @since 2025.16
+     */
+    public static final String BATCH_SIZE_PARAM = "nuxeo.hyland.cic.enrichment.batchSize";
+
+    /**
+     * Default batch size used by multi-document KE operations when
+     * {@link #BATCH_SIZE_PARAM} is not set.
+     *
+     * @since 2025.16
+     */
+    public static final int BATCH_SIZE_DEFAULT = 10;
+
+    /**
+     * Returns the effective default batch size used by multi-document KE operations: value of the
+     * {@link #BATCH_SIZE_PARAM} configuration parameter when set, otherwise
+     * {@link #BATCH_SIZE_DEFAULT}.
+     *
+     * @since 2025.16
+     */
+    public int getDefaultBatchSize();
+
+    /**
      * Using KE v2 is global to every call. It is not possible to use v2 for a call, then v1 for another, etc.
      * It can be set at startup with the HylandKEServiceImpl#KE_USE_V2_PARAM configuration parameter
      * 

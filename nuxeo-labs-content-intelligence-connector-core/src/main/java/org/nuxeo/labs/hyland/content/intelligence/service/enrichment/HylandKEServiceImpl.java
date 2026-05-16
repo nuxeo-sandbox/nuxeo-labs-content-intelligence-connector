@@ -615,6 +615,11 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
     }
 
     @Override
+    public int getDefaultBatchSize() {
+        return ServicesUtils.configParamToInt(BATCH_SIZE_PARAM, BATCH_SIZE_DEFAULT);
+    }
+
+    @Override
     public String getEmbeddingsFacet(String configName) {
         KEDescriptor d = getKEDescriptor(configName);
         return d == null ? null : d.getEmbeddingsFacet();
