@@ -27,6 +27,7 @@ import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
 import org.nuxeo.ecm.automation.core.annotations.Param;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.DocumentModelList;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.CICEnrichmentHelper;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 import org.nuxeo.runtime.api.Framework;
@@ -64,22 +65,53 @@ public class CICGetTextEmbeddingsOp extends AbstractCICTextEnrichmentOp {
     @Param(name = "saveDocument", required = false, values = "false")
     protected boolean saveDocument = false;
 
+    /**
+     * Batch size used when the operation is invoked with a {@link DocumentModelList} input.
+     * Values {@code <= 0} fall back to the configured default
+     * ({@code nuxeo.hyland.cic.enrichment.batchSize} / 10).
+     *
+     * @since 2025.16
+     */
+    @Param(name = "batchSize", required = false, values = "0")
+    protected int batchSize = 0;
+
     protected String currentConfigName;
 
     @OperationMethod
     public DocumentModel run(DocumentModel doc) {
-        HylandKEService ke = Framework.getService(HylandKEService.class);
-        String facet = ke.getEmbeddingsFacet(configName);
-        String xpath = ke.getEmbeddingsTextXpath(configName);
-        if (StringUtils.isBlank(facet) || StringUtils.isBlank(xpath)) {
-            LOG.warn(
-                    "CIC.GetTextEmbeddings skipped: KE descriptor '{}' has no embeddingsFacet/embeddingsTextXpath configured. Document {} returned unchanged (no CIC call).",
-                    configName == null ? "default" : configName, doc.getId());
+        if (isEmbeddingsNotConfigured(doc.getId())) {
             return doc;
         }
         this.xpath = xpathParam;
         this.currentConfigName = configName;
         return runForDocument(session, doc, configName, instructionsV2JsonStr, saveDocument);
+    }
+
+    @OperationMethod
+    public DocumentModelList run(DocumentModelList docs) {
+        if (docs == null || docs.isEmpty()) {
+            return docs;
+        }
+        if (isEmbeddingsNotConfigured("<list of " + docs.size() + " docs>")) {
+            return docs;
+        }
+        this.xpath = xpathParam;
+        this.currentConfigName = configName;
+        return runForDocuments(session, docs, configName, instructionsV2JsonStr, saveDocument, batchSize);
+    }
+
+    /** Returns true and WARN-logs when the descriptor does not configure text embeddings. */
+    protected boolean isEmbeddingsNotConfigured(String contextLabel) {
+        HylandKEService ke = Framework.getService(HylandKEService.class);
+        String facet = ke.getEmbeddingsFacet(configName);
+        String xpath = ke.getEmbeddingsTextXpath(configName);
+        if (StringUtils.isBlank(facet) || StringUtils.isBlank(xpath)) {
+            LOG.warn(
+                    "CIC.GetTextEmbeddings skipped: KE descriptor '{}' has no embeddingsFacet/embeddingsTextXpath configured. {} returned unchanged (no CIC call).",
+                    configName == null ? "default" : configName, contextLabel);
+            return true;
+        }
+        return false;
     }
 
     @Override

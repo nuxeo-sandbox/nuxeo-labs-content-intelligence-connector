@@ -434,6 +434,64 @@ function run(input, params) {
 
 <br>
 
+## Multi-Document Enrichment (DocumentModelList input)
+
+> Since plugin 2025.16.
+
+All ten `CIC.*` document-oriented Knowledge Enrichment operations accept **either** a single `DocumentModel` **or** a `DocumentModelList`:
+
+- `CIC.SummarizeText`, `CIC.GetTextMetadata`, `CIC.GetTextEmbeddings`, `CIC.GetNamedEntitiesFromText`, `CIC.ClassifyTextFile`
+- `CIC.GetImageDescription`, `CIC.GetImageMetadata`, `CIC.GetImageEmbeddings`, `CIC.GetNamedEntitiesFromImage`, `CIC.ClassifyImage`
+
+When a `DocumentModelList` is passed, the operation processes the documents in **sequential batches** and returns the same list reference, with each document mutated in place — success populates the action-specific schema and clears any prior `CICError`; failure populates the `CICError` facet (full upstream envelope JSON included in `cic_error:fullResponseJson`).
+
+### Batch size
+
+A new `batchSize` parameter controls how many documents are sent to CIC per HTTP call:
+
+- `batchSize <= 0` (default) → falls back to the configured default `nuxeo.hyland.cic.enrichment.batchSize` (defaults to `10`).
+- `batchSize > default` → honored, but a single WARN is logged.
+
+Between batches (only when more batches remain) the plugin runs `session.save()` + a transaction commit/restart cycle to keep the transaction bounded. **DocumentModel is not thread-safe**: processing is strictly sequential in this v1 (BulkActionFramework support is planned for a later release).
+
+### `saveDocument` strongly recommended for multi-doc
+
+- `saveDocument=false` (default): callers own persistence — including any `CICError` markers written in memory. Errors are also logged so no information is silently lost, but the in-memory mutations on documents past the first un-saved batch may be lost if the caller forgets to save.
+- `saveDocument=true`: each modified doc is reassigned via `doc = session.saveDocument(doc)` immediately after every per-doc mutation (success or error).
+
+For **multi-doc calls, pass `saveDocument=true`** unless you have a specific reason not to.
+
+### Per-document error semantics (best-effort)
+
+| Condition | Outcome |
+|---|---|
+| Doc has no blob | `CICError("No blob")` on that doc, skipped from the CIC payload |
+| Batch HTTP call fails (IOException, non-2xx, `status != SUCCESS`, unparseable envelope) | `CICError` on every payload-eligible doc in the batch |
+| Per-result error or missing result key in the response | `CICError` on the matching doc |
+| Result entry whose `sourceId` is not in the current batch | logged WARN, no doc mutation |
+| Doc was sent in the payload but absent from `response.results` | `CICError("Missing in CIC response")` on that doc |
+| Per-doc success | `applyResult` writes the schema + `clearCICError` removes the facet |
+
+### Configuration parameter
+
+- `nuxeo.hyland.cic.enrichment.batchSize` (int, default `10`) — default batch size used when the operation `batchSize` parameter is `<= 0`.
+
+### Example (JS Automation)
+
+```javascript
+function run(input, params) {
+  // input is a DocumentList (query result, multi-select, ...)
+  var enriched = CIC.SummarizeText(input, {
+    'configName': 'default',
+    'batchSize': 25,
+    'saveDocument': true
+  });
+  return enriched;
+}
+```
+
+<br>
+
 ## Response envelope (still applies in both usage levels)
 
 All `CIC.*` and `Hyland*.*` operations return a `Blob` containing a JSON object with this canonical shape:
