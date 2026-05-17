@@ -1,7 +1,20 @@
 # nuxeo-labs-content-intelligence-connector
 
+## TL;DR
+
+**2025.16 ships a full Web UI on top of the existing CIC automation operations.** Out of the box you get:
+
+- **Document action buttons** for the common Knowledge Enrichment calls (summarize, classify, extract entities, get metadata, image description, embeddings) — results stored in dedicated schemas/doctypes shipped with the plugin.
+- **Knowledge Discovery dialogs**: an "Ask a Question" popup (single doc and multi-select) and a `kd-conversation` chat panel with citations linked back to Nuxeo documents.
+- **Admin "CIC UI Config" page** that lists every `cic-*` slot-content and generates ready-to-paste Studio override snippets — customize without forking.
+- **Multi-document `CIC.*` ops** with batching, per-doc error markers, and inter-batch commits — safe for listeners, BAF, and bulk actions.
+
+**Heads up:** KE v1 is gone (v2-only); existing operation IDs and the low-level API are unchanged. Old docs preserved under `docs/low-level/`.
+
 > [!IMPORTANT]
 > Low-Level operations are available at [docs/low-level/README.md](docs/low-level/README.md).
+
+## The Nuxeo Labs COntent Intelligence Connector
 
 The plugin connects [Nuxeo](https://www.hyland.com/solutions/products/nuxeo-platform) to [Hyland Content Intelligence](https://www.hyland.com/en/solutions/products/hyland-content-intelligence) (CIC) Cloud APIs to use:
 
