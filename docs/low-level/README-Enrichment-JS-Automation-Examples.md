@@ -1,9 +1,12 @@
 # nuxeo-labs-content-intelligence-connector: JavaScript Automation Examples for Knowledge Enrichment 
 
-These examples are referenced from the [README](/README-Enrichment.md) of the plugin.
+> [!IMPORTANT]
+> This document is part of the **low-level API doc set** (see [docs/low-level/README.md](./README.md)). It describes operations that call the Hyland CIC APIs directly. For the higher-level Web UI buttons / `CIC.*` operations introduced in 2025.16, see the [main README](../../README.md).
+
+These examples are referenced from the [README](./README-Enrichment.md) of the plugin.
 
 > [!IMPORTANT]
-> All the examples assume Nuxeo was correctly configured to access Hyland CIC Knowledge Enrichment service. See [README](/README-Enrichment.md) > Nuxeo Configuration Parameters
+> All the examples assume Nuxeo was correctly configured to access Hyland CIC Knowledge Enrichment service. See [README](./README-Enrichment.md) > Nuxeo Configuration Parameters
 
 ## About Examples and Knowledge Enrichment V1/V2
 

@@ -1,5 +1,8 @@
 # nuxeo-labs-content-intelligence-connector: Knowledge Enrichment
 
+> [!IMPORTANT]
+> This document is part of the **low-level API doc set** (see [docs/low-level/README.md](./README.md)). It describes operations that call the Hyland CIC APIs directly. For the higher-level Web UI buttons / `CIC.*` operations introduced in 2025.16, see the [main README](../../README.md).
+
 This part of the plugin connects a [Nuxeo](https://www.hyland.com/solutions/products/nuxeo-platform) application to [**Hyland Content Intelligence**](https://www.hyland.com/en/solutions/products/hyland-content-intelligence) and leverages its [**Knowledge Enrichment**](https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment) APIs.
 
 It provides two kinds of operations handling the calls to the service (see details for each operation below):
@@ -13,13 +16,13 @@ It provides two kinds of operations handling the calls to the service (see detai
 
 
 > [!TIP]
-> Examples of Nuxeo JavaScript Automation using the misc. operations described below can be found in the [JS Automation Examples](/README-Enrichment-JS-Automation-Examples.md) file.
+> Examples of Nuxeo JavaScript Automation using the misc. operations described below can be found in the [JS Automation Examples](./README-Enrichment-JS-Automation-Examples.md) file.
 
 <br>
 
 ## Usage
 
-See `Common/Shared Usage` in the main [README](/README.md).
+See `Common/Shared Usage` in the main [README](./README.md).
 
 To summarize, every call returns a Blob, stringified JSON object that has at least 3 fields:
 
@@ -186,7 +189,7 @@ The service returns a token valid a certain time: The plugin handles this timeou
 
 > [!TIP]
 > As of "today" (July 2025), CIC Knowledge Enrichment service accepts only PDF for text-based files (`text-classification`, `text-summarization`, etc.).
-> For text-based files enrichment, do not forget to first convert to PDF (see [JS Automation Examples](/README-Enrichment-JS-Automation-Examples.md))
+> For text-based files enrichment, do not forget to first convert to PDF (see [JS Automation Examples](./README-Enrichment-JS-Automation-Examples.md))
 
 * `HylandKnowledgeEnrichment.Enrich`
 * `HylandKnowledgeEnrichment.EnrichSeveral`
@@ -244,7 +247,7 @@ The operation calls the service and returns a JSON Blob, that contains the objec
 > Reminder: To get the JSON string from this blob, you must call its `getString()` method (see examples below). Then you can `JSON.parse` this string
 
 > [!TIP]
-> For examples of JS Automation: See [JS Automation Examples](/README-Enrichment-JS-Automation-Examples.md)
+> For examples of JS Automation: See [JS Automation Examples](./README-Enrichment-JS-Automation-Examples.md)
 
 
 ### `HylandKnowledgeEnrichment.EnrichSeveral`
@@ -280,7 +283,7 @@ This way, when looping the results, for each result you can:
 3. Act accordingly (typically, get a the corresponding document, store values in fields)
 
 > [!TIP]
-> For example(s) of JS Automation: See [JS Automation Examples](/README-Enrichment-JS-Automation-Examples.md).
+> For example(s) of JS Automation: See [JS Automation Examples](./README-Enrichment-JS-Automation-Examples.md).
 
 ### `HylandKnowledgeEnrichment.SendForEnrichment`
 
@@ -443,7 +446,7 @@ The operation calls the service and returns a JSON Blob, that contains the objec
 > Reminder: To get the JSON string from this blob, you must call its `getString()` method (see examples below). Then you can `JSON.parse` this string
 
 > [!TIP]
-> For example(s) of JS Automation: See [JS Automation Examples](/README-Enrichment-JS-Automation-Examples.md).
+> For example(s) of JS Automation: See [JS Automation Examples](./README-Enrichment-JS-Automation-Examples.md).
 
 ### `HylandKnowledgeEnrichment.Configure`
 
