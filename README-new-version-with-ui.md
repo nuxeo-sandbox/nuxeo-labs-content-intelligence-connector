@@ -8,7 +8,7 @@ The plugin connects [Nuxeo](https://www.hyland.com/solutions/products/nuxeo-plat
 
 > [!NOTE]
 > Starting at version 2025.16, this plugin brings:
-> * Buttons to call CIC
+> * Buttons to call CIC for a specific action
 > * Schemas, facets, etc. needed to store the results
 > * Layouts to display these results
 > 
@@ -18,7 +18,7 @@ The plugin connects [Nuxeo](https://www.hyland.com/solutions/products/nuxeo-plat
 Also:
 
 > [!WARNING]
-> This documentation references calls to the CIC Ingest API and the Content Lake API: please note that these are currently Work In Progress and are not fully implemented. We are in a Nuxeo presales Sandbox plugin, so this is acceptable, but we discourage prospects/customers from using it "as is".
+> This documentation references calls to the CIC Ingest API and the Content Lake API: please note that these are currently Work In Progress and are not fully implemented. We are in a Nuxeo presales Sandbox plugin, so this is acceptable, but we discourage prospects/customers from using them "as is".
 
 <br>
 
@@ -28,7 +28,10 @@ The plugin offers **two complementary usage levels**. They can be mixed in the s
 
 ### 1. Low-level — "you call CIC, you handle the result"
 
-This is the historical surface (any version `<= 2025.15`, plus `2025.18`). The plugin exposes one Automation operation per CIC endpoint. Your Studio project calls the operation, inspects the JSON envelope, decides what to write where, handles errors, builds your own UI, etc.
+This is the historical surface (any version `<= 2025.15`, plus `2023.18`). The plugin exposes a couple Automation operations for low-level calls to CIC. Your Studio project calls the operation, inspects the JSON envelope, decides what to write where, handles errors, builds your own UI, etc.
+
+> [!NOTE]
+> "historical surface" does not mean these are deprecated, they are not at all, and all the underlying code calling CIC is used intensively.
 
 Use this level when you want full control: bespoke document model, custom triggers (event handler, listener, page provider action), custom result rendering, batch processing of selected documents, etc.
 
