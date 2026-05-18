@@ -13,7 +13,7 @@ Version **2025.16** of this pluging **ships a full Web UI on top of the existing
 > * Low-Level operations are available at [docs/low-level/README.md](docs/low-level/README.md) and fully functional.
 > * KE v1 is gone (v2-only)
 
-## The Nuxeo Labs COntent Intelligence Connector
+## The Nuxeo Labs Content Intelligence Connector
 
 The plugin connects [Nuxeo](https://www.hyland.com/solutions/products/nuxeo-platform) to [Hyland Content Intelligence](https://www.hyland.com/en/solutions/products/hyland-content-intelligence) (CIC) Cloud APIs to use:
 
