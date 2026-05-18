@@ -129,6 +129,15 @@ If `embeddingsFacet` is missing, **or** the matching `embeddingsImageXpath` / `e
 
 ## Document model added by the plugin
 
+> [!TIP]
+> If you need to __add__ fields or control the behavior or the display of these schemas, just create resources with the exact same IDs in your Nuxeo Studio Project.
+> For example, if you want the `CICSummary` facet to contain another extra custom schema of yours, then:
+> * Declare the corresponding `cic_summary` schema in the Studio registries
+> * Create the `CICSummary` facet
+> * Add the `cic_summary` schema and your own schema(s) ass needed.
+>
+> **or** use the low-level operations and handle the result in your own schemas.
+
 ### Facets / schemas (storage of CIC results)
 
 The following **facets** are declared and added **dynamically at runtime** by the operations on the target document the first time a successful call is made — you do **not** need to attach them up-front to `File`, `Picture` or any custom doctype:
@@ -163,7 +172,10 @@ Loaded on first start from CSV files shipped with the plugin. Used by the classi
 * `cicImageClassification` — default labels for `CIC.ClassifyImage`
 * `cicTextClassification` — default labels for `CIC.ClassifyTextFile`
 
-Edit the CSVs in your Studio project (or contribute new entries to the same directory names) to change the available classes.
+> [!TIP]
+> You will most likely override these vocabularies to use your own values.
+> The easiest way for doing that is to just create, in you Nuxeo Studio project, vocabularies with the same id.
+> Do not forget to handle translation keys, if needed.
 
 <br>
 
