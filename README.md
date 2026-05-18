@@ -185,7 +185,7 @@ All buttons are contributed in `nuxeo-labs-content-intelligence-connector-bundle
 
 ### Knowledge Enrichment — image actions
 
-Visible on documents with the `Picture` facet, with a `file:content` blob, that are not a version or a proxy, and on which the user has `ReadWrite`. Each button calls one operation, persists the result on the document and shows a notification.
+Visible on documents with the `Picture` facet, with a `file:content` blob, that are not a version or a proxy, and on which the user has `ReadWrite`. Each button calls one operation (_synchronously_), persists the result on the document and shows a notification.
 
 | Slot-content name | Icon (Polymer `iron-icons`) | Operation | Stored on |
 | --- | --- | --- | --- |
@@ -460,6 +460,11 @@ function run(input, params) {
   });
   return input;
 }
+
+function shouldEnrich(doc) {
+  // In this very simple example, we enrich automatically only documents that are at this hardcoded path
+  return doc && doc.path.indexOf("/default-domain/workspaces/ACME/Import/" === 0);
+}
 ```
 
 <br>
@@ -482,7 +487,11 @@ A new `batchSize` parameter controls how many documents are sent to CIC per HTTP
 - `batchSize <= 0` (default) → falls back to the configured default `nuxeo.hyland.cic.enrichment.batchSize` (defaults to `10`).
 - `batchSize > default` → honored, but a single WARN is logged.
 
-Between batches (only when more batches remain) the plugin runs `session.save()` + a transaction commit/restart cycle to keep the transaction bounded. **DocumentModel is not thread-safe**: processing is strictly sequential in this v1 (BulkActionFramework support is planned for a later release).
+Between batches (only when more batches remain) the plugin commiots the transaction.
+
+> [!CAUTION]
+> Processing is strictly sequential. To avoid time-out, we strongly recommend running these operations asynchronously when passing them a list of documents.
+
 
 ### `saveDocument` strongly recommended for multi-doc
 
