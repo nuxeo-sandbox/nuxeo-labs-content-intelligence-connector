@@ -162,7 +162,6 @@ Loaded on first start from CSV files shipped with the plugin. Used by the classi
 
 * `cicImageClassification` — default labels for `CIC.ClassifyImage`
 * `cicTextClassification` — default labels for `CIC.ClassifyTextFile`
-* `cicSecurityLevel` — for security-level metadata extraction
 
 Edit the CSVs in your Studio project (or contribute new entries to the same directory names) to change the available classes.
 

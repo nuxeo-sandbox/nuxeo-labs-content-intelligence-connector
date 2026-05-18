@@ -27,18 +27,6 @@
       <createTablePolicy>on_missing_columns</createTablePolicy>
     </directory>
 
-    <directory name="cicSecurityLevel">
-      <schema>vocabulary</schema>
-      <types>
-        <type>system</type>
-      </types>
-      <dataSource>java:/nxsqldirectory</dataSource>
-      <table>cic_security_level</table>
-      <idField>id</idField>
-      <dataFile>directories/cic-security-level.csv</dataFile>
-      <createTablePolicy>on_missing_columns</createTablePolicy>
-    </directory>
-
   </extension>
 
 </component>
