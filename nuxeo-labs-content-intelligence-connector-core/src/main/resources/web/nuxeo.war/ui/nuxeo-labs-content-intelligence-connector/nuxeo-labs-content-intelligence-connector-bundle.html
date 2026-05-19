@@ -249,14 +249,14 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
 <!-- Single-document context: open the dialog from the document toolbar. -->
 <nuxeo-slot-content name="cic-kd-ask-question" slot="DOCUMENT_ACTIONS" order="1">
   <template>
-    <kd-ask-question icon="icons:speaker-notes"></kd-ask-question>
+    <kd-ask-question icon="icons:speaker-notes" label="label.ui.cic.kd-ask.askKD"></kd-ask-question>
   </template>
 </nuxeo-slot-content>
 
 <!-- Multi-document context: open the dialog from a results selection toolbar. -->
 <nuxeo-slot-content name="cic-kd-ask-question-with-selected" slot="RESULTS_SELECTION_ACTIONS" order="1">
   <template>
-    <kd-ask-question-with-selected icon="icons:speaker-notes" selected-items="[[selectedItems]]"></kd-ask-question-with-selected>
+    <kd-ask-question-with-selected icon="icons:speaker-notes" label="label.ui.cic.kd-ask.askKD" selected-items="[[selectedItems]]"></kd-ask-question-with-selected>
   </template>
 </nuxeo-slot-content>
 
@@ -267,7 +267,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
      (only those the current user can READ). -->
 <nuxeo-slot-content name="cic-kd-conversation" slot="DOCUMENT_ACTIONS" order="2">
   <template>
-    <kd-conversation icon="icons:question-answer"></kd-conversation>
+    <kd-conversation icon="icons:question-answer" label="label.ui.cic.kd-conversation"></kd-conversation>
   </template>
 </nuxeo-slot-content>
 
