@@ -164,7 +164,7 @@ public class CICGetUIBundleConfigOp {
      * Returns {@link #UNKNOWN_VERSION} if the file cannot be read.
      */
     protected String readPluginVersion() {
-        String resource = "META-INF/maven/org.nuxeo.labs.hyland.content.intelligence/"
+        String resource = "META-INF/maven/org.nuxeo.labs.content.intelligence/"
                 + "nuxeo-labs-content-intelligence-connector-core/pom.properties";
         try (InputStream in = getClass().getClassLoader().getResourceAsStream(resource)) {
             if (in == null) {
