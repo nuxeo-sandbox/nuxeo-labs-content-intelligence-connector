@@ -6,7 +6,7 @@ then start and continue a conversation.
 
 Examples usage :
   <kd-conversation></kd-conversation>
-  <kd-conversation icon="icons:chat" show-label="true"></kd-conversation>
+  <kd-conversation icon="communication:chat" show-label="true"></kd-conversation>
 
 ====================
 INFO/WARNING/TODO
@@ -432,7 +432,9 @@ INFO/WARNING/TODO
       properties: {
         label: {
           type: String,
-          value: window.nuxeo.I18n.translate('label.ui.cic.kd-conversation')
+          value: function() {
+            return this.i18n ? this.i18n('label.ui.cic.kd-conversation') : 'label.ui.cic.kd-conversation';
+          }
         },
 
         showLabel: {
@@ -442,7 +444,8 @@ INFO/WARNING/TODO
 
         icon: {
           type: String,
-          value: 'icons:question-answer'
+          value: 'icons:question-answer',
+          reflectToAttribute: true
         },
 
         /* ==================== Private properties ==================== */

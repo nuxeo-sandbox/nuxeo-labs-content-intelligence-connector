@@ -27,7 +27,9 @@ to answer the question.
       properties: {
         label: {
           type: String,
-          value: window.nuxeo.I18n.translate('label.ui.cic.kd-ask.askKD')
+          value: function() {
+            return this.i18n ? this.i18n('label.ui.cic.kd-ask.askKD') : 'label.ui.cic.kd-ask.askKD';
+          }
         },
 
         showLabel: {
@@ -37,7 +39,8 @@ to answer the question.
 
         icon: {
           type: String,
-          value: 'icons:question-answer'
+          value: 'icons:question-answer',
+          reflectToAttribute: true
         },
 
         selectedItems: Array
