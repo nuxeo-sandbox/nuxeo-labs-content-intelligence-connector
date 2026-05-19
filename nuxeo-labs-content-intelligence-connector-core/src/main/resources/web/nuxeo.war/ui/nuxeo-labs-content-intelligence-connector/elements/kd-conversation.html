@@ -332,9 +332,9 @@ INFO/WARNING/TODO
 
     <div class="action" on-tap="_toggleDialog">
       <paper-icon-button id="bt" icon="[[icon]]"></paper-icon-button>
-      <span class="label" hidden$="[[!showLabel]]">[[label]]</span>
+      <span class="label" hidden$="[[!showLabel]]">[[i18n(label)]]</span>
     </div>
-    <paper-tooltip for="bt">[[label]]</paper-tooltip>
+    <paper-tooltip for="bt">[[i18n(label)]]</paper-tooltip>
 
     <nuxeo-dialog id="conversationDialog" on-iron-overlay-closed="_dialogClosed" with-backdrop no-auto-focus>
 
@@ -432,9 +432,7 @@ INFO/WARNING/TODO
       properties: {
         label: {
           type: String,
-          value: function() {
-            return this.i18n ? this.i18n('label.ui.cic.kd-conversation') : 'label.ui.cic.kd-conversation';
-          }
+          value: 'label.ui.cic.kd-conversation'
         },
 
         showLabel: {

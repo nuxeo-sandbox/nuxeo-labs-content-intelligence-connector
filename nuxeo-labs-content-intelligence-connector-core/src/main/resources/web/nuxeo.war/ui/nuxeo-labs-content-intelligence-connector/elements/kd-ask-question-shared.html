@@ -176,9 +176,9 @@ to answer the question.
 
     <div class="action" on-tap="_toggleDialog">
       <paper-icon-button id="bt" icon="[[icon]]"></paper-icon-button>
-      <span class="label" hidden$="[[!showLabel]]">[[label]]</span>
+      <span class="label" hidden$="[[!showLabel]]">[[i18n(label)]]</span>
     </div>
-    <paper-tooltip for="bt">[[label]]</paper-tooltip>
+    <paper-tooltip for="bt">[[i18n(label)]]</paper-tooltip>
 
     <nuxeo-dialog id="dialog" on-iron-overlay-closed="_dialogClosed" with-backdrop>
       <div class="content">
@@ -195,7 +195,7 @@ to answer the question.
           </div>
         </template>
 
-        <paper-textarea label="[[questionLabel]]" value="{{question}}" rows="2"></paper-textarea>
+        <paper-textarea label="[[i18n(questionLabel)]]" value="{{question}}" rows="2"></paper-textarea>
 
         <template is="dom-if" if="[[htmlAnswer]]">
           <div class$="answer [[_getAnswerClass(referencesCollapsed)]]" inner-h-t-m-l="[[htmlAnswer]]"></div>
@@ -250,9 +250,29 @@ to answer the question.
       properties: {
         label: {
           type: String,
-          value: function() {
-            return this.i18n ? this.i18n('label.ui.cic.kd-ask.askKD') : 'label.ui.cic.kd-ask.askKD';
-          }
+          value: 'label.ui.cic.kd-ask.askKD'
+        },
+
+        agentAndConfigDocId: {
+          type: String,
+          observer: '_agentAndConfigDocIdChanged'
+        },
+        agentAndConfigDoc: Object,
+
+        showLabel: {
+          type: Boolean,
+          value: false,
+        },
+
+        icon: {
+          type: String,
+          value: 'icons:question-answer',
+          reflectToAttribute: true
+        },
+
+        questionLabel: {
+          type: String,
+          value: 'label.ui.cic.kd-ask.askKD'
         },
 
         agentAndConfigDocId: {

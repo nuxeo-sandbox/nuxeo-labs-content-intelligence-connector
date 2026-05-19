@@ -247,7 +247,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
 <!-- ==================== Knowledge Discovery - Ask question ==================== -->
 
 <!-- Single-document context: open the dialog from the document toolbar. -->
-<nuxeo-slot-content name="cic-kd-ask-question" slot="DOCUMENT_ACTIONS" order="1">
+<nuxeo-slot-content name="cic-kd-ask-question" slot="DOCUMENT_ACTIONS" order="-10">
   <template>
     <kd-ask-question icon="icons:speaker-notes" label="label.ui.cic.kd-ask.askKD"></kd-ask-question>
   </template>
@@ -265,7 +265,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
 <!-- Open a multi-turn KD conversation dialog. The agent picker is populated by
      HylandKD.AvailableAgents which queries local CICAgentAndConfig documents
      (only those the current user can READ). -->
-<nuxeo-slot-content name="cic-kd-conversation" slot="DOCUMENT_ACTIONS" order="2">
+<nuxeo-slot-content name="cic-kd-conversation" slot="DOCUMENT_ACTIONS" order="-20">
   <template>
     <kd-conversation icon="icons:question-answer" label="label.ui.cic.kd-conversation"></kd-conversation>
   </template>
