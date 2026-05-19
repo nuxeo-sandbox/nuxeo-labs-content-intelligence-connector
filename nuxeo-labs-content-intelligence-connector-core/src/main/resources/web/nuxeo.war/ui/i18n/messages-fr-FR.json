@@ -1,11 +1,11 @@
 {
-  "label.ui.cic.doctype.CICAgentAndConfig": "Agent KD et configuration",
+  "label.document.type.cicagentandconfig": "Agent KD et configuration",
   "label.ui.cic.doctype.CICAgentAndConfig.description": "Un agent Knowledge Discovery (id + paramètres) utilisé par les écrans Conversation et Question/Réponse.",
-  "label.ui.cic.doctype.CICAgenticAgentAndConfig": "Agent Agentic et configuration",
+  "label.document.type.cicagenticagentandconfig": "Agent Agentic et configuration",
   "label.ui.cic.doctype.CICAgenticAgentAndConfig.description": "Un agent Agentic (id + paramètres) appelé via le service CIC Agents.",
-  "label.ui.cic.doctype.CICAgentsAndConfigs": "Agents-Configs KD",
+  "label.document.type.cicagentsandconfigs": "Agents-Configs KD",
   "label.ui.cic.doctype.CICAgentsAndConfigs.description": "Conteneur pour les définitions d'agents Knowledge Discovery.",
-  "label.ui.cic.doctype.CICAgenticAgentsAndConfigs": "Agents-Configs Agentic",
+  "label.document.type.cicagenticagentsandconfigs": "Agents-Configs Agentic",
   "label.ui.cic.doctype.CICAgenticAgentsAndConfigs.description": "Conteneur pour les définitions d'agents Agentic.",
 
   "label.ui.cic.agents.lookupAgent": "Lookup Agent",

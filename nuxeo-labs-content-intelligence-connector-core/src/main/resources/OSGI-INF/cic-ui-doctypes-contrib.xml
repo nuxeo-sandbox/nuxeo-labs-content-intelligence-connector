@@ -118,30 +118,30 @@
   <extension target="org.nuxeo.ecm.platform.types.TypeService" point="types">
 
     <type id="CICAgentAndConfig">
-      <label>label.ui.cic.doctype.CICAgentAndConfig</label>
-      <icon>/img/share-setting.png</icon>
-      <bigIcon>/img/share-setting.png</bigIcon>
+      <label>label.document.CICAgentAndConfig</label>
+      <icon>/img/cicagentandconfig.png</icon>
+      <bigIcon>/img/cicagentandconfig.png</bigIcon>
       <description>label.ui.cic.doctype.CICAgentAndConfig.description</description>
     </type>
 
     <type id="CICAgenticAgentAndConfig">
-      <label>label.ui.cic.doctype.CICAgenticAgentAndConfig</label>
-      <icon>/img/business-setting.png</icon>
-      <bigIcon>/img/business-setting.png</bigIcon>
+      <label>label.document.CICAgenticAgentAndConfig</label>
+      <icon>/img/cicagenticagentandconfig.png</icon>
+      <bigIcon>/img/cicagenticagentandconfig.png</bigIcon>
       <description>label.ui.cic.doctype.CICAgenticAgentAndConfig.description</description>
     </type>
 
     <type id="CICAgentsAndConfigs">
-      <label>label.ui.cic.doctype.CICAgentsAndConfigs</label>
-      <icon>/img/folder-setting.png</icon>
-      <bigIcon>/img/folder-setting.png</bigIcon>
+      <label>label.document.CICAgentsAndConfigs</label>
+      <icon>/img/cicagentsandconfigs.png</icon>
+      <bigIcon>/img/cicagentsandconfigs.png</bigIcon>
       <description>label.ui.cic.doctype.CICAgentsAndConfigs.description</description>
     </type>
 
     <type id="CICAgenticAgentsAndConfigs">
-      <label>label.ui.cic.doctype.CICAgenticAgentsAndConfigs</label>
-      <icon>/img/box-view-setting.png</icon>
-      <bigIcon>/img/box-view-setting.png</bigIcon>
+      <label>label.document.CICAgenticAgentsAndConfigs</label>
+      <icon>/img/cicagenticagentsandconfigs.png</icon>
+      <bigIcon>/img/cicagenticagentsandconfigs.png</bigIcon>
       <description>label.ui.cic.doctype.CICAgenticAgentsAndConfigs.description</description>
     </type>
 
