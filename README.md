@@ -386,6 +386,10 @@ Example: display the text summary in the metadata layout of the `File` document 
 </dom-module>
 ```
 
+### Tip: generate the snippet from the admin page
+
+Instead of typing the imports + tags by hand, open **Administration > CIC UI Config**, switch to the **Form snippets** tab, tick the forms you want, and copy the generated block. The block includes a header comment reminding you to adapt the relative `../../` path to where you paste it.
+
 The same pattern applies to every form listed above. For example, on a `Picture` document:
 
 ```html
