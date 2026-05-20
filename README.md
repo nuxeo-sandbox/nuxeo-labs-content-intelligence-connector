@@ -8,6 +8,7 @@ Version **2025.16** of this pluging **ships a full Web UI on top of the existing
 - **Knowledge Discovery dialogs**: an "Ask a Question" popup (single doc and multi-select) and a `kd-conversation` chat panel with citations linked back to Nuxeo documents.
 - **Multi-document `CIC.*` ops** with batching, per-doc error markers, and inter-batch commits — safe for listeners, BAF, and bulk actions.
 - **Easy to override** for you nown usage. There even is an **Admin "CIC UI Config" page** that lists every `cic-*` slot-content and generates ready-to-paste Studio override snippets (demo build/tests utility).
+- **Connection to CIC** stays easy: Add nuxeo.conf parameters (URLs, secrets, ...)
 
 
 > [!IMPORTANT]
@@ -72,7 +73,7 @@ The rest of this README documents this UI level and how to customize it.
 ### Endpoints, client IDs, secrets
 
 CIC is reached via OAuth2 client credentials. The plugin needs:
-* An **authentication base URL** (usually `nuxeo.hyland.cic.auth.baseUrl`)
+* An **authentication base URL** (`nuxeo.hyland.cic.auth.baseUrl`)
 * per-service **base URL**, **clientId**, **clientSecret** and (for some services) **environment**
 
 Set these via standard `nuxeo.conf` properties. The default mapping is:
@@ -134,7 +135,7 @@ If `embeddingsFacet` is missing, **or** the matching `embeddingsImageXpath` / `e
 > For example, if you want the `CICSummary` facet to contain another extra custom schema of yours, then:
 > * Declare the corresponding `cic_summary` schema in the Studio registries
 > * Create the `CICSummary` facet
-> * Add the `cic_summary` schema and your own schema(s) ass needed.
+> * Add the `cic_summary` schema and your own schema(s) as needed.
 >
 > **or** use the low-level operations and handle the result in your own schemas.
 
