@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.service.enrichment;
 
@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.nuxeo.ecm.core.api.Blob;
+import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.labs.hyland.content.intelligence.ContentToProcess;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 
@@ -66,7 +67,7 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
  * }
  * </pre>
  * 
- * @since TODO
+ * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
 @SuppressWarnings("rawtypes")
 public interface HylandKEService {
@@ -74,17 +75,43 @@ public interface HylandKEService {
     public static final String SERVICE_LABEL = "Knowledge Enrichment";
 
     /**
+     * Configuration parameter name controlling the default batch size used by multi-document KE
+     * operations (e.g. {@code CIC.GetImageDescription} when invoked with a {@code DocumentModelList}
+     * input).
+     *
+     * @since 2025.16
+     */
+    public static final String BATCH_SIZE_PARAM = "nuxeo.hyland.cic.enrichment.batchSize";
+
+    /**
+     * Default batch size used by multi-document KE operations when
+     * {@link #BATCH_SIZE_PARAM} is not set.
+     *
+     * @since 2025.16
+     */
+    public static final int BATCH_SIZE_DEFAULT = 10;
+
+    /**
+     * Returns the effective default batch size used by multi-document KE operations: value of the
+     * {@link #BATCH_SIZE_PARAM} configuration parameter when set, otherwise
+     * {@link #BATCH_SIZE_DEFAULT}.
+     *
+     * @since 2025.16
+     */
+    public int getDefaultBatchSize();
+
+    /**
      * Using KE v2 is global to every call. It is not possible to use v2 for a call, then v1 for another, etc.
      * It can be set at startup with the HylandKEServiceImpl#KE_USE_V2_PARAM configuration parameter
      * 
      * @param value
-     * @since TODO
+     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public void setUseKEV2(boolean value);
 
     /**
      * @return the value of current setting.
-     * @since TODO
+     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public boolean getUseKEV2();
 
@@ -292,5 +319,86 @@ public interface HylandKEService {
      * Introspection
      */
     public KEDescriptor getKEDescriptor(String configName);
+
+    /**
+     * Convenience accessor: returns the {@code embeddingsFacet} configured for {@code configName}, or
+     * {@code null} if not set. See {@link KEDescriptor#getEmbeddingsFacet()}.
+     *
+     * @since 2025.18
+     */
+    public String getEmbeddingsFacet(String configName);
+
+    /**
+     * Convenience accessor: returns the {@code embeddingsImageXpath} configured for {@code configName},
+     * or {@code null} if not set. See {@link KEDescriptor#getEmbeddingsImageXpath()}.
+     *
+     * @since 2025.18
+     */
+    public String getEmbeddingsImageXpath(String configName);
+
+    /**
+     * Convenience accessor: returns the {@code embeddingsTextXpath} configured for {@code configName},
+     * or {@code null} if not set. See {@link KEDescriptor#getEmbeddingsTextXpath()}.
+     *
+     * @since 2025.18
+     */
+    public String getEmbeddingsTextXpath(String configName);
+
+    /**
+     * Convenience accessor: returns the picture rendition (view) name configured for {@code configName},
+     * falling back to {@link KEDescriptor#DEFAULT_PICTURE_RENDITION_NAME} when not set.
+     *
+     * @since 2025.18
+     */
+    public String getPictureRenditionName(String configName);
+
+    /**
+     * Returns a JPEG rendition blob suitable for sending to the CIC image endpoints.
+     * <p>
+     * Resolution rules:
+     * <ul>
+     * <li>If {@code renditionName} is not blank, that view is requested via the {@code MultiviewPicture}
+     * adapter.</li>
+     * <li>Otherwise, the rendition configured on the descriptor (see
+     * {@link #getPictureRenditionName(String)}) is used.</li>
+     * </ul>
+     * If the document is not a picture (no {@code MultiviewPicture} adapter) or the requested view
+     * does not exist, this method records a {@code CICError} on the document via
+     * {@link #setCICError(DocumentModel, String, int, String, String, String)} (when {@code recordError}
+     * is {@code true}) and returns {@code null}. It does NOT throw.
+     *
+     * @param doc           the document; must not be {@code null}
+     * @param configName    contribution name (used to resolve the default rendition); may be {@code null}
+     * @param renditionName explicit view name; may be {@code null} or blank to use the default
+     * @param recordError   if {@code true}, populate the {@code cic_error} schema on missing facet/view
+     * @return the picture view's blob, or {@code null} if unavailable
+     * @since 2025.18
+     */
+    public Blob getImageRenditionForCIC(DocumentModel doc, String configName, String renditionName,
+            boolean recordError);
+
+    /**
+     * Removes any data previously written by {@link #setCICError} and removes the {@code CICError}
+     * facet from the document. No save is performed.
+     *
+     * @param doc the document; must not be {@code null}
+     * @since 2025.18
+     */
+    public void clearCICError(DocumentModel doc);
+
+    /**
+     * Adds the {@code CICError} facet to {@code doc} (if not already present) and populates the
+     * {@code cic_error} schema. No save is performed.
+     *
+     * @param doc          the document; must not be {@code null}
+     * @param service      short label of the failing service (e.g. {@code "Knowledge Enrichment"})
+     * @param responseCode HTTP-like response code; pass {@code 0} when not applicable
+     * @param shortMessage short human-readable error description
+     * @param fullMessage  optional detailed message
+     * @param fullJson     optional raw JSON returned by the upstream service
+     * @since 2025.18
+     */
+    public void setCICError(DocumentModel doc, String service, int responseCode, String shortMessage,
+            String fullMessage, String fullJson);
 
 }

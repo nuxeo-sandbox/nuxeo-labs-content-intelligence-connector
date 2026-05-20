@@ -16,13 +16,15 @@
  *
  * Contributors:
  *     Michael Vachette
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.test;
 
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
 import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsServiceImpl;
 import org.nuxeo.labs.hyland.content.intelligence.service.contentlake.ContentLakeServiceImpl;
@@ -84,6 +86,8 @@ import org.nuxeo.runtime.test.runner.RunnerFeature;
  * @since 2023
  */
 public class ConfigCheckerFeature implements RunnerFeature {
+
+    private static final Logger log = LogManager.getLogger(ConfigCheckerFeature.class);
 
     // ==========> Auth
     public static final String ENV_CIC_AUTH_BASE_URL = "CIC_AUTH_BASE_URL";
@@ -195,14 +199,14 @@ public class ConfigCheckerFeature implements RunnerFeature {
 
         boolean hasEndpointAuth = hasProperty(CICServiceConstants.AUTH_BASE_URL_PARAM, ENV_CIC_AUTH_BASE_URL);
         if (!hasEndpointAuth) {
-            System.out.println("Missing CIC Auth endpoint => no tests");
+            log.info("Missing CIC Auth endpoint => no tests");
         }
 
         // ==================================================
         boolean hasEnrichmentBaseUrl = hasProperty(HylandKEServiceImpl.CONTEXT_ENRICHMENT_BASE_URL_PARAM,
                 ENV_CIC_ENRICHMENT_BASE_URL);
         if (!hasEnrichmentBaseUrl) {
-            System.out.println("Missing CIC Enrichment Base URL => no enrichment tests");
+            log.info("Missing CIC Enrichment Base URL => no enrichment tests");
         }
         boolean hasEnrichmentClientId = hasProperty(HylandKEServiceImpl.ENRICHMENT_CLIENT_ID_PARAM,
                 ENV_CIC_ENRICHMENT_CLIENT_ID);
@@ -211,14 +215,14 @@ public class ConfigCheckerFeature implements RunnerFeature {
         hasEnrichmentClientInfo = hasEndpointAuth && hasEnrichmentBaseUrl && hasEnrichmentClientId
                 && hasEnrichmentClientSecret;
         if (!hasEnrichmentClientInfo) {
-            System.out.println("Missing CIC Enrichment Client info => no tests of enricvhment");
+            log.info("Missing CIC Enrichment Client info => no tests of enricvhment");
         }
 
         // ==================================================
         boolean hasDataCurationBaseUrl = hasProperty(HylandDCServiceImpl.DATA_CURATION_BASE_URL_PARAM,
                 ENV_CIC_DATA_CURATION_BASE_URL);
         if (!hasDataCurationBaseUrl) {
-            System.out.println("Missing CIC Data Curation Base URL => no data curation tests");
+            log.info("Missing CIC Data Curation Base URL => no data curation tests");
         }
         boolean hasDataCurationClientId = hasProperty(HylandDCServiceImpl.DATA_CURATION_CLIENT_ID_PARAM,
                 ENV_CIC_DATA_CURATION_CLIENT_ID);
@@ -227,14 +231,14 @@ public class ConfigCheckerFeature implements RunnerFeature {
         hasDataCurationClientInfo = hasEndpointAuth && hasDataCurationBaseUrl && hasDataCurationClientId
                 && hasDataCurationClientSecret;
         if (!hasDataCurationClientInfo) {
-            System.out.println("Missing CIC Data Curation Client info => no tests of data curation");
+            log.info("Missing CIC Data Curation Client info => no tests of data curation");
         }
 
         // ==================================================
         boolean hasDiscoveryBaseUrl = hasProperty(HylandKDServiceImpl.DISCOVERY_BASE_URL_PARAM,
                 ENV_CIC_DISCOVERY_BASE_URL);
         if (!hasDiscoveryBaseUrl) {
-            System.out.println("Missing CIC Discovery Base URL => no discovery tests");
+            log.info("Missing CIC Discovery Base URL => no discovery tests");
         }
         boolean hasDiscoveryClientId = hasProperty(HylandKDServiceImpl.DISCOVERY_CLIENT_ID_PARAM,
                 ENV_CIC_DISCOVERY_CLIENT_ID);
@@ -245,13 +249,13 @@ public class ConfigCheckerFeature implements RunnerFeature {
         hasDiscoveryClientInfo = hasEndpointAuth && hasDiscoveryClientId && hasDiscoveryClientSecret
                 && hasDiscoveryEnvironment;
         if (!hasDiscoveryClientInfo) {
-            System.out.println("Missing CIC Discovery Client info => no tests of Discovery");
+            log.info("Missing CIC Discovery Client info => no tests of Discovery");
         }
 
         // ==================================================
         boolean hasAgentsBaseUrl = hasProperty(HylandAgentsServiceImpl.AGENTS_BASE_URL_PARAM, ENV_CIC_AGENTS_BASE_URL);
         if (!hasAgentsBaseUrl) {
-            System.out.println("Missing CIC Agents Base URL => no Agent tests");
+            log.info("Missing CIC Agents Base URL => no Agent tests");
         }
         boolean hasAgentsClientId = hasProperty(HylandAgentsServiceImpl.AGENTS_CLIENT_ID_PARAM,
                 ENV_CIC_DISCOVERY_CLIENT_ID);
@@ -259,13 +263,13 @@ public class ConfigCheckerFeature implements RunnerFeature {
                 ENV_CIC_DISCOVERY_CLIENT_SECRET);
         hasAgentsClientInfo = hasEndpointAuth && hasAgentsClientId && hasAgentsClientSecret;
         if (!hasAgentsClientInfo) {
-            System.out.println("Missing CIC Agents Client info => no tests of agents");
+            log.info("Missing CIC Agents Client info => no tests of agents");
         }
 
         // ==================================================
         boolean hasIngestBaseUrl = hasProperty(IngestServiceImpl.INGEST_BASE_URL_PARAM, ENV_CIC_INGEST_BASE_URL);
         if (!hasIngestBaseUrl) {
-            System.out.println("Missing CIC Content Lake Base URL => no Content Lake tests");
+            log.info("Missing CIC Content Lake Base URL => no Content Lake tests");
         }
         boolean hasIngestClientId = hasProperty(IngestServiceImpl.INGEST_CLIENT_ID_PARAM, ENV_CIC_INGEST_CLIENT_ID);
         boolean hasIngestClientSecret = hasProperty(IngestServiceImpl.INGEST_CLIENT_SECRET_PARAM,
@@ -274,13 +278,13 @@ public class ConfigCheckerFeature implements RunnerFeature {
                 ENV_CIC_INGEST_ENVIRONMENT);
         hasIngestClientInfo = hasEndpointAuth && hasIngestClientId && hasIngestClientSecret && hasIngestEnvironment;
         if (!hasIngestClientInfo) {
-            System.out.println("Missing CIC Ingest Client info => no tests of Ingest");
+            log.info("Missing CIC Ingest Client info => no tests of Ingest");
         }
 
         // ==================================================
         boolean hasContentLakeBaseUrl = hasProperty(ContentLakeServiceImpl.CONTENTLAKE_BASE_URL_PARAM, ENV_CIC_CONTENTLAKE_BASE_URL);
         if (!hasContentLakeBaseUrl) {
-            System.out.println("Missing CIC Content Lake Base URL => no Content Lake tests");
+            log.info("Missing CIC Content Lake Base URL => no Content Lake tests");
         }
         boolean hasContentLakeClientId = hasProperty(ContentLakeServiceImpl.CONTENTLAKE_CLIENT_ID_PARAM, ENV_CIC_CONTENTLAKE_CLIENT_ID);
         boolean hasContentLakeClientSecret = hasProperty(ContentLakeServiceImpl.CONTENTLAKE_CLIENT_SECRET_PARAM,
@@ -289,7 +293,7 @@ public class ConfigCheckerFeature implements RunnerFeature {
                 ENV_CIC_CONTENTLAKE_ENVIRONMENT);
         hasContentLakeClientInfo = hasEndpointAuth && hasContentLakeClientId && hasContentLakeClientSecret && hasContentLakeEnvironment;
         if (!hasContentLakeClientInfo) {
-            System.out.println("Missing CIC Content Lake Client info => no tests of Content Lake");
+            log.info("Missing CIC Content Lake Client info => no tests of Content Lake");
         }
 
     }

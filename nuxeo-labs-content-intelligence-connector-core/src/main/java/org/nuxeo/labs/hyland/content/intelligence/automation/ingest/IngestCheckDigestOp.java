@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.automation.ingest;
 
@@ -29,7 +29,7 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.ingest.IngestService;
 
 /**
- * @since TODO
+ * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
 @Operation(id = IngestCheckDigestOp.ID, category = "Hyland CIC Ingest", label = "Check Document was Ingested", description = ""
         + "input is a document. xpath is the xpath of the blob (file:content by default)."

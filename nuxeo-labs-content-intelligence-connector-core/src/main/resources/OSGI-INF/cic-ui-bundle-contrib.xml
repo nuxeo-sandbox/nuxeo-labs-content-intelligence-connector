@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.labs.hyland.content.intelligence.ui.bundle">
+
+    <!-- Register the bundle entry-point HTML as a web resource -->
+    <extension target="org.nuxeo.ecm.platform.WebResources" point="resources">
+        <resource name="nuxeo-labs-content-intelligence-connector-bundle.html" type="import">
+            <uri>/ui/nuxeo-labs-content-intelligence-connector/nuxeo-labs-content-intelligence-connector-bundle.html</uri>
+        </resource>
+    </extension>
+
+    <!-- Append our bundle to the web-ui Web Resources bundle -->
+    <extension target="org.nuxeo.ecm.platform.WebResources" point="bundles">
+        <bundle name="web-ui">
+            <resources append="true">
+                <resource>nuxeo-labs-content-intelligence-connector-bundle.html</resource>
+            </resources>
+        </bundle>
+    </extension>
+
+</component>

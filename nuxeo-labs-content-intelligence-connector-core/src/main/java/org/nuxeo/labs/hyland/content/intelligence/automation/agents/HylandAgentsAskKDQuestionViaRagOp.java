@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.automation.agents;
 
@@ -33,7 +33,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsSer
 import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService.AgentType;
 
 /**
- * @since TODO
+ * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
 @Operation(id = HylandAgentsAskKDQuestionViaRagOp.ID, category = "Hyland Agent Builder", label = "Ask question to KD via RAG Agent", description = ""
         + "Ask a question to KD using a RAG agent."

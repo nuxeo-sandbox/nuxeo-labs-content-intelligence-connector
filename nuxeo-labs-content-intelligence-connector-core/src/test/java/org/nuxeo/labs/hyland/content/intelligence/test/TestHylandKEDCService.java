@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.test;
 
@@ -26,6 +26,8 @@ import java.io.File;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assume;
@@ -54,6 +56,8 @@ import jakarta.inject.Inject;
 @Features({ PlatformFeature.class, ConfigCheckerFeature.class })
 @Deploy("nuxeo-hyland-content-intelligence-connector-core")
 public class TestHylandKEDCService {
+
+    private static final Logger log = LogManager.getLogger(TestHylandKEDCService.class);
 
     public static final String TEST_IMAGE_PATH = "files/dc-3-smaller.jpg";
 
@@ -431,7 +435,7 @@ public class TestHylandKEDCService {
 
             tryCount += 1;
             if (tryCount > 1) {
-                System.out.println("shouldGetImageMetadata: Servcice returned " + status + "n trying again.");
+                log.info("shouldGetImageMetadata: Servcice returned {}n trying again.", status);
             }
 
         } while (tryCount < 4 || !"SUCCESS".equals(status));

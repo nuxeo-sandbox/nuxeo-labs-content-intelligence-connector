@@ -7,9 +7,16 @@ Bundle-Name: nuxeo-hyland-content-intelligence-connector-core
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: nuxeo-hyland-content-intelligence-connector-core;singleton=true
 Nuxeo-Component: OSGI-INF/service-enrichment-contrib.xml,
-    OSGI-INF/service-datacuration-contrib.xml,
-    OSGI-INF/service-discovery-contrib.xml,
-    OSGI-INF/service-ingest-contrib.xml,
-    OSGI-INF/service-agents-contrib.xml,
-    OSGI-INF/service-contentlake-contrib.xml,
-    OSGI-INF/automation-contrib.xml
+ OSGI-INF/service-datacuration-contrib.xml,
+ OSGI-INF/service-discovery-contrib.xml,
+ OSGI-INF/service-ingest-contrib.xml,
+ OSGI-INF/service-agents-contrib.xml,
+ OSGI-INF/service-contentlake-contrib.xml,
+ OSGI-INF/automation-contrib.xml,
+ OSGI-INF/cic-ui-schemas-contrib.xml,
+ OSGI-INF/cic-ui-doctypes-contrib.xml,
+ OSGI-INF/cic-ui-directories-contrib.xml,
+ OSGI-INF/cic-ui-pageproviders-contrib.xml,
+ OSGI-INF/cic-ui-bundle-contrib.xml,
+ OSGI-INF/cic-enrichment-helper-contrib.xml
+

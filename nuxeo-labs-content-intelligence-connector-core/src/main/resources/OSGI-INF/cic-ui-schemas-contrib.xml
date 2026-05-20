@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.labs.hyland.content.intelligence.ui.schemas">
+
+  <extension target="org.nuxeo.ecm.core.schema.TypeService" point="schema">
+
+    <schema name="cic_summary" prefix="cicsummary"
+            src="schemas/cic_summary.xsd"/>
+
+    <schema name="cic_classification" prefix="cicclassification"
+            src="schemas/cic_classification.xsd"/>
+
+    <schema name="cic_named_entities" prefix="cicnamedentities"
+            src="schemas/cic_named_entities.xsd"/>
+
+    <schema name="cic_metadata_detection" prefix="cicmetadatadetection"
+            src="schemas/cic_metadata_detection.xsd"/>
+
+    <schema name="cic_text_metadata" prefix="cictextmetadata"
+            src="schemas/cic_text_metadata.xsd"/>
+
+    <schema name="cic_image_description" prefix="cicimagedescription"
+            src="schemas/cic_image_description.xsd"/>
+
+    <schema name="cic_agent_and_config" prefix="cicagentandconfig"
+            src="schemas/cic_agent_and_config.xsd"/>
+
+    <schema name="cic_agentic_agent_and_config" prefix="cicagenticagentandconfig"
+            src="schemas/cic_agentic_agent_and_config.xsd"/>
+
+    <schema name="cic_error" prefix="cicerror"
+            src="schemas/cic_error.xsd"/>
+
+  </extension>
+
+</component>

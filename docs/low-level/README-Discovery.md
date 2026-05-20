@@ -1,5 +1,8 @@
 # nuxeo-labs-content-intelligence-connector: Knowledge Discovery
 
+> [!IMPORTANT]
+> This document is part of the **low-level API doc set** (see [docs/low-level/README.md](./README.md)). It describes operations that call the Hyland CIC APIs directly. For the higher-level Web UI buttons / `CIC.*` operations introduced in 2025.16, see the [main README](../../README.md).
+
 This part of the plugin connects a [Nuxeo](https://www.hyland.com/solutions/products/nuxeo-platform) application to [**Hyland Content Intelligence**](https://www.hyland.com/en/solutions/products/hyland-content-intelligence) and leverages its [**Knowledge Discovery**](https://hyland.github.io/ContentIntelligence-Docs/KnowledgeDiscovery) APIs.
 
 It provides two kinds of operations handling the calls to the service (see details for each operation below):
@@ -14,7 +17,7 @@ It provides two kinds of operations handling the calls to the service (see detai
 
 ## Usage
 
-See `Common/Shared Usage` in the main [README](/README.md).
+See `Common/Shared Usage` in the main [README](./README.md).
 
 To summarize, every call returns a Blob, stringified JSON object that has at least 3 fields:
 
@@ -29,7 +32,7 @@ To summarize, every call returns a Blob, stringified JSON object that has at lea
 
 The plugin contains a full element displaying a conversation with an agent. User selects the agent and starts asking question.
 
-You can find the element at /UI-Examples/kd-conversation.html
+You can find the element at [./UI-Examples/kd-conversation.html](./UI-Examples/kd-conversation.html)
 
 You can just import the element in your Studio project and then use it wherever you need, with the visibility filter you need.
 
@@ -51,7 +54,7 @@ You can tune the element as you want, change the operation used, maybe always ca
 
 #### Companion Script: `kd-conversation-libs.js`
 
-The element relies on a companion file, `UI-Examples/kd-conversation-libs.js`, which must also be added to your Studio project. This script dynamically loads two external libraries at runtime:
+The element relies on a companion file, [`./UI-Examples/kd-conversation-libs.js`](./UI-Examples/kd-conversation-libs.js), which must also be added to your Studio project. This script dynamically loads two external libraries at runtime:
 
 * [**marked.js**](https://github.com/markedjs/marked) (MIT license) -- Converts the markdown returned by the agent into HTML for display in the chat.
 * [**DOMPurify**](https://github.com/cure53/DOMPurify) (Apache/MPL license) -- Sanitizes the rendered HTML to prevent XSS. Although answers come from the Hyland Content Intelligence Cloud API (not arbitrary user input), `marked.parse()` does not sanitize its output, so DOMPurify ensures no dangerous tags or attributes are injected into the DOM.
@@ -177,7 +180,7 @@ The service returns a token valid a certain time: The plugin handles this timeou
 
 > [!TIP]
 > Check in CIC Discovery documentation the type of files accepted by the service (pdf, ...), and convert if needed
-> See [JS Automation Examples](/README-Discovery-JS-Automation-Examples.md))
+> See [JS Automation Examples](./README-Discovery-JS-Automation-Examples.md))
 
 ### Single-Shot Operations
 * `HylandKnowledgeDiscovery.getAllAgents`
@@ -200,7 +203,7 @@ A high level operation that gets a list of all agents
   * `extraHeadersJsonStr`: String optional. A JSON object as string, with more headers than the one sent byt the plugin, allowing for extra tuning if needed
   * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
 
-The operation calls the service and returns a JSON Blob, that contains the object described in `Common/Shared Usage` in the main [README](/README.md)
+The operation calls the service and returns a JSON Blob, that contains the object described in `Common/Shared Usage` in the main [README](./README.md)
 
 > [!NOTE]
 > Reminder: To get the JSON string from this blob, you must call its `getString()` method (see example below). Then you can `JSON.parse` this string
@@ -330,7 +333,7 @@ The operation calls the endpoint service and returns the raw result. You have to
 
 This operation allows for maximum flexibility, to adapt to the service in case new API is added, the API for an endpoint changes, its payload or headers change, etc.: No need to wait for the plugin to be updated.
 
-See the example of asking a question and getting an answer using `HylandKnowledgeDiscovery.Invoke` in the [JS Automation Examples](/README-Discovery-JS-Automation-Examples.md) file.
+See the example of asking a question and getting an answer using `HylandKnowledgeDiscovery.Invoke` in the [JS Automation Examples](./README-Discovery-JS-Automation-Examples.md) file.
 
 <br>
 
@@ -373,7 +376,7 @@ The returned JSON is something like:
 }
 ```
 
-See [JS Automation Examples](/README-Discovery-JS-Automation-Examples.md) for usage examples.
+See [JS Automation Examples](./README-Discovery-JS-Automation-Examples.md) for usage examples.
 
 <br>
 
@@ -411,7 +414,7 @@ The returned JSON is something like:
 }
 ```
 
-See [JS Automation Examples](/README-Discovery-JS-Automation-Examples.md) for usage examples.
+See [JS Automation Examples](./README-Discovery-JS-Automation-Examples.md) for usage examples.
 
 <br>
 
@@ -429,7 +432,7 @@ A high level operation that submits feedback on a specific message in a conversa
   * `extraHeadersJsonStr`: String, optional. A JSON object as string, with more headers than the one sent by the plugin, allowing for extra tuning if needed.
   * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
 
-See [JS Automation Examples](/README-Discovery-JS-Automation-Examples.md) for usage examples, including a full conversation flow (start, follow-up, feedback).
+See [JS Automation Examples](./README-Discovery-JS-Automation-Examples.md) for usage examples, including a full conversation flow (start, follow-up, feedback).
 
 > [!TIP]
 > For other conversation management operations (listing conversations, getting conversation details, retrieving message history, updating conversation metadata), you can use the low-level `HylandKnowledgeDiscovery.Invoke` operation with the appropriate HTTP method and endpoint. See the [CIC Conversations documentation](https://hyland.github.io/ContentIntelligence-Docs/tutorials/conversations) for the full list of endpoints.

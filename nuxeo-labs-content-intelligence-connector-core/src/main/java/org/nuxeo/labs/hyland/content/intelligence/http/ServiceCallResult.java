@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.http;
 
@@ -138,7 +138,7 @@ public class ServiceCallResult {
      * Set the response. SHould eb JSON string.
      * 
      * @param response
-     * @since TODO
+     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public void setResponse(String response) {
         this.response = response;
@@ -163,7 +163,7 @@ public class ServiceCallResult {
      * or JSON
      * 
      * @return
-     * @since TODO
+     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public JSONObject forceResponseAsJSONObject() {
 

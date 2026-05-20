@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.automation;
 
@@ -36,7 +36,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.ingest.IngestService;
 
 /**
  * 
- * @since TODO
+ * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
 @Operation(id = HylandCIGetContributionNamesOp.ID, category = "Hyland Content Intelligence Connector", label = "Get the names of all contributions", description = ""
         + "Returns a JSON object (as string) with the names of the extension points and for exah of them, the name of the contriutions.")

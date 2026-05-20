@@ -1,0 +1,49 @@
+<!--
+`kd-ask-question-with-selected`
+@group Nuxeo UI
+@element kd-ask-question-with-selected
+
+Ask a question to Knowledge Discovery, sending a list of contextObjectIds, to be used
+to answer the question.
+-->
+<link rel="import" href="kd-ask-question-shared.html">
+<dom-module id="kd-ask-question-with-selected">
+  <template>
+    <style include="nuxeo-action-button-styles nuxeo-styles"></style>
+
+    <kd-ask-question-shared
+      selected-items="[[selectedItems]]"
+      icon="[[icon]]"
+      label="[[label]]"
+      show-label="[[showLabel]]">
+    </kd-ask-question-shared>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'kd-ask-question-with-selected',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        label: {
+          type: String,
+          value: 'label.ui.cic.kd-ask.askKD'
+        },
+
+        showLabel: {
+          type: Boolean,
+          value: false,
+        },
+
+        icon: {
+          type: String,
+          value: 'icons:speaker-notes',
+          reflectToAttribute: true
+        },
+
+        selectedItems: Array
+      }
+
+    });
+  </script>
+</dom-module>

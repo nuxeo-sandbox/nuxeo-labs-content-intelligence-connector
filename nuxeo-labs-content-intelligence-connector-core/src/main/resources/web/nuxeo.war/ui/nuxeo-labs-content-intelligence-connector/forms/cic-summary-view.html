@@ -1,0 +1,43 @@
+<!--
+`cic-summary-view`
+@group Nuxeo UI
+@element cic-summary-view
+-->
+<dom-module id="cic-summary-view">
+  <template>
+    <style include="nuxeo-styles"></style>
+
+    <template is="dom-if" if="[[hasFacet(document, 'CICSummary')]]">
+      <h5>
+        [[i18n('label.ui.summary')]]
+      </h5>
+
+      <div role="widget">
+        <label>label.ui.summary.calledWithWordCount</label>
+        <div name="doneWithMaxWordCount">[[document.properties.cicsummary:doneWithMaxWordCount]]</div>
+      </div>
+
+      <div role="widget">
+        <div name="summary"
+             class="multiline"
+             style="word-break: keep-all">[[document.properties.cicsummary:summary]]
+        </div>
+      </div>
+    </template>
+
+  </template>
+
+  <script>
+  Polymer({
+    is: 'cic-summary-view',
+    behaviors: [Nuxeo.LayoutBehavior],
+    properties: {
+
+      document: {
+        type: Object
+      }
+    }
+
+  });
+  </script>
+</dom-module>

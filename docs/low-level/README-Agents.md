@@ -1,5 +1,8 @@
 # nuxeo-labs-content-intelligence-connector: Agents
 
+> [!IMPORTANT]
+> This document is part of the **low-level API doc set** (see [docs/low-level/README.md](./README.md)). It describes operations that call the Hyland CIC APIs directly. For the higher-level Web UI buttons / `CIC.*` operations introduced in 2025.16, see the [main README](../../README.md).
+
 This part of the plugin connects a [Nuxeo](https://www.hyland.com/solutions/products/nuxeo-platform) application to [**Hyland Content Intelligence**](https://www.hyland.com/en/solutions/products/hyland-content-intelligence) and leverages its [**Agents**](https://hyland.github.io/ContentIntelligence-Docs/AgentBuilderPlatform) APIs.
 
 It provides two kinds of operations handling the calls to the service (see details for each operation below):
@@ -14,7 +17,7 @@ It provides two kinds of operations handling the calls to the service (see detai
 
 ## Usage
 
-See `Common/Shared Usage` in the main [README](/README.md).
+See `Common/Shared Usage` in the main [README](./README.md).
 
 To summarize, every call returns a Blob, stringified JSON object that has at least 3 fields:
 
@@ -130,7 +133,7 @@ A high level operation that gets a list of all agents linked linked to the accou
   * `extraHeadersJsonStr`: String optional. A JSON object as string, with more headers than the one sent byt the plugin, allowing for extra tuning if needed
   * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
 
-The operation calls the service and returns a JSON Blob, that contains the object described in `Common/Shared Usage` in the main [README](/README.md). The original unmodified response from the ser vice in the `response` property.
+The operation calls the service and returns a JSON Blob, that contains the object described in `Common/Shared Usage` in the main [README](./README.md). The original unmodified response from the ser vice in the `response` property.
 
 > [!NOTE]
 > Reminder: To get the JSON string from this blob, you must call its `getString()` method (see example below). Then you can `JSON.parse` this string and find the full response form the service in the `response` property.
@@ -234,7 +237,7 @@ A high level operation that runs a _task_ agent and returns the result.
   * `extraHeadersJsonStr`: String optional. A JSON object as string, with more headers than the one sent byt the plugin, allowing for extra tuning if needed
   * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
 
-The plugin invokes the `agentId`, passing it its expected parameters in `jsonPayloadStr`. It returns aJSON Blob, that contains the object described in `Common/Shared Usage` in the main [README](/README.md). The original unmodified response from the ser vice in the `response` property.
+The plugin invokes the `agentId`, passing it its expected parameters in `jsonPayloadStr`. It returns aJSON Blob, that contains the object described in `Common/Shared Usage` in the main [README](./README.md). The original unmodified response from the ser vice in the `response` property.
 
 > [!NOTE]
 > Reminder: To get the JSON string from this blob, you must call its `getString()` method (see example below). Then you can `JSON.parse` this string and find the full response form the service in the `response` property.

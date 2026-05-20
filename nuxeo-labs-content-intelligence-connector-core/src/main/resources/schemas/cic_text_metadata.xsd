@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:cictextmetadata="http://www.nuxeo.org/ecm/schemas/cic/textmetadata"
+           targetNamespace="http://www.nuxeo.org/ecm/schemas/cic/textmetadata">
+
+  <xs:simpleType name="stringList">
+    <xs:list itemType="xs:string"/>
+  </xs:simpleType>
+
+  <xs:element name="company" type="xs:string"/>
+  <xs:element name="keywords" type="cictextmetadata:stringList"/>
+  <xs:element name="moreMetadata" type="xs:string"/>
+  <xs:element name="owner" type="xs:string"/>
+  <xs:element name="security" type="xs:string"/>
+
+</xs:schema>

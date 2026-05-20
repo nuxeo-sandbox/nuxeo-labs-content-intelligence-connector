@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.service.contentlake;
 
@@ -145,7 +145,7 @@ public class ContentLakeServiceImpl extends AbstractCICServiceComponent<ContentL
 
         String targetUrl = buildBaseUrl(configName) + CL_DOCUMENTS_ENDPOINT + "/" + buildCLDocId(sourceId, docId);
         // Headers
-        Map<String, String> headers = new HashMap<String, String>();
+        Map<String, String> headers = new HashMap<>();
         headers.put("Accept", "application/json");
         headers.put("Authorization", "Bearer " + bearer);
 

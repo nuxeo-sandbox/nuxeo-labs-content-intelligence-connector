@@ -1,0 +1,175 @@
+<!--
+(C) Copyright 2025 Hyland (http://hyland.com/)  and others.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contributors:
+    Thibaud Arguillere (With the help of Opencode/Claude for the Web UI port from a Studio project)
+-->
+<!--
+`cic-agent-selector`
+@group Nuxeo UI
+@element cic-agent-selector
+
+Pops a dialog listing the agents (KD or Agentic) available on the CIC platform
+for a given configuration. On selection, fires a custom `agent-selected` event
+with detail `{ agent: {id, name, description} }`.
+
+Required attributes:
+  - agent-type   "KD" or "Agentic"
+  - config-name  the plugin XML configuration name (e.g. "default")
+
+Example:
+    <cic-agent-selector agent-type="KD"
+                        config-name="{{document.properties.cicagentandconfig:configName}}"
+                        on-agent-selected="_onAgentSelected">
+    </cic-agent-selector>
+-->
+<dom-module id="cic-agent-selector">
+  <template>
+    <style include="nuxeo-styles"></style>
+
+    <nuxeo-operation id="getAgentsOp" op="CIC.GetAllAgents"></nuxeo-operation>
+
+    <paper-button raised
+                  disabled$="{{!_hasConfigName(configName)}}"
+                  on-tap="_getAllAgents"
+                  style="margin-bottom: 20px;">
+      [[i18n('label.ui.cic.agentSelector.button')]]
+    </paper-button>
+
+    <!-- Agent Selection Dialog -->
+    <paper-dialog id="agentDialog" modal style="max-width: 600px; width: 100%;">
+      <h2>[[i18n('label.ui.cic.agentSelector.dialog.title')]]</h2>
+      <div class="scrollable" style="max-height: 300px; overflow-y: auto;">
+        <paper-listbox id="agentList" selected="{{selectedAgentIndex}}">
+          <template is="dom-repeat" items="{{agents}}" as="agent" index-as="index">
+            <paper-item style="border-bottom: 1px solid #e0e0e0; padding: 12px 16px;">
+              <div style="width: 100%;">
+                <div style="font-weight: bold;">[[agent.name]]</div>
+                <div style="font-size: 0.8em; color: #666;">[[agent.id]]</div>
+                <div style="font-size: 0.8em; color: #666; white-space: normal; word-wrap: break-word; overflow-wrap: break-word;">[[agent.description]]</div>
+              </div>
+            </paper-item>
+          </template>
+        </paper-listbox>
+      </div>
+      <div class="buttons">
+        <paper-button dialog-dismiss>[[i18n('label.ui.cic.agentSelector.cancel')]]</paper-button>
+        <paper-button dialog-confirm
+                      autofocus
+                      disabled$="{{!_hasSelectedAgent(selectedAgentIndex)}}"
+                      on-tap="_chooseAgent">
+          [[i18n('label.ui.cic.agentSelector.choose')]]
+        </paper-button>
+      </div>
+    </paper-dialog>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'cic-agent-selector',
+      behaviors: [Nuxeo.LayoutBehavior, Nuxeo.I18nBehavior, Nuxeo.NotifyBehavior],
+      properties: {
+
+        /**
+         * The configuration name to use when fetching agents.
+         */
+        configName: {
+          type: String,
+          value: ''
+        },
+
+        /**
+         * The type of agent. "KD" or "Agentic". REQUIRED.
+         */
+        agentType: {
+          type: String,
+          value: ''
+        },
+
+        agents: {
+          type: Array,
+          value: function() { return []; }
+        },
+
+        selectedAgentIndex: {
+          type: Number,
+          value: -1
+        }
+
+      },
+
+      _hasConfigName: function(configName) {
+        return configName && configName.trim() !== '';
+      },
+
+      _hasSelectedAgent: function(selectedIndex) {
+        return selectedIndex >= 0;
+      },
+
+      _getAllAgents: function() {
+        if (!this.configName) {
+          return;
+        }
+
+        this.$.getAgentsOp.params = {
+          typeOfAgent: this.agentType,
+          configName: this.configName
+        };
+
+        this.$.getAgentsOp.execute()
+          .then(this._handleAgentsResponse.bind(this))
+          .catch(this._handleError.bind(this));
+      },
+
+      _handleAgentsResponse: function(response) {
+        // response is a Blob containing the canonical envelope; read its text and parse.
+        var self = this;
+        var asText = response && typeof response.text === 'function' ? response.text() : Promise.resolve(response);
+        Promise.resolve(asText).then(function(text) {
+          var payload;
+          try {
+            payload = typeof text === 'string' ? JSON.parse(text) : text;
+          } catch (e) {
+            self.notify({ message: self.i18n('label.ui.cic.agentSelector.error.load') });
+            return;
+          }
+          if (payload && payload.responseCode === 200 && Array.isArray(payload.response)) {
+            self.agents = payload.response.slice().sort(function(a, b) {
+              return (a.name || '').localeCompare(b.name || '');
+            });
+            self.selectedAgentIndex = -1;
+            self.$.agentDialog.open();
+          } else {
+            self.notify({ message: self.i18n('label.ui.cic.agentSelector.error.load') });
+          }
+        });
+      },
+
+      _handleError: function() {
+        this.notify({ message: this.i18n('label.ui.cic.agentSelector.error.load') });
+      },
+
+      _chooseAgent: function() {
+        if (this.selectedAgentIndex >= 0 && this.agents[this.selectedAgentIndex]) {
+          var selectedAgent = this.agents[this.selectedAgentIndex];
+          this.fire('agent-selected', { agent: selectedAgent });
+          this.$.agentDialog.close();
+        }
+      }
+
+    });
+  </script>
+</dom-module>

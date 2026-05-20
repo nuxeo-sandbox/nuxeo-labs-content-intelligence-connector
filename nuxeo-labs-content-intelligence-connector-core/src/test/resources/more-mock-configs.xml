@@ -16,6 +16,23 @@
 	</extension>
 
 	<extension
+		target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
+		point="knowledgeEnrichment">
+		<knowledgeEnrichment>
+			<name>more-ke-with-embeddings</name>
+			<authenticationBaseUrl>blah</authenticationBaseUrl>
+			<baseUrl>blah</baseUrl>
+			<tokenGrantType>blah</tokenGrantType>
+			<tokenScope>blah</tokenScope>
+			<clientId>blah</clientId>
+			<clientSecret>blah</clientSecret>
+			<embeddingsFacet>Embeddings</embeddingsFacet>
+			<embeddingsImageXpath>embeddings:image</embeddingsImageXpath>
+			<embeddingsTextXpath>embeddings:text</embeddingsTextXpath>
+		</knowledgeEnrichment>
+	</extension>
+
+	<extension
 		target="org.nuxeo.labs.hyland.content.intelligence.HylandDCService"
 		point="dataCuration">
 		<dataCuration>

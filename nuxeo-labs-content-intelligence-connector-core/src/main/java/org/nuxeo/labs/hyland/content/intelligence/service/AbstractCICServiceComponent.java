@@ -12,6 +12,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Contributors:
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.service;
 
@@ -39,7 +42,7 @@ import org.nuxeo.runtime.model.Extension;
  */
 public abstract class AbstractCICServiceComponent<D extends AbstractServiceDescriptor> extends DefaultComponent {
 
-    protected Map<String, D> contribs = new HashMap<String, D>();
+    protected Map<String, D> contribs = new HashMap<>();
 
     // ======================================================================
     // ======================================================================
@@ -73,7 +76,7 @@ public abstract class AbstractCICServiceComponent<D extends AbstractServiceDescr
 
     public List<String> getContribNames() {
         if(contribs == null) {
-            contribs = new HashMap<String, D>();
+            contribs = new HashMap<>();
         }
         return new ArrayList<>(contribs.keySet());
     }
@@ -104,7 +107,7 @@ public abstract class AbstractCICServiceComponent<D extends AbstractServiceDescr
             return null;
         }
 
-        Map<String, AuthenticationToken> tokens = new HashMap<String, AuthenticationToken>();
+        Map<String, AuthenticationToken> tokens = new HashMap<>();
         for (D desc : getContribMap().values()) {
             AuthenticationToken token = tokenFactory.apply(desc);
             tokens.put(desc.getName(), token);
@@ -122,7 +125,7 @@ public abstract class AbstractCICServiceComponent<D extends AbstractServiceDescr
         }
         
         if(contribs == null) {
-            contribs = new HashMap<String, D>();
+            contribs = new HashMap<>();
         }
 
         Object[] contributions = extension.getContributions();

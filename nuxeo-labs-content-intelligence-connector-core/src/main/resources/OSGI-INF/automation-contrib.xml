@@ -12,10 +12,24 @@
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.HylandKESendForEnrichmentOp"/>
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.HylandKEGetEnrichmentResultsOp"/>
 
+        <!-- CIC document operations (DocumentModel -> DocumentModel) -->
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICSummarizeTextOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICGetTextMetadataOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICClassifyTextFileOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICGetNamedEntitiesFromTextOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICGetTextEmbeddingsOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICGetImageDescriptionOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICGetImageMetadataOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICClassifyImageOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICGetNamedEntitiesFromImageOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICGetImageEmbeddingsOp"/>
+
         <!-- Discovery -->
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.discovery.HylandKDInvokeOp"/>
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.discovery.HylandKDGetAllAgentsOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.discovery.HylandKDAvailableAgentsOp"/>
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.discovery.HylandKDAskQuestionAndGetAnswerOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.discovery.CICKDAskQuestionForUIOp"/>
         <!-- Discovery Conversations -->
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.discovery.HylandKDStartConversationOp"/>
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.discovery.HylandKDContinueConversationOp"/>
@@ -28,12 +42,19 @@
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsInvokeRagOp"/>
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsInvokeToolOp"/>
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsAskKDQuestionViaRagOp"/>
-        
+
+        <!-- CIC Agent helper operations -->
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.agents.CICGetAllAgentsOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.agents.CICAgenticAgentLookupOp"/>
+
         <!-- Ingest -->
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.ingest.IngestCheckDigestOp"/>
 
         <!-- All -->
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.HylandCIGetContributionNamesOp"/>
+
+        <!-- UI helpers -->
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.ui.CICGetUIBundleConfigOp"/>
     </extension>
 
 </component>

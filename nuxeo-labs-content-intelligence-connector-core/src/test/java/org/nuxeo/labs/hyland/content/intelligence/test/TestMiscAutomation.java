@@ -15,7 +15,7 @@
  *
  * Contributors:
  *     Michael Vachette
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.test;
 
@@ -103,9 +103,10 @@ public class TestMiscAutomation {
         JSONObject resultJson = new JSONObject(resultJsonStr);
         
         JSONArray contribs = resultJson.getJSONArray("knowledgeEnrichment");
-        assertEquals(2, contribs.length());
+        assertEquals(3, contribs.length());
         contribs.toList().contains("default");
         contribs.toList().contains("more-ke-1");
+        contribs.toList().contains("more-ke-with-embeddings");
         
         contribs = resultJson.getJSONArray("dataCuration");
         assertEquals(2, contribs.length());

@@ -1,0 +1,54 @@
+<!--
+`cic-metadata-detection-edit`
+@group Nuxeo UI
+@element cic-metadata-detection-edit
+-->
+<dom-module id="cic-metadata-detection-edit">
+  <template>
+    <style include="nuxeo-styles"></style>
+
+    <template is="dom-if" if="[[hasFacet(document, 'CICMetadataDetection')]]">
+      <h5>
+        [[i18n('label.ui.schema.mdd.metadata')]]
+      </h5>
+
+      <nuxeo-data-table role="widget" label="[[i18n('label.ui.schema.mdd.metadata')]]"
+                        items="{{document.properties.cicmetadatadetection:metadata}}"
+                        orderable="true" editable="true" name="metadata">
+        <nuxeo-data-table-column name="[[i18n('label.ui.schema.mdd.metadata.field')]]">
+          <template>
+            [[item.field]]
+          </template>
+        </nuxeo-data-table-column>
+
+        <nuxeo-data-table-column name="[[i18n('label.ui.schema.mdd.metadata.value')]]">
+          <template>
+            [[item.value]]
+          </template>
+        </nuxeo-data-table-column>
+
+        <nuxeo-data-table-form>
+          <template>
+            <nuxeo-input value="{{item.field}}" label="[[i18n('label.ui.schema.mdd.metadata.field')]]" type="text" name="field"></nuxeo-input>
+            <nuxeo-input value="{{item.value}}" label="[[i18n('label.ui.schema.mdd.metadata.value')]]" type="text" name="value"></nuxeo-input>
+          </template>
+        </nuxeo-data-table-form>
+      </nuxeo-data-table>
+    </template>
+
+  </template>
+
+  <script>
+  Polymer({
+    is: 'cic-metadata-detection-edit',
+    behaviors: [Nuxeo.LayoutBehavior],
+    properties: {
+
+      document: {
+        type: Object
+      }
+    }
+
+  });
+  </script>
+</dom-module>

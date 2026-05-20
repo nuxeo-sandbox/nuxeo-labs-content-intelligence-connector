@@ -1,0 +1,9 @@
+"id","label","obsolete","ordering"
+"news","label.cic.textclass.news",0,10
+"legal","label.cic.textclass.legal",0,20
+"technical","label.cic.textclass.technical",0,30
+"marketing","label.cic.textclass.marketing",0,40
+"financial","label.cic.textclass.financial",0,50
+"hr","label.cic.textclass.hr",0,60
+"general","label.cic.textclass.general",0,70
+"other","label.cic.textclass.other",0,80

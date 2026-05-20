@@ -1,0 +1,507 @@
+<!--
+`kd-ask-question-shared`
+@group Nuxeo UI
+@element kd-ask-question-shared
+
+Ask a question to Knowledge Discovery, sending a list of contextObjectIds, to be used
+to answer the question.
+-->
+<dom-module id="kd-ask-question-shared">
+  <template>
+    <style include="nuxeo-action-button-styles nuxeo-styles">
+      #dialog {
+        width: 90vw;
+        max-width: 1200px;
+        min-width: 600px;
+        height: 90vh;
+        max-height: 90vh;
+        min-height: 400px;
+        @apply --layout-vertical;
+      }
+
+      .content {
+        @apply --layout-vertical;
+        @apply --layout-flex;
+        max-height: calc(90vh - 120px); /* Reserve space for buttons */
+        overflow-y: auto;
+        padding: 16px;
+      }
+
+      .document-list {
+        max-height: 95px; /* Approximately 4 items visible */
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 8px;
+        margin: 8px 0;
+      }
+
+      .document-list ul {
+        margin: 0;
+        padding: 0;
+        list-style-type: disc;
+        padding-left: 20px;
+      }
+
+      .document-list li {
+        margin-bottom: 4px;
+      }
+
+      .answer {
+        margin-top: 16px;
+        background: #f9f9f9;
+        padding: 8px;
+        border-left: 4px solid #ccc;
+        max-height: calc(60vh - 200px); /* Dynamic height based on viewport */
+        overflow-y: auto;
+        border-radius: 4px;
+        word-wrap: break-word;
+        font-size: 13px;
+        @apply --layout-flex;
+      }
+
+      .answer.expanded {
+        max-height: calc(70vh - 120px); /* More space when references collapsed */
+      }
+
+      .buttons {
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+        @apply --layout-center;
+        padding: 16px;
+        border-top: 1px solid #e0e0e0;
+        margin-top: auto; /* Push buttons to bottom */
+      }
+
+      .references {
+        margin-top: 16px;
+        padding: 10px;
+        border-top: 1px solid #e0e0e0;
+      }
+
+      .references-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+        font-size: 14px;
+        cursor: pointer;
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        padding: 4px 0;
+        transition: color 0.2s;
+      }
+
+      .references-title:hover {
+        color: #0066cc;
+      }
+
+      .references-toggle-icon {
+        margin-right: 8px;
+        transition: transform 0.2s ease;
+        color: #666;
+      }
+
+      .references-toggle-icon.collapsed {
+        transform: rotate(-90deg);
+      }
+
+      .references-content {
+        overflow: hidden;
+        transition: max-height 0.3s ease, opacity 0.3s ease;
+      }
+
+      .references-content.collapsed {
+        max-height: 0 !important;
+        opacity: 0;
+      }
+
+      .reference-items {
+        @apply --layout-horizontal;
+        @apply --layout-wrap;
+        gap: 10px;
+      }
+
+      .reference-item {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        width: 200px;
+        padding: 6px;
+        cursor: pointer;
+        transition: box-shadow 0.2s;
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .reference-item:hover {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .reference-thumbnail {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        border-radius: 2px;
+        margin-right: 10px;
+        flex-shrink: 0;
+      }
+
+      .reference-title {
+        font-size: 12px;
+        word-wrap: break-word;
+        word-break: break-all;
+        line-height: 1.2;
+        width: 140px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .no-references-message {
+        padding: 10px;
+        font-style: italic;
+        color: #666;
+        background: #f5f5f5;
+        border-radius: 4px;
+        font-size: 13px;
+      }
+    </style>
+
+    <nuxeo-operation id="askQuestionOp" op="CIC.KDAskQuestionForUI"></nuxeo-operation>
+    <nuxeo-document id="agentAndConfigDocFetcher"
+                    response="{{agentAndConfigDoc}}"
+                    schemas="cicagentandconfig">
+    </nuxeo-document>
+
+    <div class="action" on-tap="_toggleDialog">
+      <paper-icon-button id="bt" icon="[[icon]]"></paper-icon-button>
+      <span class="label" hidden$="[[!showLabel]]">[[i18n(label)]]</span>
+    </div>
+    <paper-tooltip for="bt">[[i18n(label)]]</paper-tooltip>
+
+    <nuxeo-dialog id="dialog" on-iron-overlay-closed="_dialogClosed" with-backdrop>
+      <div class="content">
+        <nuxeo-document-suggestion value="{{agentAndConfigDocId}}" label="[[i18n('label.ui.cic.kd-ask.agent')]]" min-chars="0" name="agentAndConfigDocId" role="widget" page-provider="SelectCICAgentAndConfig"></nuxeo-document-suggestion>
+
+        <template is="dom-if" if="[[hasSelectedItems]]">
+          [[_getDocumentsPrompt(selectedItems)]]
+          <div class="document-list">
+            <ul>
+              <template is="dom-repeat" items="[[selectedItems]]">
+                <li>[[item.title]]</li>
+              </template>
+            </ul>
+          </div>
+        </template>
+
+        <paper-textarea label="[[i18n(questionLabel)]]" value="{{question}}" rows="2"></paper-textarea>
+
+        <template is="dom-if" if="[[htmlAnswer]]">
+          <div class$="answer [[_getAnswerClass(referencesCollapsed)]]" inner-h-t-m-l="[[htmlAnswer]]"></div>
+        </template>
+
+        <template is="dom-if" if="[[errorMessage]]">
+          <div class="answer" style="color:red">[[errorMessage]]</div>
+        </template>
+
+        <template is="dom-if" if="[[_shouldShowReferences(references, noReferencesMessage)]]">
+          <div class="references">
+            <div class="references-title" on-tap="_toggleReferences">
+              <iron-icon class$="references-toggle-icon [[_getToggleClass(referencesCollapsed)]]" icon="icons:expand-more"></iron-icon>
+              [[i18n('label.ui.cic.kd-ask.references')]]
+            </div>
+
+            <div class$="references-content [[_getContentClass(referencesCollapsed)]]">
+              <template is="dom-if" if="[[references.length]]">
+                <div class="reference-items">
+                  <template is="dom-repeat" items="[[references]]" as="reference">
+                    <div class="reference-item" on-tap="_openDocument" data-doc-uid$="[[reference.uid]]">
+                      <img class="reference-thumbnail" src$="/nuxeo/api/v1/repo/default/id/[[reference.uid]]/@rendition/thumbnail?changeToken=11-0&sync=true&clientReason=view" alt="[[reference.title]]" loading="lazy">
+                      <div class="reference-title">[[reference.title]]</div>
+                    </div>
+                  </template>
+                </div>
+              </template>
+
+              <template is="dom-if" if="[[noReferencesMessage]]">
+                <div class="no-references-message">[[noReferencesMessage]]</div>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+      <div class="buttons">
+        <paper-button noink dialog-dismiss>[[i18n('label.ui.cic.kd-ask.close')]]</paper-button>
+        <paper-button noink on-tap="_onClearButtonTap">[[i18n('label.ui.cic.kd-ask.clear')]]</paper-button>
+        <paper-spinner style="margin-left: 1em;" id="spinner"></paper-spinner>
+        <paper-button id="askButton" noink class="primary" on-tap="_ask">[[i18n('label.ui.cic.kd-ask.ask')]]</paper-button>
+      </div>
+    </nuxeo-dialog>
+
+  </template>
+
+  <!-- result is returned as markdown, need a converter
+       Using https://github.com/markedjs/marked, MIT license -->
+  <script>
+    Polymer({
+      is: 'kd-ask-question-shared',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        label: {
+          type: String,
+          value: 'label.ui.cic.kd-ask.askKD'
+        },
+
+        agentAndConfigDocId: {
+          type: String,
+          observer: '_agentAndConfigDocIdChanged'
+        },
+        agentAndConfigDoc: Object,
+
+        showLabel: {
+          type: Boolean,
+          value: false,
+        },
+
+        icon: {
+          type: String,
+          value: 'icons:question-answer',
+          reflectToAttribute: true
+        },
+
+        questionLabel: {
+          type: String,
+          value: 'label.ui.cic.kd-ask.askKD'
+        },
+
+        agentAndConfigDocId: {
+          type: String,
+          observer: '_agentAndConfigDocIdChanged'
+        },
+        agentAndConfigDoc: Object,
+
+        showLabel: {
+          type: Boolean,
+          value: false,
+        },
+
+        icon: {
+          type: String,
+          value: 'icons:speaker-notes',
+          reflectToAttribute: true
+        },
+
+        questionLabel: {
+          type: String,
+          value: function() {
+            return this.i18n ? this.i18n('label.ui.cic.kd-ask.askKD') : 'label.ui.cic.kd-ask.askKD';
+          }
+        },
+
+        selectedItems: {
+          type: Array,
+          observer: "_selectedItemsChanged"
+        },
+
+        hasSelectedItems: {
+          type: Boolean,
+          value: false
+        },
+
+        question: String,
+        answer: String,
+        errorMessage: String,
+
+        htmlAnswer: {
+          type: String,
+          value: ''
+        },
+
+        references: {
+          type: Array,
+          value: function() { return []; }
+        },
+
+        noReferencesMessage: {
+          type: String,
+          value: ''
+        },
+
+        referencesCollapsed: {
+          type: Boolean,
+          value: false // Expanded by default
+        }
+      },
+
+      ready: function() {
+        this._loadMarkedJs();
+        this._cleanupStuff(false);
+      },
+
+      _selectedItemsChanged: function(newValue) {
+        let hasSelectedItems = false;
+        let questionLabel = "";
+        if (newValue && Array.isArray(newValue) && newValue.length > 0) {
+          hasSelectedItems = true;
+          questionLabel = this.i18n('label.ui.cic.kd-ask.usingDocsAsk');
+        } else {
+          hasSelectedItems = false;
+          questionLabel = this.i18n("label.ui.cic.kd-ask.askKD");
+        }
+
+        this.hasSelectedItems = hasSelectedItems;
+        this.questionLabel = questionLabel;
+      },
+
+      _agentAndConfigDocIdChanged: function(newVal) {
+        if (newVal) {
+          this.$.agentAndConfigDocFetcher.docId = newVal;
+          this.$.agentAndConfigDocFetcher.execute();
+        } else {
+          this.agentAndConfigDoc = null;
+        }
+      },
+
+      _loadMarkedJs: function() {
+        // Check if marked is already loaded
+        if (window.marked) {
+          return;
+        }
+
+        // Dynamically load marked.js to avoid CORS issues in Studio Designer
+        var script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js';
+        script.onerror = function() {
+          console.warn('Failed to load marked.js from CDN, markdown parsing disabled');
+        };
+        document.head.appendChild(script);
+      },
+
+      _getDocumentsPrompt: function(selectedItems) {
+        if (!selectedItems || !selectedItems.length) {
+          return this.i18n("label.ui.cic.kd-ask.nodocs");
+        }
+        if (selectedItems.length === 1) {
+          return this.i18n('label.ui.cic.kd-ask.usingOneDoc');
+        }
+
+        let prompt = this.i18n("label.ui.cic.kd-ask.usingDocs");
+        return prompt.replace("HOW_MANY", "" + selectedItems.length);
+      },
+
+      _ask: function() {
+        const op = this.$.askQuestionOp;
+        op.input = this.selectedItems;
+        op.params = { "question": this.question };
+        if (this.agentAndConfigDoc && this.agentAndConfigDoc.properties) {
+          op.params.configName = this.agentAndConfigDoc.properties["cicagentandconfig:configName"];
+          op.params.agentId = this.agentAndConfigDoc.properties["cicagentandconfig:agentId"];
+        }
+
+        this.$.spinner.active = true;
+
+        op.execute()
+          .then(function(result) {
+            let answer;
+            if (result && result.response && result.response.answer) {
+              answer = result.response.answer;
+              this.htmlAnswer = marked.parse(answer); // convert Markdown to HTML
+            } else {
+              answer = this.i18n("label.ui.cic.kd-ask.noanswer");
+            }
+            this.answer = answer;
+            this.errorMessage = '';
+
+            // Handle references
+            if (result && result.response && result.response.references && Array.isArray(result.response.references) && result.response.references.length > 0) {
+              this.references = result.response.references;
+              this.noReferencesMessage = '';
+            } else {
+              this.references = [];
+              // Check for no references message
+              if (result && result.response && result.response.noReferencesMessage) {
+                this.noReferencesMessage = result.response.noReferencesMessage;
+                console.log('No references message:', this.noReferencesMessage);
+              } else {
+                this.noReferencesMessage = '';
+              }
+            }
+          }.bind(this))
+          .catch(function(error) {
+            this.errorMessage = 'Error: ' + (error.message || error);
+            this.answer = '';
+            this.references = [];
+            this.noReferencesMessage = '';
+          }.bind(this))
+          .finally(function() {
+            this.$.spinner.active = false;
+          }.bind(this));
+      },
+
+      _shouldShowReferences: function(references, noReferencesMessage) {
+        return (references && references.length > 0) || (noReferencesMessage && noReferencesMessage.length > 0);
+      },
+
+      _shouldShowNoReferencesMessage: function(references, noReferencesMessage) {
+        return (!references || references.length === 0) && (noReferencesMessage && noReferencesMessage.length > 0);
+      },
+
+      _openDocument: function(event) {
+        const docUid = event.currentTarget.getAttribute('data-doc-uid');
+        if (docUid) {
+          // Open the document in a new window/tab
+          window.open('/nuxeo/ui/#!/doc/' + docUid, '_blank');
+        }
+      },
+
+      _toggleReferences: function() {
+        this.referencesCollapsed = !this.referencesCollapsed;
+      },
+
+      _getToggleClass: function(collapsed) {
+        return collapsed ? 'collapsed' : '';
+      },
+
+      _getContentClass: function(collapsed) {
+        return collapsed ? 'collapsed' : '';
+      },
+
+      _getAnswerClass: function(referencesCollapsed) {
+        return referencesCollapsed ? 'expanded' : '';
+      },
+
+      _onClearButtonTap: function(event) {
+        let preserveAgent = false;
+        if (event.altKey || (event.detail && event.detail.sourceEvent && event.detail.sourceEvent.altKey)) {
+          preserveAgent = event.detail.sourceEvent.altKey;
+        }
+        this._cleanupStuff(preserveAgent);
+      },
+
+      _cleanupStuff: function(preserveAgent) {
+        if (!preserveAgent) {
+          this.agentAndConfigDocId = null;
+          this.agentAndConfigDoc = null;
+        }
+        this.answer = '';
+        this.htmlAnswer = '';
+        this.errorMessage = '';
+        this.question = '';
+        this.references = [];
+        this.noReferencesMessage = '';
+        this.referencesCollapsed = false; // Reset to expanded
+      },
+
+      // ====================> Handle Dialog
+      _toggleDialog: function() {
+        this._cleanupStuff(false);
+        this.$.dialog.toggle();
+      },
+
+      _dialogClosed: function() {
+        this._cleanupStuff(false);
+      }
+    });
+  </script>
+</dom-module>

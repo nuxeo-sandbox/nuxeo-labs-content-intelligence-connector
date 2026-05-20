@@ -1,0 +1,28 @@
+<!--
+`nuxeo-cicagentandconfig-metadata-layout`
+@group Nuxeo UI
+@element nuxeo-cicagentandconfig-metadata-layout
+-->
+<dom-module id="nuxeo-cicagentandconfig-metadata-layout">
+  <template>
+    <style include="nuxeo-styles"></style>
+
+  </template>
+
+  <script>
+  Polymer({
+    is: 'nuxeo-cicagentandconfig-metadata-layout',
+    behaviors: [Nuxeo.LayoutBehavior],
+    properties: {
+
+      /**
+       * @doctype CICAgentAndConfig
+       */
+      document: {
+        type: Object,
+      },
+
+    }
+  });
+  </script>
+</dom-module>

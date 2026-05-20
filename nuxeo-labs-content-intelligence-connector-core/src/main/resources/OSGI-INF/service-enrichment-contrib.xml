@@ -26,6 +26,26 @@
 			<tokenScope>${nuxeo.hyland.cic.enrichment.auth.scope:=environment_authorization}</tokenScope>
 			<clientId>${nuxeo.hyland.cic.enrichment.clientId:=}</clientId>
 			<clientSecret>${nuxeo.hyland.cic.enrichment.clientSecret:=}</clientSecret>
+			<!--
+				Optional: where to persist embeddings produced by the CIC.GetTextEmbeddings,
+				CIC.GetImageDescriptionAndEmbeddings and CIC.ImageGetAll operations.
+
+				This plugin does NOT ship an embeddings facet/schema (so the historical
+				`Embeddings` facet / `embeddings:image` + `embeddings:text` schema declared
+				by another plugin or by your studio project keeps owning the storage and
+				cross-plugin compatibility is preserved).
+
+				If any of the three values below is missing, the corresponding embedding
+				is silently NOT written on the document; the API call still runs and the
+				JSON response is still returned to the caller.
+
+				Uncomment and adapt to your storage:
+			-->
+			<!--
+			<embeddingsFacet>Embeddings</embeddingsFacet>
+			<embeddingsImageXpath>embeddings:image</embeddingsImageXpath>
+			<embeddingsTextXpath>embeddings:text</embeddingsTextXpath>
+			-->
 		</knowledgeEnrichment>
 	</extension>
 	

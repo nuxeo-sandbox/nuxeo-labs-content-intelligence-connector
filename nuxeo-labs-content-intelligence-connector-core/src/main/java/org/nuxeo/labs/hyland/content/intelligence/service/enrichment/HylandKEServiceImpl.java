@@ -14,7 +14,7 @@ i * (C) Copyright 2025 Hyland (http://hyland.com/) and others.
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.service.enrichment;
 
@@ -33,7 +33,10 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.Blob;
+import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.NuxeoException;
+import org.nuxeo.ecm.platform.picture.api.PictureView;
+import org.nuxeo.ecm.platform.picture.api.adapters.MultiviewPicture;
 import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationToken;
 import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationTokenEnrichment;
 import org.nuxeo.labs.hyland.content.intelligence.ContentToProcess;
@@ -78,7 +81,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
 
     protected static ServiceCall serviceCall = new ServiceCall();
 
-    protected static boolean useKEV2 = false;
+    protected static boolean useKEV2 = true;
 
     // ====================> Extensions points
     protected static final String EXT_POINT_KE = "knowledgeEnrichment";
@@ -114,7 +117,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         pullResultsSleepIntervalMS = ServicesUtils.configParamToInt(PULL_RESULTS_SLEEP_INTERVAL_PARAM,
                 PULL_RESULTS_SLEEP_INTERVAL_DEFAULT);
 
-        useKEV2 = ServicesUtils.configParamToBoolean(KE_USE_V2_PARAM, false);
+        useKEV2 = ServicesUtils.configParamToBoolean(KE_USE_V2_PARAM, true);
 
         logConfigurationInfo();
     }
@@ -149,6 +152,11 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
     // ======================================================================
     @Override
     public void setUseKEV2(boolean value) {
+
+        if (!value) {
+            throw new NuxeoException(
+                    "Since verison 2025.16 of the plugin, it is not possible to use KE API in its version 1, that is deprecated.");
+        }
         useKEV2 = value;
 
         logConfigurationInfo();
@@ -215,7 +223,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         }
 
         @SuppressWarnings("rawtypes")
-        List<ContentToProcess> contentToProcess = new ArrayList<ContentToProcess>();
+        List<ContentToProcess> contentToProcess = new ArrayList<>();
         ContentToProcess<Blob> oneContent = new ContentToProcess<Blob>(sourceId, blob);
         contentToProcess.add(oneContent);
 
@@ -236,7 +244,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         }
 
         @SuppressWarnings("rawtypes")
-        List<ContentToProcess> contentToProcess = new ArrayList<ContentToProcess>();
+        List<ContentToProcess> contentToProcess = new ArrayList<>();
         ContentToProcess<File> oneContent = new ContentToProcess<File>(sourceId, file);
         contentToProcess.add(oneContent);
 
@@ -389,7 +397,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         String sourceId = getCustomUUID();
 
         @SuppressWarnings("rawtypes")
-        List<ContentToProcess> contentToProcess = new ArrayList<ContentToProcess>();
+        List<ContentToProcess> contentToProcess = new ArrayList<>();
         ContentToProcess<Blob> oneContent = new ContentToProcess<Blob>(sourceId, blob);
         contentToProcess.add(oneContent);
 
@@ -492,7 +500,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         String sourceId = getCustomUUID();
 
         @SuppressWarnings("rawtypes")
-        List<ContentToProcess> contentToProcess = new ArrayList<ContentToProcess>();
+        List<ContentToProcess> contentToProcess = new ArrayList<>();
         ContentToProcess<File> oneContent = new ContentToProcess<File>(sourceId, file);
         contentToProcess.add(oneContent);
 
@@ -507,26 +515,27 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         ServiceCallResult result;
         int count = 1;
 
-        log.info("pullEnrichmentResults for Job ID '" + resultId + "'.");
+        log.info("pullEnrichmentResults for Job ID '{}'.", resultId);
 
         do {
             if (count > 1) {
                 try {
                     Thread.sleep(pullResultsSleepIntervalMS);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
+                    throw new NuxeoException("Interrupted while polling Enrichment results", e);
                 }
             }
 
             if (count == pullResultsMaxTries) {
-                log.warn("Pulling Enrichment results is taking time. This is the last try,  " + count + "/"
-                        + pullResultsMaxTries);
+                log.warn("Pulling Enrichment results is taking time. This is the last try,  {}/{}", count,
+                        pullResultsMaxTries);
             } else if (count == 5 || (count > 5 && (count - 5) % 2 == 0)) {
-                log.warn("Pulling Enrichment results is taking time. This is the call #" + count + " (max calls: "
-                        + pullResultsMaxTries + ")");
+                log.warn("Pulling Enrichment results is taking time. This is the call #{} (max calls: {})", count,
+                        pullResultsMaxTries);
                 if (count == 5) {
                     KEDescriptor config = getKEDescriptor(configName);
-                    log.warn("(Pulling job ID '" + resultId + "', configuration '" + config.getName() + "')");
+                    log.warn("(Pulling job ID '{}', configuration '{}')", resultId, config.getName());
                 }
             }
 
@@ -560,7 +569,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         targetUrl += endpoint;
 
         // Headers
-        Map<String, String> headers = new HashMap<String, String>();
+        Map<String, String> headers = new HashMap<>();
         headers.put("Accept", "*/*");
         headers.put("Authorization", "Bearer " + bearer);
         if (endpoint.startsWith("/content/process")) {
@@ -605,6 +614,111 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         return super.getDescriptor(configName);
     }
 
+    @Override
+    public int getDefaultBatchSize() {
+        return ServicesUtils.configParamToInt(BATCH_SIZE_PARAM, BATCH_SIZE_DEFAULT);
+    }
+
+    @Override
+    public String getEmbeddingsFacet(String configName) {
+        KEDescriptor d = getKEDescriptor(configName);
+        return d == null ? null : d.getEmbeddingsFacet();
+    }
+
+    @Override
+    public String getEmbeddingsImageXpath(String configName) {
+        KEDescriptor d = getKEDescriptor(configName);
+        return d == null ? null : d.getEmbeddingsImageXpath();
+    }
+
+    @Override
+    public String getEmbeddingsTextXpath(String configName) {
+        KEDescriptor d = getKEDescriptor(configName);
+        return d == null ? null : d.getEmbeddingsTextXpath();
+    }
+
+    @Override
+    public String getPictureRenditionName(String configName) {
+        KEDescriptor desc = getKEDescriptor(configName);
+        String rendition = desc == null ? KEDescriptor.DEFAULT_PICTURE_RENDITION_NAME : desc.getPictureRenditionName();
+        return StringUtils.isBlank(rendition) ? KEDescriptor.DEFAULT_PICTURE_RENDITION_NAME : rendition;
+    }
+
+    /**
+     * Schema / facet constants for the {@code CICError} contract.
+     *
+     * @since 2025.18
+     */
+    public static final String CIC_ERROR_FACET = "CICError";
+
+    public static final String CIC_ERROR_SCHEMA = "cic_error";
+
+    public static final String CIC_ERROR_FIELD_SERVICE = "cic_error:service";
+
+    public static final String CIC_ERROR_FIELD_RESPONSE_CODE = "cic_error:responseCode";
+
+    public static final String CIC_ERROR_FIELD_RESPONSE_MESSAGE = "cic_error:responseMessage";
+
+    public static final String CIC_ERROR_FIELD_MESSAGE = "cic_error:message";
+
+    public static final String CIC_ERROR_FIELD_FULL_JSON = "cic_error:fullResponseJson";
+
+    @Override
+    public Blob getImageRenditionForCIC(DocumentModel doc, String configName, String renditionName,
+            boolean recordError) {
+        if (doc == null) {
+            throw new NuxeoException("doc is required");
+        }
+        String view = StringUtils.isBlank(renditionName) ? getPictureRenditionName(configName) : renditionName;
+        MultiviewPicture mvp = doc.getAdapter(MultiviewPicture.class);
+        if (mvp == null) {
+            if (recordError) {
+                setCICError(doc, SERVICE_LABEL, 0, "No picture adapter",
+                        "Document " + doc.getId() + " has no MultiviewPicture adapter (not a Picture)", null);
+            }
+            return null;
+        }
+        PictureView pv = mvp.getView(view);
+        if (pv == null) {
+            if (recordError) {
+                setCICError(doc, SERVICE_LABEL, 0, "Picture view not found",
+                        "Picture view '" + view + "' is not available on document " + doc.getId(), null);
+            }
+            return null;
+        }
+        return pv.getBlob();
+    }
+
+    @Override
+    public void clearCICError(DocumentModel doc) {
+        if (doc == null) {
+            return;
+        }
+        if (doc.hasFacet(CIC_ERROR_FACET)) {
+            for (String key : doc.getProperties(CIC_ERROR_SCHEMA).keySet()) {
+                doc.setProperty(CIC_ERROR_SCHEMA, key, null);
+            }
+            doc.removeFacet(CIC_ERROR_FACET);
+        }
+    }
+
+    @Override
+    public void setCICError(DocumentModel doc, String service, int responseCode, String shortMessage,
+            String fullMessage, String fullJson) {
+        if (doc == null) {
+            throw new NuxeoException("doc is required");
+        }
+        if (!doc.hasFacet(CIC_ERROR_FACET)) {
+            doc.addFacet(CIC_ERROR_FACET);
+        }
+        doc.setPropertyValue(CIC_ERROR_FIELD_SERVICE, service);
+        // Schema declares xs:integer => use Long for safety.
+        doc.setPropertyValue(CIC_ERROR_FIELD_RESPONSE_CODE, (long) responseCode);
+        doc.setPropertyValue(CIC_ERROR_FIELD_RESPONSE_MESSAGE, shortMessage);
+        doc.setPropertyValue(CIC_ERROR_FIELD_MESSAGE, fullMessage);
+        doc.setPropertyValue(CIC_ERROR_FIELD_FULL_JSON, fullJson);
+    }
+
     /**
      * Start the component. This method is called after all the components were resolved and activated
      *
@@ -613,9 +727,8 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
     @Override
     public void start(ComponentContext context) {
 
-        enrichmentAuthTokens = initAuthTokens(
-                desc -> new AuthenticationTokenEnrichment(
-                        desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
+        enrichmentAuthTokens = initAuthTokens(desc -> new AuthenticationTokenEnrichment(
+                desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
                 desc.getAuthenticationTokenParams()));
     }
 

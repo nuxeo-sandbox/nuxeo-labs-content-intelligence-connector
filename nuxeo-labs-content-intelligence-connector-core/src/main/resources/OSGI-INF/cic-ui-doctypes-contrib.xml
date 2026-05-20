@@ -1,0 +1,150 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.labs.hyland.content.intelligence.ui.doctypes">
+
+  <extension target="org.nuxeo.ecm.core.schema.TypeService" point="doctype">
+
+    <!-- ============================================================
+         Facets carrying the CIC enrichment/curation result schemas.
+         Added to existing doctypes (File, Picture, ...) by an admin
+         contribution or via the dedicated facets XML below.
+         ============================================================ -->
+
+    <facet name="CICSummary">
+      <schema name="cic_summary"/>
+    </facet>
+
+    <facet name="CICClassification">
+      <schema name="cic_classification"/>
+    </facet>
+
+    <facet name="CICNamedEntities">
+      <schema name="cic_named_entities"/>
+    </facet>
+
+    <facet name="CICMetadataDetection">
+      <schema name="cic_metadata_detection"/>
+    </facet>
+
+    <facet name="CICTextMetadata">
+      <schema name="cic_text_metadata"/>
+    </facet>
+
+    <facet name="CICImageDescription">
+      <schema name="cic_image_description"/>
+    </facet>
+
+    <facet name="CICError">
+      <schema name="cic_error"/>
+    </facet>
+
+    <!-- ============================================================
+         NOTE: CIC facets are NOT appended to standard doctypes here.
+         They are added dynamically at runtime by the CIC operations
+         (DocumentModel.addFacet("CICSummary"), etc.) right after the
+         service call succeeds, before saving the document.
+         ============================================================ -->
+
+    <!-- ============================================================
+         Agent / Agentic Agent doctypes (ported from the Studio demo).
+         Container types are simple Folders restricting their children.
+         ============================================================ -->
+
+    <doctype name="CICAgentAndConfig" extends="Document">
+      <schema name="common"/>
+      <schema name="dublincore"/>
+      <schema name="cic_agent_and_config"/>
+    </doctype>
+
+    <doctype name="CICAgenticAgentAndConfig" extends="Document">
+      <schema name="common"/>
+      <schema name="dublincore"/>
+      <schema name="cic_agentic_agent_and_config"/>
+    </doctype>
+
+    <doctype name="CICAgentsAndConfigs" extends="Folder">
+      <subtypes>
+        <type>CICAgentAndConfig</type>
+      </subtypes>
+    </doctype>
+
+    <doctype name="CICAgenticAgentsAndConfigs" extends="Folder">
+      <subtypes>
+        <type>CICAgenticAgentAndConfig</type>
+      </subtypes>
+    </doctype>
+
+    <!-- ============================================================
+         Where can the two container doctypes be created?
+         Append CICAgentsAndConfigs and CICAgenticAgentsAndConfigs to
+         the subtypes of Root, Domain, Workspace and Folder.
+         ============================================================ -->
+
+    <doctype name="Root" append="true">
+      <subtypes>
+        <type>CICAgentsAndConfigs</type>
+        <type>CICAgenticAgentsAndConfigs</type>
+      </subtypes>
+    </doctype>
+
+    <doctype name="Domain" append="true">
+      <subtypes>
+        <type>CICAgentsAndConfigs</type>
+        <type>CICAgenticAgentsAndConfigs</type>
+      </subtypes>
+    </doctype>
+
+    <doctype name="Workspace" append="true">
+      <subtypes>
+        <type>CICAgentsAndConfigs</type>
+        <type>CICAgenticAgentsAndConfigs</type>
+      </subtypes>
+    </doctype>
+
+    <doctype name="Folder" append="true">
+      <subtypes>
+        <type>CICAgentsAndConfigs</type>
+        <type>CICAgenticAgentsAndConfigs</type>
+      </subtypes>
+    </doctype>
+
+  </extension>
+
+  <!-- ============================================================
+       Web UI / Type Service icons and labels for the four CIC
+       Agent-related doctypes. PNG and SVG icon files are shipped
+       under web/nuxeo.war/img/ and copied to nuxeo.war/img/ at
+       runtime by the deployment-fragment.
+       ============================================================ -->
+  <extension target="org.nuxeo.ecm.platform.types.TypeService" point="types">
+
+    <type id="CICAgentAndConfig">
+      <label>label.document.CICAgentAndConfig</label>
+      <icon>/img/cicagentandconfig.png</icon>
+      <bigIcon>/img/cicagentandconfig.png</bigIcon>
+      <description>label.ui.cic.doctype.CICAgentAndConfig.description</description>
+    </type>
+
+    <type id="CICAgenticAgentAndConfig">
+      <label>label.document.CICAgenticAgentAndConfig</label>
+      <icon>/img/cicagenticagentandconfig.png</icon>
+      <bigIcon>/img/cicagenticagentandconfig.png</bigIcon>
+      <description>label.ui.cic.doctype.CICAgenticAgentAndConfig.description</description>
+    </type>
+
+    <type id="CICAgentsAndConfigs">
+      <label>label.document.CICAgentsAndConfigs</label>
+      <icon>/img/cicagentsandconfigs.png</icon>
+      <bigIcon>/img/cicagentsandconfigs.png</bigIcon>
+      <description>label.ui.cic.doctype.CICAgentsAndConfigs.description</description>
+    </type>
+
+    <type id="CICAgenticAgentsAndConfigs">
+      <label>label.document.CICAgenticAgentsAndConfigs</label>
+      <icon>/img/cicagenticagentsandconfigs.png</icon>
+      <bigIcon>/img/cicagenticagentsandconfigs.png</bigIcon>
+      <description>label.ui.cic.doctype.CICAgenticAgentsAndConfigs.description</description>
+    </type>
+
+  </extension>
+
+</component>

@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.automation.agents;
 
@@ -31,7 +31,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService;
 
 /**
- * @since TODO
+ * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
 @Operation(id = HylandAgentsLookupAgentOp.ID, category = "Hyland Agent Builder", label = "Lookup Agent", description = ""
         + "Returns a JSON blob holding the result of the call. Call its getString() method then JSON.parse()."

@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.automation.contentlake;
 
@@ -29,7 +29,7 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.contentlake.ContentLakeService;
 
 /**
- * @since TODO
+ * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
 @Operation(id = ContentLakeGetDocumentOp.ID, category = "Hyland Content Lake", label = "Get a document in the Content Lake", description = ""
         + "input is a document, used to check its counterpart in Content Lake."

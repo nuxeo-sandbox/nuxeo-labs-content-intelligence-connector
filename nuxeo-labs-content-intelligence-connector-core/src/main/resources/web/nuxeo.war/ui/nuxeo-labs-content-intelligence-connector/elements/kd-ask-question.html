@@ -1,0 +1,44 @@
+<!--
+`kd-ask-question`
+@group Nuxeo UI
+@element kd-ask-question
+
+Ask a question to Knowledge Discovery.
+-->
+<link rel="import" href="kd-ask-question-shared.html">
+<dom-module id="kd-ask-question">
+  <template>
+    <style include="nuxeo-action-button-styles nuxeo-styles"></style>
+
+    <kd-ask-question-shared
+      icon="[[icon]]"
+      label="[[label]]"
+      show-label="[[showLabel]]">
+    </kd-ask-question-shared>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'kd-ask-question',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        label: {
+          type: String,
+          value: 'label.ui.cic.kd-ask.askKD'
+        },
+
+        showLabel: {
+          type: Boolean,
+          value: false,
+        },
+
+        icon: {
+          type: String,
+          value: 'icons:speaker-notes',
+          reflectToAttribute: true
+        },
+      }
+    });
+  </script>
+</dom-module>

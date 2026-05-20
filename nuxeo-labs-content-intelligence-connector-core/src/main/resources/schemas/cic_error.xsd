@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:cicerror="http://www.nuxeo.org/ecm/schemas/cic/error"
+           targetNamespace="http://www.nuxeo.org/ecm/schemas/cic/error">
+
+  <xs:element name="service" type="xs:string"/>
+  <xs:element name="responseCode" type="xs:integer"/>
+  <xs:element name="responseMessage" type="xs:string"/>
+  <xs:element name="message" type="xs:string"/>
+  <xs:element name="fullResponseJson" type="xs:string"/>
+
+</xs:schema>

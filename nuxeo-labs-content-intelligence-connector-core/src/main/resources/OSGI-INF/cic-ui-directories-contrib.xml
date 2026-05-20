@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.labs.hyland.content.intelligence.ui.directories">
+
+  <extension target="org.nuxeo.ecm.directory.sql.SQLDirectoryFactory" point="directories">
+
+    <directory name="cicImageClassification">
+      <schema>vocabulary</schema>
+      <types>
+        <type>system</type>
+      </types>
+      <dataSource>java:/nxsqldirectory</dataSource>
+      <table>cic_image_classification</table>
+      <idField>id</idField>
+      <dataFile>directories/cic-image-classification.csv</dataFile>
+      <createTablePolicy>on_missing_columns</createTablePolicy>
+    </directory>
+
+    <directory name="cicTextClassification">
+      <schema>vocabulary</schema>
+      <types>
+        <type>system</type>
+      </types>
+      <dataSource>java:/nxsqldirectory</dataSource>
+      <table>cic_text_classification</table>
+      <idField>id</idField>
+      <dataFile>directories/cic-text-classification.csv</dataFile>
+      <createTablePolicy>on_missing_columns</createTablePolicy>
+    </directory>
+
+  </extension>
+
+</component>

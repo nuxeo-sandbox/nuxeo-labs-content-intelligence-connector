@@ -1,0 +1,64 @@
+<!--
+`cic-metadata-detection-view`
+@group Nuxeo UI
+@element cic-metadata-detection-view
+-->
+<dom-module id="cic-metadata-detection-view">
+  <template>
+    <style include="nuxeo-styles">
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      th, td {
+        border: 1px solid darkgrey;
+        padding: 5px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      td.multiline {
+        white-space: pre-line;
+      }
+    </style>
+
+    <template is="dom-if" if="[[hasFacet(document, 'CICMetadataDetection')]]">
+      <h5>
+        [[i18n('label.ui.schema.mdd.metadata')]]
+      </h5>
+
+      <table>
+        <thead>
+          <tr>
+            <th>[[i18n('label.ui.schema.mdd.metadata.field')]]</th>
+            <th>[[i18n('label.ui.schema.mdd.metadata.value')]]</th>
+          </tr>
+        </thead>
+        <tbody>
+          <template is="dom-repeat" items="[[document.properties.cicmetadatadetection:metadata]]">
+            <tr>
+              <td>[[item.field]]</td>
+              <td class="multiline">[[item.value]]</td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </template>
+
+  </template>
+
+  <script>
+  Polymer({
+    is: 'cic-metadata-detection-view',
+    behaviors: [Nuxeo.LayoutBehavior],
+    properties: {
+
+      document: {
+        type: Object
+      }
+    }
+
+  });
+  </script>
+</dom-module>

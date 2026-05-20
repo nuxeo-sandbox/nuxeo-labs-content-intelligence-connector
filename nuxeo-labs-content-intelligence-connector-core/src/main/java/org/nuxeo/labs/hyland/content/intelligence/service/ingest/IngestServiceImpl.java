@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * Contributors:
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.service.ingest;
 
@@ -117,13 +117,13 @@ public class IngestServiceImpl extends AbstractCICServiceComponent<IngestDescrip
         }
         Blob blob = (Blob) doc.getPropertyValue(xpath);
         if (blob == null) {
-            log.error("No blob at xpath " + xpath);
+            log.error("No blob at xpath {}", xpath);
             return new ServiceCallResult("{}", -1, "No blob at xpath " + xpath);
         }
 
         String digest = blob.getDigest();
         if (StringUtils.isBlank(digest)) {
-            log.error("No digest for blob at xpath " + xpath);
+            log.error("No digest for blob at xpath {}", xpath);
             return new ServiceCallResult("{}", -1, "No digest for blob at xpath " + xpath);
         }
 
@@ -162,7 +162,7 @@ public class IngestServiceImpl extends AbstractCICServiceComponent<IngestDescrip
         targetUrl += "/" + sourceId + "/" + docId + "?digest=" + blobDigest + "&useContentLake=true";
 
         // Headers
-        Map<String, String> headers = new HashMap<String, String>();
+        Map<String, String> headers = new HashMap<>();
         headers.put("Accept", "*/*");
         headers.put("Authorization", "Bearer " + bearer);
         // More specific Ingest

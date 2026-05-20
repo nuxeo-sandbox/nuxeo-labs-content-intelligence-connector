@@ -1,0 +1,716 @@
+<!--
+`cic-ui-config-page`
+
+Admin drawer page that lists every CIC slot-content button shipped by the plugin
+(read from the plugin's own `nuxeo-labs-content-intelligence-connector-bundle.html`
+via the `CIC.GetUIBundleConfig` operation), lets the administrator toggle
+enabled/disabled and reorder them, then generates a copy/paste-ready Studio
+Web UI override snippet.
+
+This page reads ONLY this plugin's own bundle. It does NOT detect or merge
+overrides coming from Studio projects or other plugins. A warning banner makes
+this explicit: the runtime UI may differ from what is shown here.
+
+@group Nuxeo Labs
+@element cic-ui-config-page
+-->
+
+<dom-module id="cic-ui-config-page">
+  <template>
+    <style include="nuxeo-styles">
+
+      .main-div {
+        /*max-width: 900px;*/
+        margin: 16px;
+      }
+
+      h1 {
+        font-size: 1.4em;
+        margin: 0 0 12px 0;
+      }
+
+      .warning {
+        background: #fff8e1;
+        border: 1px solid #ffd54f;
+        border-radius: 3px;
+        padding: 10px 14px;
+        margin-bottom: 16px;
+        color: #5d4037;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .meta {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 16px;
+      }
+
+      .meta code {
+        background: #f5f5f5;
+        padding: 1px 4px;
+        border-radius: 2px;
+      }
+
+      .category-block {
+        margin-bottom: 24px;
+      }
+
+      .category-title {
+        font-size: 1.05em;
+        font-weight: 600;
+        color: #0066cc;
+        margin: 14px 0 6px 0;
+        border-bottom: 1px solid #e0e0e0;
+        padding-bottom: 4px;
+      }
+
+      table.cic-buttons {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        table-layout: fixed;
+      }
+
+      table.cic-buttons th,
+      table.cic-buttons td {
+        text-align: left;
+        padding: 6px 8px;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+      }
+
+      table.cic-buttons th {
+        font-weight: 600;
+        color: #555;
+        background: #fafafa;
+      }
+
+      /* Keep the same column sizing across all category tables. */
+      table.cic-buttons th:nth-child(1),
+      table.cic-buttons td:nth-child(1) {
+        width: 28px;
+      }
+
+      table.cic-buttons th:nth-child(2),
+      table.cic-buttons td:nth-child(2) {
+        width: 20%;
+      }
+
+      table.cic-buttons th:nth-child(3),
+      table.cic-buttons td:nth-child(3) {
+        width: 35%;
+      }
+
+      table.cic-buttons th:nth-child(4),
+      table.cic-buttons td:nth-child(4) {
+        width: 12%;
+      }
+
+      table.cic-buttons th:nth-child(5),
+      table.cic-buttons td:nth-child(5) {
+        width: 80px;
+      }
+
+      table.cic-buttons th:nth-child(6),
+      table.cic-buttons td:nth-child(6) {
+        width: 70px;
+      }
+
+      table.cic-buttons th:nth-child(7),
+      table.cic-buttons td:nth-child(7) {
+        width: 90px;
+      }
+
+      table.cic-buttons td.col-icon {
+        width: 28px;
+      }
+
+      table.cic-buttons td.col-name {
+        font-family: monospace;
+        font-size: 12px;
+        color: #444;
+      }
+
+      table.cic-buttons td.col-slot {
+        font-size: 12px;
+        color: #666;
+      }
+
+      table.cic-buttons td.col-default {
+        font-size: 12px;
+        color: #888;
+        text-align: center;
+        width: 80px;
+      }
+
+      table.cic-buttons td.col-enabled {
+        text-align: center;
+        width: 70px;
+      }
+
+      table.cic-buttons td.col-order input {
+        width: 60px;
+        padding: 4px;
+        font-size: 13px;
+        text-align: center;
+      }
+
+      tr.modified {
+        background: #fffde7;
+      }
+
+      .actions {
+        margin: 18px 0 8px 0;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .actions paper-button {
+        background: #0066cc;
+        color: white;
+      }
+
+      .actions paper-button.secondary {
+        background: #eee;
+        color: #333;
+      }
+
+      .actions paper-button[disabled] {
+        opacity: 0.5;
+      }
+
+      textarea.output {
+        width: 100%;
+        min-height: 280px;
+        font-family: monospace;
+        font-size: 12px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        background: #fafafa;
+        box-sizing: border-box;
+        white-space: pre;
+      }
+
+      .error {
+        background: #ffebee;
+        border: 1px solid #e57373;
+        color: #c62828;
+        padding: 10px 14px;
+        border-radius: 3px;
+        margin-bottom: 16px;
+      }
+
+      paper-tabs {
+        background: #f5f5f5;
+        --paper-tabs-selection-bar-color: #0066cc;
+        margin-bottom: 16px;
+      }
+
+      paper-tab {
+        --paper-tab-ink: #0066cc;
+        font-weight: 600;
+      }
+
+      table.cic-forms {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        table-layout: fixed;
+      }
+
+      table.cic-forms th,
+      table.cic-forms td {
+        text-align: left;
+        padding: 6px 8px;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+      }
+
+      table.cic-forms th {
+        font-weight: 600;
+        color: #555;
+        background: #fafafa;
+      }
+
+      table.cic-forms th:nth-child(1),
+      table.cic-forms td:nth-child(1) {
+        width: 40px;
+        text-align: center;
+      }
+
+      table.cic-forms th:nth-child(2),
+      table.cic-forms td:nth-child(2) {
+        width: 24%;
+      }
+
+      table.cic-forms th:nth-child(3),
+      table.cic-forms td:nth-child(3) {
+        width: 30%;
+      }
+
+      table.cic-forms th:nth-child(4),
+      table.cic-forms td:nth-child(4) {
+        width: 80px;
+        text-align: center;
+      }
+
+      table.cic-forms td.col-tag {
+        font-family: monospace;
+        font-size: 12px;
+        color: #444;
+      }
+
+      table.cic-forms td.col-binding {
+        font-family: monospace;
+        font-size: 12px;
+        color: #666;
+      }
+
+      .forms-intro {
+        font-size: 13px;
+        color: #555;
+        margin: 0 0 12px 0;
+        line-height: 1.5;
+      }
+    </style>
+
+    <nuxeo-operation id="getConfigOp" op="CIC.GetUIBundleConfig"></nuxeo-operation>
+
+    <nuxeo-page>
+      <div slot="header">
+        <span>[[i18n('label.ui.cic.ui-config.title')]]</span>
+      </div>
+
+      <div>
+        <nuxeo-card>
+
+          <div class="main-div">
+
+          <div class="warning">
+            [[i18n('label.ui.cic.ui-config.warning')]]
+          </div>
+
+          <template is="dom-if" if="[[_errorMessage]]">
+            <div class="error">[[_errorMessage]]</div>
+          </template>
+
+          <template is="dom-if" if="[[_loaded]]">
+            <div class="meta">
+              [[i18n('label.ui.cic.ui-config.meta.bundle')]]
+              <code>[[_bundlePath]]</code>
+              &nbsp;|&nbsp;
+              [[i18n('label.ui.cic.ui-config.meta.version')]]
+              <code>[[_pluginVersion]]</code>
+            </div>
+
+            <paper-tabs selected="{{_selectedTab}}" noink>
+              <paper-tab>[[i18n('label.ui.cic.ui-config.tab.buttons')]]</paper-tab>
+              <paper-tab>[[i18n('label.ui.cic.ui-config.tab.forms')]]</paper-tab>
+            </paper-tabs>
+
+            <iron-pages selected="[[_selectedTab]]">
+
+              <!-- Tab 1: Slot-content buttons (original page) -->
+              <div>
+                <template is="dom-repeat" items="[[_groups]]" as="group">
+                  <div class="category-block">
+                    <div class="category-title">[[group.label]]</div>
+                    <table class="cic-buttons">
+                      <thead>
+                        <tr>
+                          <th>[[i18n('label.ui.cic.ui-config.column.icon')]]</th>
+                          <th>[[i18n('label.ui.cic.ui-config.column.name')]]</th>
+                          <th>[[i18n('label.ui.cic.ui-config.column.label')]]</th>
+                          <th>[[i18n('label.ui.cic.ui-config.column.slot')]]</th>
+                          <th>[[i18n('label.ui.cic.ui-config.column.defaultOrder')]]</th>
+                          <th>[[i18n('label.ui.cic.ui-config.column.enabled')]]</th>
+                          <th>[[i18n('label.ui.cic.ui-config.column.order')]]</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <template is="dom-repeat" items="[[group.buttons]]" as="btn">
+                          <tr class$="[[_rowClass(btn.*)]]">
+                            <td class="col-icon">
+                              <template is="dom-if" if="[[btn.icon]]">
+                                <iron-icon icon="[[btn.icon]]"></iron-icon>
+                              </template>
+                            </td>
+                            <td class="col-name">[[btn.name]]</td>
+                            <td>[[_resolveLabel(btn.labelKey)]]</td>
+                            <td class="col-slot">[[btn.slot]]</td>
+                            <td class="col-default">[[btn.defaultOrder]]</td>
+                            <td class="col-enabled">
+                              <input type="checkbox" checked="{{btn.enabled::change}}">
+                            </td>
+                            <td class="col-order">
+                              <input type="number" value="{{btn.order::input}}" step="1">
+                            </td>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                  </div>
+                </template>
+
+                <div class="actions">
+                  <paper-button on-tap="_generateAll">
+                    [[i18n('label.ui.cic.ui-config.generate.all')]]
+                  </paper-button>
+                  <paper-button on-tap="_generateChanged">
+                    [[i18n('label.ui.cic.ui-config.generate.changed')]]
+                  </paper-button>
+                  <paper-button class="secondary" on-tap="_copyOutput" disabled$="[[!_output]]">
+                    [[i18n('label.ui.cic.ui-config.copy')]]
+                  </paper-button>
+                  <paper-button class="secondary" on-tap="_resetState">
+                    [[i18n('label.ui.cic.ui-config.reset')]]
+                  </paper-button>
+                </div>
+
+                <textarea class="output" readonly value="[[_output]]"></textarea>
+              </div>
+
+              <!-- Tab 2: Form snippets -->
+              <div>
+                <p class="forms-intro">[[i18n('label.ui.cic.ui-config.forms.intro')]]</p>
+
+                <table class="cic-forms">
+                  <thead>
+                    <tr>
+                      <th>[[i18n('label.ui.cic.ui-config.forms.column.pick')]]</th>
+                      <th>[[i18n('label.ui.cic.ui-config.forms.column.tag')]]</th>
+                      <th>[[i18n('label.ui.cic.ui-config.forms.column.binding')]]</th>
+                      <th>[[i18n('label.ui.cic.ui-config.forms.column.mode')]]</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template is="dom-repeat" items="[[_forms]]" as="form">
+                      <tr>
+                        <td>
+                          <input type="checkbox" checked="{{form.selected::change}}">
+                        </td>
+                        <td class="col-tag">&lt;[[form.tag]]&gt;</td>
+                        <td class="col-binding">[[form.binding]]</td>
+                        <td>[[_formModeLabel(form.mode)]]</td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+
+                <div class="actions">
+                  <paper-button on-tap="_generateFormsSelected">
+                    [[i18n('label.ui.cic.ui-config.forms.generate.selected')]]
+                  </paper-button>
+                  <paper-button on-tap="_generateFormsAllView">
+                    [[i18n('label.ui.cic.ui-config.forms.generate.allView')]]
+                  </paper-button>
+                  <paper-button on-tap="_generateFormsAllEdit">
+                    [[i18n('label.ui.cic.ui-config.forms.generate.allEdit')]]
+                  </paper-button>
+                  <paper-button class="secondary" on-tap="_copyFormsOutput" disabled$="[[!_formsOutput]]">
+                    [[i18n('label.ui.cic.ui-config.copy')]]
+                  </paper-button>
+                  <paper-button class="secondary" on-tap="_resetForms">
+                    [[i18n('label.ui.cic.ui-config.reset')]]
+                  </paper-button>
+                </div>
+
+                <textarea class="output forms-output" readonly value="[[_formsOutput]]"></textarea>
+              </div>
+
+            </iron-pages>
+          </template>
+
+          </div>
+        </nuxeo-card>
+      </div> 
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'cic-ui-config-page',
+      behaviors: [Nuxeo.LayoutBehavior],
+
+      properties: {
+        // Required so the element is recognized as an Administration page entry.
+        name: { type: String },
+
+        _loaded:        { type: Boolean, value: false },
+        _errorMessage:  { type: String, value: '' },
+        _bundlePath:    { type: String, value: '' },
+        _pluginVersion: { type: String, value: '' },
+
+        // Frozen baseline returned by the op. Used to detect "changed" rows.
+        _defaults:      { type: Array, value: function() { return []; } },
+
+        // Working copy bound to the table. Each row carries its own `enabled` (=!disabled)
+        // and `order`, so two-way binding works directly. Other fields are read-only.
+        _buttons:       { type: Array, value: function() { return []; } },
+
+        // Same data as _buttons, grouped by category, for the dom-repeat over <tables>.
+        _groups:        { type: Array, value: function() { return []; } },
+
+        _output:        { type: String, value: '' },
+
+        // Tab index: 0 = Buttons, 1 = Forms
+        _selectedTab:   { type: Number, value: 0 },
+
+        // Hardcoded catalog of reusable form snippets shipped under forms/cic-*.html.
+        // Order mirrors README "Reusable form elements".
+        _forms: {
+          type: Array,
+          value: function() {
+            return [
+              { selected: false, file: 'cic-summary-view.html',             tag: 'cic-summary-view',             mode: 'view', binding: 'cic_summary:summary' },
+              { selected: false, file: 'cic-image-description-view.html',   tag: 'cic-image-description-view',   mode: 'view', binding: 'cic_image_description:description' },
+              { selected: false, file: 'cic-classification-view.html',      tag: 'cic-classification-view',      mode: 'view', binding: 'cic_classification:imageClass / :textClass' },
+              { selected: false, file: 'cic-classification-edit.html',      tag: 'cic-classification-edit',      mode: 'edit', binding: 'cic_classification:imageClass / :textClass' },
+              { selected: false, file: 'cic-named-entities-view.html',      tag: 'cic-named-entities-view',      mode: 'view', binding: 'cic_named_entities:entities' },
+              { selected: false, file: 'cic-metadata-detection-view.html',  tag: 'cic-metadata-detection-view',  mode: 'view', binding: 'cic_metadata_detection:metadata' },
+              { selected: false, file: 'cic-metadata-detection-edit.html',  tag: 'cic-metadata-detection-edit',  mode: 'edit', binding: 'cic_metadata_detection:metadata' }
+            ];
+          }
+        },
+
+        _formsOutput:   { type: String, value: '' }
+      },
+
+      attached: function() {
+        this._loadConfig();
+      },
+
+      // ====================> Loading
+      _loadConfig: function() {
+        this._errorMessage = '';
+        this.$.getConfigOp.execute().then(function(response) {
+          var jsonStr = (response && typeof response.getString === 'function')
+              ? response.getString() : response;
+          var parsed = (typeof jsonStr === 'string') ? JSON.parse(jsonStr) : jsonStr;
+          if (!parsed || parsed.responseCode !== 200) {
+            this._errorMessage = (parsed && parsed.responseMessage)
+                ? parsed.responseMessage
+                : this.i18n('label.ui.cic.ui-config.error.load');
+            return;
+          }
+          var resp = parsed.response || {};
+          this._bundlePath    = resp.bundlePath    || '';
+          this._pluginVersion = resp.pluginVersion || '';
+          this._initButtons(resp.buttons || []);
+          this._loaded = true;
+        }.bind(this)).catch(function(err) {
+          this._errorMessage = (err && err.message) ? err.message : String(err);
+        }.bind(this));
+      },
+
+      _initButtons: function(rawButtons) {
+        // Defensive deep clones so the working copy is independent of the baseline.
+        var defaults = rawButtons.map(function(b) {
+          return Object.assign({}, b, {
+            enabled: !b.disabled,
+            defaultOrder: b.order
+          });
+        });
+        var working = defaults.map(function(b) { return Object.assign({}, b); });
+
+        this._defaults = defaults;
+        this._buttons = working;
+        this._groups = this._groupByCategory(working);
+      },
+
+      _groupByCategory: function(buttons) {
+        var order = ['KE Image', 'KE Text', 'KD', 'Agents', 'Other'];
+        var labelKeyByCategory = {
+          'KE Image': 'label.ui.cic.ui-config.category.keImage',
+          'KE Text':  'label.ui.cic.ui-config.category.keText',
+          'KD':       'label.ui.cic.ui-config.category.kd',
+          'Agents':   'label.ui.cic.ui-config.category.agents',
+          'Other':    'label.ui.cic.ui-config.category.other'
+        };
+        var groups = {};
+        buttons.forEach(function(b) {
+          var cat = b.category || 'Other';
+          if (!groups[cat]) { groups[cat] = []; }
+          groups[cat].push(b);
+        });
+        var result = [];
+        order.forEach(function(cat) {
+          if (groups[cat] && groups[cat].length) {
+            // Sort each group by current order then name for stable display.
+            groups[cat].sort(function(a, b) {
+              var ao = parseInt(a.order, 10) || 0;
+              var bo = parseInt(b.order, 10) || 0;
+              if (ao !== bo) return ao - bo;
+              return a.name.localeCompare(b.name);
+            });
+            result.push({
+              category: cat,
+              label: this.i18n(labelKeyByCategory[cat]),
+              buttons: groups[cat]
+            });
+          }
+        }.bind(this));
+        return result;
+      },
+
+      // ====================> Helpers
+      _resolveLabel: function(labelKey) {
+        if (!labelKey) return '';
+        return this.i18n(labelKey);
+      },
+
+      _rowClass: function(/* btnChangeRecord */) {
+        // Polymer passes a change record so we can compute reactively. We resolve via the
+        // underlying object to avoid signature noise.
+        var btn = arguments[0] && arguments[0].base ? arguments[0].base : null;
+        if (!btn) return '';
+        return this._isChanged(btn) ? 'modified' : '';
+      },
+
+      _isChanged: function(btn) {
+        var def = this._findDefault(btn.name);
+        if (!def) return false;
+        var orderChanged = (parseInt(btn.order, 10) || 0) !== (parseInt(def.order, 10) || 0);
+        var enabledChanged = !!btn.enabled !== !def.disabled;
+        return orderChanged || enabledChanged;
+      },
+
+      _findDefault: function(name) {
+        for (var i = 0; i < this._defaults.length; i++) {
+          if (this._defaults[i].name === name) return this._defaults[i];
+        }
+        return null;
+      },
+
+      // ====================> Generate
+      _generateAll: function() {
+        this._output = this._buildOutput(this._buttons, false);
+      },
+
+      _generateChanged: function() {
+        var changed = this._buttons.filter(function(b) { return this._isChanged(b); }.bind(this));
+        if (!changed.length) {
+          this._output = '<!-- ' + this.i18n('label.ui.cic.ui-config.generate.nothing') + ' -->\n';
+          return;
+        }
+        this._output = this._buildOutput(changed, true);
+      },
+
+      _buildOutput: function(buttons /* , onlyChanged */) {
+        return buttons.map(function(b) {
+          return this._serializeOne(b);
+        }.bind(this)).join('\n');
+      },
+
+      _serializeOne: function(b) {
+        var order = parseInt(b.order, 10);
+        if (isNaN(order)) order = 0;
+        var disabled = !b.enabled;
+        var attrs = 'name="' + b.name + '" slot="' + b.slot + '" order="' + order + '"'
+            + (disabled ? ' disabled' : '');
+        // Re-emit the FULL template body verbatim so the override is complete regardless
+        // of Web UI's slot-content patch-vs-replace semantics.
+        var body = b.templateBody || '';
+        return '<nuxeo-slot-content ' + attrs + '>' + body + '</nuxeo-slot-content>\n';
+      },
+
+      _copyOutput: function() {
+        if (!this._output) return;
+        var ta = this.shadowRoot ? this.shadowRoot.querySelector('textarea.output')
+                                 : this.querySelector('textarea.output');
+        if (ta) {
+          ta.select();
+          try {
+            document.execCommand('copy');
+          } catch (e) {
+            console.warn('cic-ui-config-page: clipboard copy failed', e);
+          }
+          window.getSelection().removeAllRanges();
+        }
+      },
+
+      _resetState: function() {
+        // Restore working copy from the baseline.
+        this._initButtons(this._defaults.map(function(b) {
+          // Strip the convenience fields that _initButtons re-derives.
+          var copy = Object.assign({}, b);
+          delete copy.enabled;
+          delete copy.defaultOrder;
+          return copy;
+        }));
+        this._output = '';
+      },
+
+      /* ==================== Forms tab ==================== */
+
+      _formModeLabel: function(mode) {
+        return this.i18n('label.ui.cic.ui-config.forms.mode.' + mode);
+      },
+
+      _generateFormsSelected: function() {
+        var selected = this._forms.filter(function(f) { return f.selected; });
+        if (!selected.length) {
+          this._formsOutput = '<!-- ' + this.i18n('label.ui.cic.ui-config.forms.generate.nothing') + ' -->\n';
+          return;
+        }
+        this._formsOutput = this._buildFormsOutput(selected);
+      },
+
+      _generateFormsAllView: function() {
+        this._formsOutput = this._buildFormsOutput(
+            this._forms.filter(function(f) { return f.mode === 'view'; }));
+      },
+
+      _generateFormsAllEdit: function() {
+        this._formsOutput = this._buildFormsOutput(
+            this._forms.filter(function(f) { return f.mode === 'edit'; }));
+      },
+
+      _buildFormsOutput: function(forms) {
+        var header =
+            '<!-- Paste the following at the top of the layout.\n     Adapt the path. These "../../" are valid if you are placing the element\n' +
+            '     in a document layout (e.g. nuxeo.war/ui/document/<doctype>/...). -->\n';
+
+        var imports = forms.map(function(f) {
+          return '<link rel="import" href="../../nuxeo-labs-content-intelligence-connector/forms/'
+              + f.file + '">';
+        }).join('\n');
+
+        var comment = '\n\n<!-- Then, place the following tags where you want the form(s) to appear. -->\n';
+        var usages = forms.map(function(f) {
+          return '<' + f.tag + ' document="[[document]]"></' + f.tag + '>';
+        }).join('\n');
+
+        return header + imports + comment + usages + '\n';
+      },
+
+      _copyFormsOutput: function() {
+        if (!this._formsOutput) return;
+        var ta = this.shadowRoot ? this.shadowRoot.querySelector('textarea.forms-output')
+                                 : this.querySelector('textarea.forms-output');
+        if (ta) {
+          ta.select();
+          try {
+            document.execCommand('copy');
+          } catch (e) {
+            console.warn('cic-ui-config-page: clipboard copy failed', e);
+          }
+          window.getSelection().removeAllRanges();
+        }
+      },
+
+      _resetForms: function() {
+        var reset = this._forms.map(function(f) {
+          return Object.assign({}, f, { selected: false });
+        });
+        this._forms = reset;
+        this._formsOutput = '';
+      }
+
+    });
+  </script>
+</dom-module>

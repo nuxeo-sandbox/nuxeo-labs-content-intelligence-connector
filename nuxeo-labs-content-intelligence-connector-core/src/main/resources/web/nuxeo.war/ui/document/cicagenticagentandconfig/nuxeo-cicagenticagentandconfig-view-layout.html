@@ -1,0 +1,81 @@
+<!--
+`nuxeo-cicagenticagentandconfig-view-layout`
+@group Nuxeo UI
+@element nuxeo-cicagenticagentandconfig-view-layout
+-->
+<dom-module id="nuxeo-cicagenticagentandconfig-view-layout">
+  <template>
+    <style include="nuxeo-styles">
+      .json-display {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 11px;
+        line-height: 1.4;
+        max-height: 140px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        padding: 8px;
+        background-color: #f5f5f5;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+      }
+    </style>
+
+    <nuxeo-card>
+
+      <div role="widget">
+        <label>[[i18n('label.dublincore.title')]]</label>
+        <div name="title">[[document.properties.dc:title]]</div>
+      </div>
+
+      <div role="widget">
+        <label>[[i18n('label.dublincore.description')]]</label>
+        <div name="description">[[document.properties.dc:description]]</div>
+      </div>
+
+      <div role="widget">
+        <label>[[i18n('label.ui.cicagenticagentandconfig.configName')]]</label>
+        <div name="configName">[[document.properties.cicagenticagentandconfig:configName]]</div>
+
+        <div style="font-size: smaller; display: flex; align-items: center; width:90%">
+          <span style="margin-right: 8px;">&#9432;</span>
+          <span style="text-align: left;">[[i18n('label.ui.cicagenticagentandconfig.configNameHelp')]]</span>
+        </div>
+      </div>
+
+      <div role="widget">
+        <label>[[i18n('label.ui.cicagenticagentandconfig.agentId')]]</label>
+        <div name="agentId">[[document.properties.cicagenticagentandconfig:agentId]]</div>
+      </div>
+
+      <div role="widget">
+        <label>[[i18n('label.ui.cicagenticagentandconfig.inputSchemaJson')]]</label>
+        <div class="json-display" name="inputSchemaJson">[[document.properties.cicagenticagentandconfig:inputSchemaJson]]</div>
+      </div>
+
+      <div role="widget">
+        <label>[[i18n('label.ui.cicagenticagentandconfig.toolsJson')]]</label>
+        <div class="json-display" name="toolsJson">[[document.properties.cicagenticagentandconfig:toolsJson]]</div>
+      </div>
+
+    </nuxeo-card>
+
+  </template>
+
+  <script>
+  Polymer({
+    is: 'nuxeo-cicagenticagentandconfig-view-layout',
+    behaviors: [Nuxeo.LayoutBehavior],
+    properties: {
+
+      /**
+       * @doctype CICAgenticAgentAndConfig
+       */
+      document: {
+        type: Object,
+      },
+
+    }
+  });
+  </script>
+</dom-module>

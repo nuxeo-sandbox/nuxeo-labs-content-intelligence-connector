@@ -1,3 +1,21 @@
+/*
+ * (C) Copyright 2026 Hyland (http://hyland.com/) and others.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Contributors:
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
+ */
 package org.nuxeo.labs.hyland.content.intelligence.service.discovery;
 
 import java.util.HashMap;
@@ -144,7 +162,7 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
         }
 
         // Headers
-        Map<String, String> headers = new HashMap<String, String>();
+        Map<String, String> headers = new HashMap<>();
         headers.put("Accept", "*/*");
         headers.put("Authorization", "Bearer " + bearer);
         headers.put("Content-Type", "application/json");
@@ -230,8 +248,7 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
     }
 
     @Override
-    public ServiceCallResult getAnswer(String configName, String questionId, Map<String, String> extraHeaders)
-            throws InterruptedException {
+    public ServiceCallResult getAnswer(String configName, String questionId, Map<String, String> extraHeaders) {
 
         ServiceCallResult result = null;
 
@@ -245,11 +262,11 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
             count += 1;
 
             if (count == pullResultsMaxTries) {
-                log.warn("getAnswer() for question " + questionId + " is taking time. This is the last try, " + count
-                        + "/" + pullResultsMaxTries + " (Last responseCode " + lastResponseCode + ").");
+                log.warn("getAnswer() for question {} is taking time. This is the last try, {}/{} (Last responseCode {}).",
+                        questionId, count, pullResultsMaxTries, lastResponseCode);
             } else if (count == 5 || (count > 5 && (count - 5) % 2 == 0)) {
-                log.warn("getAnswer() for question " + questionId + ", call " + count + "/" + pullResultsMaxTries
-                        + " (Last responseCode " + lastResponseCode + ").");
+                log.warn("getAnswer() for question {}, call {}/{} (Last responseCode {}).",
+                        questionId, count, pullResultsMaxTries, lastResponseCode);
             }
 
             result = invokeDiscovery(configName, "GET", endPoint, null, extraHeaders);
@@ -263,7 +280,7 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
                 if (result.callFailed() && lastResponseCode != 404 && count > 4) {
                     gotIt = true;
                 } else {
-                    Thread.sleep(pullResultsSleepIntervalMS);
+                    sleepBetweenPullAttempts();
                 }
             } else {
                 response = result.getResponseAsJSONObject();
@@ -271,9 +288,9 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
                 // In this case, response.getString("answer") throws an error
                 String answer = response.optString("answer", null);
                 String responseCompleteness = response.optString("responseCompleteness", "");
-                gotIt = StringUtils.isNotBlank(answer) && responseCompleteness.toLowerCase().equals("complete");
+                gotIt = StringUtils.isNotBlank(answer) && "complete".equalsIgnoreCase(responseCompleteness);
                 if (!gotIt) {
-                    Thread.sleep(pullResultsSleepIntervalMS);
+                    sleepBetweenPullAttempts();
                 }
             }
 
@@ -282,10 +299,24 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
         return result;
     }
 
+    /**
+     * Sleep between Discovery polling attempts. If the thread is interrupted, the interrupt status is restored
+     * and the polling loop is aborted by wrapping the cause in a {@link NuxeoException}.
+     *
+     * @since 2025.16
+     */
+    protected void sleepBetweenPullAttempts() {
+        try {
+            Thread.sleep(pullResultsSleepIntervalMS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new NuxeoException("Interrupted while polling Knowledge Discovery results", e);
+        }
+    }
+
     @Override
     public ServiceCallResult askQuestionAndGetAnswer(String configName, String agentId, String question,
-            List<String> contextObjectIds, String extraPayloadJsonStr, Map<String, String> extraHeaders)
-            throws InterruptedException {
+            List<String> contextObjectIds, String extraPayloadJsonStr, Map<String, String> extraHeaders) {
 
         ServiceCallResult result = null;
 

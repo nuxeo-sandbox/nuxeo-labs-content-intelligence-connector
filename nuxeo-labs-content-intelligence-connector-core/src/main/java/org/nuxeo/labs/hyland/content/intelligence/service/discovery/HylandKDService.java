@@ -1,3 +1,21 @@
+/*
+ * (C) Copyright 2026 Hyland (http://hyland.com/) and others.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Contributors:
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
+ */
 package org.nuxeo.labs.hyland.content.intelligence.service.discovery;
 
 import java.util.List;
@@ -65,7 +83,7 @@ public interface HylandKDService {
      * @param configName
      * @param extraHeaders
      * @return
-     * @since TODO
+     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public ServiceCallResult getAllAgents(String configName, Map<String, String> extraHeaders);
 
@@ -104,8 +122,7 @@ public interface HylandKDService {
      * @return
      * @since 2023
      */
-    public ServiceCallResult getAnswer(String configName, String questionId, Map<String, String> extraHeaders)
-            throws InterruptedException;
+    public ServiceCallResult getAnswer(String configName, String questionId, Map<String, String> extraHeaders);
 
     /**
      * Only question is required:
@@ -125,8 +142,7 @@ public interface HylandKDService {
      * @since 2023
      */
     public ServiceCallResult askQuestionAndGetAnswer(String configName, String agentId, String question,
-            List<String> contextObjectIds, String extraPayloadJsonStr, Map<String, String> extraHeaders)
-            throws InterruptedException;
+            List<String> contextObjectIds, String extraPayloadJsonStr, Map<String, String> extraHeaders);
     
     /**
      * 

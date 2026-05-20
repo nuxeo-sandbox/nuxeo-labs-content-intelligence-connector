@@ -15,7 +15,7 @@
  *
  * Contributors:
  *     Michael Vachette
- *     Thibaud Arguillere
+ *     Thibaud Arguillere (With the help of Opencode/Claude Opus for the Web UI port from a Studio project)
  */
 package org.nuxeo.labs.hyland.content.intelligence.test;
 
@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -53,6 +55,8 @@ import jakarta.inject.Inject;
 @Features({ AutomationFeature.class, ConfigCheckerFeature.class })
 @Deploy("nuxeo-hyland-content-intelligence-connector-core")
 public class TestHylandAgentOperations {
+
+    private static final Logger log = LogManager.getLogger(TestHylandAgentOperations.class);
 
     @Inject
     protected CoreSession session;
@@ -141,7 +145,7 @@ public class TestHylandAgentOperations {
         
         String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
         if(StringUtils.isBlank(agentId)) {
-            System.out.println("Missing the " + ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID + " env. variable => ignoring the test.");
+            log.info("Missing the {} env. variable => ignoring the test.", ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
             return;
         }
 
@@ -171,7 +175,7 @@ public class TestHylandAgentOperations {
         
         // Should we assert? This is not a plugin error, it is smeting that changes in the service.
         if(agentFinalResult.toLowerCase().indexOf("i don't know") < 0) {
-            System.out.print("Service abnswered, but not what we expected.\nAnswered...\n" + agentFinalResult + "\n...we expected \"I don't know\".");
+            log.info("Service abnswered, but not what we expected.\nAnswered...\n{}\n...we expected \"I don't know\".", agentFinalResult);
         }
     }
     
@@ -183,7 +187,7 @@ public class TestHylandAgentOperations {
         
         String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
         if(StringUtils.isBlank(agentId)) {
-            System.out.println("Missing the " + ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID + " env. variable => ignoring the test.");
+            log.info("Missing the {} env. variable => ignoring the test.", ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
             return;
         }
 
@@ -214,7 +218,7 @@ public class TestHylandAgentOperations {
         
         // Should we assert? This is not a plugin error, it is smeting that changes in the service.
         if(agentFinalResult.toLowerCase().indexOf("empty response") < 0) {
-            System.out.print("Service answered, but not what we expected.\nAnswered...\n" + agentFinalResult + "\n...we expected \"Empty Response\".");
+            log.info("Service answered, but not what we expected.\nAnswered...\n{}\n...we expected \"Empty Response\".", agentFinalResult);
         }
     }
     
@@ -226,7 +230,7 @@ public class TestHylandAgentOperations {
         
         String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
         if(StringUtils.isBlank(agentId)) {
-            System.out.println("Missing the " + ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID + " env. variable => ignoring the test.");
+            log.info("Missing the {} env. variable => ignoring the test.", ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
             return;
         }
 
@@ -264,7 +268,7 @@ public class TestHylandAgentOperations {
         
         // Should we assert? This is not a plugin error, it is smeting that changes in the service.
         if(answer.toLowerCase().indexOf("i don't know") < 0) {
-            System.out.print("Service abnswered, but not what we expected.\nAnswered...\n" + answer + "\n...we expected \"I don't know\".");
+            log.info("Service abnswered, but not what we expected.\nAnswered...\n{}\n...we expected \"I don't know\".", answer);
         }
 
     }
