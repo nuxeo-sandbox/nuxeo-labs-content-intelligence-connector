@@ -35,7 +35,7 @@ import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 /**
  * @since 2025.16 (note: not properly tracked, exact first-release version unknown)

@@ -45,7 +45,7 @@ import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 /**
  * Important: Calls to the service assert the response code is 200, but it could fiail if the service,

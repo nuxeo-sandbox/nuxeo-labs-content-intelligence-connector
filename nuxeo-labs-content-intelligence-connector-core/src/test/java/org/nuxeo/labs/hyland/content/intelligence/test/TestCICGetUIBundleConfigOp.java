@@ -29,7 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -132,7 +132,7 @@ public class TestCICGetUIBundleConfigOp {
         assertNotNull("cic-kd-conversation must be present", conversation);
         assertEquals("DOCUMENT_ACTIONS", conversation.getString("slot"));
         assertEquals("KD", conversation.getString("category"));
-        assertEquals("icons:forum", conversation.getString("icon"));
+        assertEquals("icons:question-answer", conversation.getString("icon"));
 
         JSONObject lookup = findByName(buttons, "cic-agents-lookupAgent");
         assertNotNull("cic-agents-lookupAgent must be present", lookup);
