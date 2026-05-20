@@ -1,5 +1,10 @@
 # nuxeo-labs-content-intelligence-connector
 
+> [!CAUTION]
+> This branch is no more active, it has been merged to master on May, 20th 2026, please do not use it.
+
+<hr>
+
 ## TL;DR
 
 Version **2025.16** of this pluging **ships a full Web UI on top of the existing CIC automation operations.** Out of the box you get:
