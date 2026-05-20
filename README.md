@@ -154,6 +154,22 @@ The following **facets** are declared and added **dynamically at runtime** by th
 
 `CICError` carries `service`, `responseCode`, `responseMessage`, `message` and `fullResponseJson` (the full upstream `ServiceCallResult` envelope, JSON-serialized). It is automatically cleared on the next successful call.
 
+> [!IMPORTANT]
+> **Customizing `CIC.GetTextMetadata` / `CIC.GetImageMetadata`.** KE v2 **requires** a `kSimilarMetadata` example object on both metadata-generation actions (it tells the model which fields to extract and which values are plausible — see the [Hyland v2 docs](https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/Reference/Context%20API/v2-api-examples#text-metadata-generation)). Accordingly, the `kSimilarMetadataJsonStr` parameter on both operations is **required** (`required = true`); calling them without it fails fast with a `NuxeoException`. No Java-side default is provided.
+>
+> So that the out-of-the-box Web UI buttons still work, the plugin ships a **deliberately generic example value directly in the two slot-contents** (`cic-ke-text-metadata`, `cic-ke-image-metadata`) inside `nuxeo-labs-content-intelligence-connector-bundle.html`:
+>
+> - `cic-ke-text-metadata` → `[{"document:category":"Business|Personal|Technical|Legal|Financial|Other","keywords:tags":"general|reference|draft|final|important|other"}]`
+> - `cic-ke-image-metadata` → `[{"image:category":"Photo|Screenshot|Diagram|Scan|Illustration|Other","keywords:tags":"general|reference|product|person|landscape|document"}]`
+>
+> **These defaults are intentionally meaningless** and will produce poor results on real content. They exist only so the buttons do not error out before you customize them. For any real deployment:
+>
+> 1. **Design your own `kSimilarMetadata` JSON array** that matches your business (format: `"category:field": "Value1|Value2|..."` — multiple example objects encouraged, see the Hyland docs).
+> 2. **Wrap the operation in a Studio Automation chain** that injects your value as `kSimilarMetadataJsonStr` and calls `CIC.GetTextMetadata` (or `CIC.GetImageMetadata`).
+> 3. **Override the slot-content** in your Studio project (`cic-ke-text-metadata` / `cic-ke-image-metadata`) so the Web UI button calls your chain instead of the raw operation. The Admin → CIC UI Config drawer (`CIC.GetUIBundleConfig`) generates a copy / edit / paste-ready snippet of the current slot-content layout.
+>
+> Calling these operations from Automation / REST without `kSimilarMetadataJsonStr` will fail-fast with an explicit error pointing at this section.
+
 ### Document types (CIC agent registry)
 
 Used by the KD "Ask a question" dialog (the agent picker is a `nuxeo-document-suggestion` backed by the `SelectCICAgentAndConfig` page provider):
@@ -342,8 +358,6 @@ For every CIC schema/facet the plugin persists, a small Polymer element is shipp
 | `forms/cic-named-entities-view.html` | `<cic-named-entities-view>` | `cic_named_entities:entities` | Renders the entities list. |
 | `forms/cic-metadata-detection-view.html` | `<cic-metadata-detection-view>` | `cic_metadata_detection:metadata` | Renders the `field/value` items extracted from images. |
 | `forms/cic-metadata-detection-edit.html` | `<cic-metadata-detection-edit>` | same | Editable variant. |
-| `forms/cic-text-metadata-view.html` | `<cic-text-metadata-view>` | `cic_text_metadata:*` | Renders `company`, `owner`, `security`, `keywords`, `moreMetadata`. |
-| `forms/cic-text-metadata-edit.html` | `<cic-text-metadata-edit>` | same | Editable variant. |
 
 All elements take a single `document` property (the standard Nuxeo Web UI `document` object) and silently render nothing when the underlying facet/field is missing — safe to drop unconditionally into a layout.
 
@@ -527,6 +541,30 @@ function run(input, params) {
   });
   return enriched;
 }
+```
+
+<br>
+
+## Async execution (`runAsynchronously`)
+
+Every `CIC.*` document operation accepts an optional `runAsynchronously` boolean parameter (default `false`). When set to `true`, the call to Hyland CIC is scheduled as a background [Nuxeo Work](https://doc.nuxeo.com/nxdoc/work-and-workmanager/) and the operation returns the input document(s) immediately, unchanged. The Web UI buttons shipped by this plugin use this mode so the user is not blocked while CIC processes (which can take several seconds).
+
+Key points:
+
+- Persistence is forced to `saveDocument=true` inside the Work — async callers have no way to see the resulting document(s). Passing `saveDocument=false` together with `runAsynchronously=true` logs a single WARN per call.
+- Errors land on each document via the standard `CICError` facet (same code path as synchronous calls), so failures are inspectable from the document's metadata view.
+- Single-doc input → one Work for one doc. List input → one Work that processes the list in the same batched code path as the synchronous variant (the existing `batchSize` param still applies).
+- The embeddings operations (`CIC.GetImageEmbeddings`, `CIC.GetTextEmbeddings`) still short-circuit *before* scheduling when the descriptor has no `embeddingsFacet` / `embeddings{Image,Text}Xpath` configured.
+- All Works run under the `cicEnrichment` category. Cap concurrency in `nuxeo.conf` via `nuxeo.works.queue.cicEnrichment.maxThreads` (Nuxeo's default is `1`).
+
+Example (JS Automation):
+
+```javascript
+CIC.SummarizeText(input, {
+  'configName': 'default',
+  'runAsynchronously': true
+});
+// returns immediately; CIC call runs in the background
 ```
 
 <br>

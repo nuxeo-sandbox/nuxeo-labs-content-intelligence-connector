@@ -18,6 +18,7 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.automation.enrichment;
 
+import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
@@ -29,7 +30,7 @@ import org.nuxeo.runtime.api.Framework;
  *
  * @since 2025.18
  */
-abstract class AbstractCICImageEnrichmentOp extends AbstractCICEnrichmentOp {
+public abstract class AbstractCICImageEnrichmentOp extends AbstractCICEnrichmentOp {
 
     protected String renditionName;
 
@@ -40,6 +41,20 @@ abstract class AbstractCICImageEnrichmentOp extends AbstractCICEnrichmentOp {
         HylandKEService ke = Framework.getService(HylandKEService.class);
         // Errors are recorded by the service when the picture facet/view is missing.
         return ke.getImageRenditionForCIC(doc, configName, renditionName, true);
+    }
+
+    /**
+     * Restores the image-op-specific fields ({@code configName}, {@code renditionName}) when the
+     * op runs inside {@link CICEnrichmentWork}. Concrete subclasses with additional params MUST
+     * override and call {@code super.applyAsyncParams(params)} first.
+     *
+     * @since 2025.16
+     */
+    @Override
+    public void applyAsyncParams(JSONObject params) {
+        super.applyAsyncParams(params);
+        this.configName = params.has("configName") ? params.optString("configName", null) : null;
+        this.renditionName = params.has("renditionName") ? params.optString("renditionName", null) : null;
     }
 
 }

@@ -19,6 +19,7 @@
 package org.nuxeo.labs.hyland.content.intelligence.automation.enrichment;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.DocumentModel;
 
@@ -27,7 +28,7 @@ import org.nuxeo.ecm.core.api.DocumentModel;
  *
  * @since 2025.18
  */
-abstract class AbstractCICTextEnrichmentOp extends AbstractCICEnrichmentOp {
+public abstract class AbstractCICTextEnrichmentOp extends AbstractCICEnrichmentOp {
 
     public static final String DEFAULT_TEXT_XPATH = "file:content";
 
@@ -38,6 +39,19 @@ abstract class AbstractCICTextEnrichmentOp extends AbstractCICEnrichmentOp {
         String path = StringUtils.isBlank(xpath) ? DEFAULT_TEXT_XPATH : xpath;
         Object value = doc.getPropertyValue(path);
         return value instanceof Blob b ? b : null;
+    }
+
+    /**
+     * Restores the text-op-specific field ({@code xpath}) when the op runs inside
+     * {@link CICEnrichmentWork}. Concrete subclasses with additional params MUST override and
+     * call {@code super.applyAsyncParams(params)} first.
+     *
+     * @since 2025.16
+     */
+    @Override
+    public void applyAsyncParams(JSONObject params) {
+        super.applyAsyncParams(params);
+        this.xpath = params.has("xpath") ? params.optString("xpath", null) : null;
     }
 
 }

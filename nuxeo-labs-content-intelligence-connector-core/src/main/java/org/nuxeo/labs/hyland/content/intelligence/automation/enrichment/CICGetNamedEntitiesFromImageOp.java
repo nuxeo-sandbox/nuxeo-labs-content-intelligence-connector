@@ -66,10 +66,23 @@ public class CICGetNamedEntitiesFromImageOp extends AbstractCICImageEnrichmentOp
     @Param(name = "batchSize", required = false, values = "0")
     protected int batchSize = 0;
 
+    /**
+     * When {@code true}, schedule as a background {@link CICEnrichmentWork} and return the input
+     * unchanged. {@code saveDocument} is forced to {@code true} inside the Work.
+     *
+     * @since 2025.16
+     */
+    @Param(name = "runAsynchronously", required = false, values = "false")
+    protected boolean runAsynchronously = false;
+
     @OperationMethod
     public DocumentModel run(DocumentModel doc) {
         this.configName = configNameParam;
         this.renditionName = renditionNameParam;
+        if (runAsynchronously) {
+            scheduleAsyncForDocument(session, doc, buildParamsJson());
+            return doc;
+        }
         return runForDocument(session, doc, configNameParam, instructionsV2JsonStr, saveDocument);
     }
 
@@ -77,7 +90,19 @@ public class CICGetNamedEntitiesFromImageOp extends AbstractCICImageEnrichmentOp
     public DocumentModelList run(DocumentModelList docs) {
         this.configName = configNameParam;
         this.renditionName = renditionNameParam;
+        if (runAsynchronously) {
+            scheduleAsyncForDocuments(session, docs, buildParamsJson());
+            return docs;
+        }
         return runForDocuments(session, docs, configNameParam, instructionsV2JsonStr, saveDocument, batchSize);
+    }
+
+    protected org.json.JSONObject buildParamsJson() {
+        org.json.JSONObject json = baseParamsJson(configNameParam, instructionsV2JsonStr, saveDocument, batchSize);
+        if (renditionNameParam != null) {
+            json.put("renditionName", renditionNameParam);
+        }
+        return json;
     }
 
     @Override

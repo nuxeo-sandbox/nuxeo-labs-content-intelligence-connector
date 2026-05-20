@@ -42,6 +42,7 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.CICEnrichmentHelper;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
+import org.nuxeo.ecm.core.work.api.WorkManager;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.transaction.TransactionHelper;
 
@@ -97,6 +98,21 @@ public abstract class AbstractCICEnrichmentOp {
      * Override in classification ops.
      */
     protected List<String> getClasses() {
+        return null;
+    }
+
+    /**
+     * Returns the optional {@code kSimilarMetadata} JSON array string (KE v2
+     * {@code textMetadataGeneration} / {@code imageMetadataGeneration} require at least one
+     * example metadata object). Default is {@code null}. Override in the metadata generation ops
+     * to provide a sensible generic default. Real-world usage typically requires a use-case
+     * specific override (custom Automation chain or slot-content override) — see the README.
+     *
+     * @return a JSON array string (e.g. {@code [{"document:category":"Legal|Financial|..."}]}),
+     *         or {@code null} when not applicable.
+     * @since 2025.18
+     */
+    protected String getSimilarMetadataJsonArrayStr() {
         return null;
     }
 
@@ -157,7 +173,7 @@ public abstract class AbstractCICEnrichmentOp {
         ServiceCallResult result;
         try {
             result = ke.enrich(StringUtils.isBlank(configName) ? null : configName, blob,
-                    List.of(getActionName()), getClasses(), null, extra);
+                    List.of(getActionName()), getClasses(), getSimilarMetadataJsonArrayStr(), extra);
         } catch (IOException e) {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 0, "IO error calling KE",
                     e.getMessage(), null);
@@ -370,7 +386,8 @@ public abstract class AbstractCICEnrichmentOp {
 
         ServiceCallResult result;
         try {
-            result = ke.enrich(configName, contentObjects, List.of(getActionName()), getClasses(), null, extra);
+            result = ke.enrich(configName, contentObjects, List.of(getActionName()), getClasses(),
+                    getSimilarMetadataJsonArrayStr(), extra);
         } catch (IOException e) {
             String msg = "IO error calling KE: " + e.getMessage();
             LOG.warn("KE batch failed (IO): {}", e.getMessage(), e);
@@ -509,5 +526,113 @@ public abstract class AbstractCICEnrichmentOp {
 
     /** Local copy of the {@code CICError} facet name to avoid coupling to the impl class. */
     protected static final String CIC_ERROR_FACET = "CICError";
+
+    /* ==================== Async dispatch (runAsynchronously=true) ==================== */
+
+    /**
+     * Schedules a {@link CICEnrichmentWork} for a single document and returns immediately. The
+     * concrete op subclass is rebuilt inside the Work via reflection and its {@code @Param} fields
+     * are restored from {@code paramsJson} through {@link #applyAsyncParams(JSONObject)}.
+     * <p>
+     * Persistence is always forced to {@code saveDocument=true} inside the Work — the caller's
+     * value is ignored because asynchronous callers have no way to see the resulting documents.
+     * The caller's choice is logged once (WARN) when it was {@code false}.
+     *
+     * @param session  core session (used only to read the repository name)
+     * @param doc      the input document
+     * @param paramsJson JSON object string holding the original {@code @Param} values
+     * @since 2025.16
+     */
+    public void scheduleAsyncForDocument(CoreSession session, DocumentModel doc, JSONObject paramsJson) {
+        if (doc == null) {
+            throw new NuxeoException("Input document is required");
+        }
+        warnIfSaveDocumentFalse(paramsJson);
+        WorkManager wm = Framework.getService(WorkManager.class);
+        CICEnrichmentWork work = new CICEnrichmentWork(session.getRepositoryName(), List.of(doc.getId()),
+                getClass().getName(), paramsJson.toString(), false);
+        wm.schedule(work, true);
+        LOG.info("Scheduled CICEnrichmentWork (single doc {}) for op {}", doc.getId(), getClass().getName());
+    }
+
+    /**
+     * Schedules a {@link CICEnrichmentWork} for a list of documents and returns immediately. The
+     * Work runs the standard batched {@link #runForDocuments} code path (so batching, inter-batch
+     * commits and per-doc {@code CICError} marking are unchanged).
+     *
+     * @param session  core session (used only to read the repository name)
+     * @param docs     the input list
+     * @param paramsJson JSON object string holding the original {@code @Param} values
+     * @since 2025.16
+     */
+    public void scheduleAsyncForDocuments(CoreSession session, DocumentModelList docs, JSONObject paramsJson) {
+        if (docs == null || docs.isEmpty()) {
+            return;
+        }
+        warnIfSaveDocumentFalse(paramsJson);
+        List<String> ids = new ArrayList<>(docs.size());
+        for (DocumentModel d : docs) {
+            if (d != null) {
+                ids.add(d.getId());
+            }
+        }
+        WorkManager wm = Framework.getService(WorkManager.class);
+        CICEnrichmentWork work = new CICEnrichmentWork(session.getRepositoryName(), ids, getClass().getName(),
+                paramsJson.toString(), true);
+        wm.schedule(work, true);
+        LOG.info("Scheduled CICEnrichmentWork ({} docs) for op {}", ids.size(), getClass().getName());
+    }
+
+    /**
+     * Logs a one-shot WARN when {@code saveDocument=false} was passed together with
+     * {@code runAsynchronously=true}. Async callers cannot inspect the returned document(s), so
+     * the Work always saves regardless of this flag.
+     */
+    protected void warnIfSaveDocumentFalse(JSONObject paramsJson) {
+        if (paramsJson.has("saveDocument") && !paramsJson.optBoolean("saveDocument", false)) {
+            LOG.warn(
+                    "{} called with runAsynchronously=true and saveDocument=false. saveDocument is forced to true inside the background Work (async callers cannot read the result).",
+                    getClass().getSimpleName());
+        }
+    }
+
+    /**
+     * Reapplies the {@code @Param} values captured at scheduling time onto a freshly instantiated
+     * op (used by {@link CICEnrichmentWork} when running in the background). The default
+     * implementation handles the params declared on this base class. Subclasses with additional
+     * {@code @Param} fields (e.g. {@code renditionName}, {@code xpath}, {@code classes}) MUST
+     * override this method, call {@code super.applyAsyncParams(params)}, then set their own
+     * fields from {@code params}.
+     * <p>
+     * Reflection is intentionally NOT used here: each subclass owns its parameter contract.
+     *
+     * @param params the JSON object built by the original op call
+     * @since 2025.16
+     */
+    public void applyAsyncParams(JSONObject params) {
+        // Base class: no fields to restore. Subclasses override and set their @Param fields.
+    }
+
+    /**
+     * Convenience helper for subclasses: builds the params JSON skeleton with the params declared
+     * on the abstract base class ({@code configName}, {@code instructionsV2JsonStr},
+     * {@code saveDocument}, {@code batchSize}, {@code runAsynchronously}). Subclasses append their
+     * own fields.
+     *
+     * @since 2025.16
+     */
+    public static JSONObject baseParamsJson(String configName, String instructionsV2JsonStr, boolean saveDocument,
+            int batchSize) {
+        JSONObject json = new JSONObject();
+        if (configName != null) {
+            json.put("configName", configName);
+        }
+        if (instructionsV2JsonStr != null) {
+            json.put("instructionsV2JsonStr", instructionsV2JsonStr);
+        }
+        json.put("saveDocument", saveDocument);
+        json.put("batchSize", batchSize);
+        return json;
+    }
 
 }

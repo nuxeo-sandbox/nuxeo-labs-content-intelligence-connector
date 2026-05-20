@@ -53,8 +53,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
             icon="icons:class"
             input="[[document]]"
             label="label.ui.cic.ke.classify"
-            notification="label.ui.cic.ke.classify.done"
-            params="{&quot;saveDocument&quot;: true}"
+            params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true}"
             operation="CIC.ClassifyImage">
         </nuxeo-operation-button-with-spinner>
       </template>
@@ -73,8 +72,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
             icon="icons:description"
             input="[[document]]"
             label="label.ui.cic.ke.image.description"
-            notification="label.ui.cic.ke.image.description.done"
-            params="{&quot;saveDocument&quot;: true}"
+            params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true}"
             operation="CIC.GetImageDescription">
         </nuxeo-operation-button-with-spinner>
       </template>
@@ -88,13 +86,14 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
                   expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
                   facet="Picture" permission="ReadWrite" user="[[user]]">
       <template>
+        <!-- kSimilarMetadataJsonStr is REQUIRED. The example below is intentionally generic;
+             override it in your Studio project (see README "Customizing CIC.GetTextMetadata / CIC.GetImageMetadata"). -->
         <nuxeo-operation-button-with-spinner
             event="document-updated"
             icon="icons:note-add"
             input="[[document]]"
             label="label.ui.cic.ke.metadata"
-            notification="label.ui.cic.ke.metadata.done"
-            params="{&quot;saveDocument&quot;: true}"
+            params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true, &quot;kSimilarMetadataJsonStr&quot;: &quot;[{\&quot;image:category\&quot;:\&quot;Photo|Screenshot|Diagram|Scan|Illustration|Other\&quot;,\&quot;keywords:tags\&quot;:\&quot;general|reference|product|person|landscape|document\&quot;}]&quot;}"
             operation="CIC.GetImageMetadata">
         </nuxeo-operation-button-with-spinner>
       </template>
@@ -113,8 +112,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
             icon="icons:view-list"
             input="[[document]]"
             label="label.ui.cic.ke.namedEntities"
-            notification="label.ui.cic.ke.namedEntities.done"
-            params="{&quot;saveDocument&quot;: true}"
+            params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true}"
             operation="CIC.GetNamedEntitiesFromImage">
         </nuxeo-operation-button-with-spinner>
       </template>
@@ -133,8 +131,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
             icon="icons:fingerprint"
             input="[[document]]"
             label="label.ui.cic.ke.embeddings"
-            notification="label.ui.cic.ke.embeddings.done"
-            params="{&quot;saveDocument&quot;: true}"
+            params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true}"
             operation="CIC.GetImageEmbeddings">
         </nuxeo-operation-button-with-spinner>
       </template>
@@ -150,13 +147,14 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
                   expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
                   type="File" permission="ReadWrite" user="[[user]]">
       <template>
+        <!-- kSimilarMetadataJsonStr is REQUIRED. The example below is intentionally generic;
+             override it in your Studio project (see README "Customizing CIC.GetTextMetadata / CIC.GetImageMetadata"). -->
         <nuxeo-operation-button-with-spinner
             event="document-updated"
             icon="icons:note-add"
             input="[[document]]"
             label="label.ui.cic.ke.metadata"
-            notification="label.ui.cic.ke.metadata.done"
-            params="{&quot;saveDocument&quot;: true}"
+            params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true, &quot;kSimilarMetadataJsonStr&quot;: &quot;[{\&quot;document:category\&quot;:\&quot;Business|Personal|Technical|Legal|Financial|Other\&quot;,\&quot;keywords:tags\&quot;:\&quot;general|reference|draft|final|important|other\&quot;}]&quot;}"
             operation="CIC.GetTextMetadata">
         </nuxeo-operation-button-with-spinner>
       </template>
@@ -175,8 +173,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
             icon="icons:class"
             input="[[document]]"
             label="label.ui.cic.ke.classify"
-            notification="label.ui.cic.ke.classify.done"
-            params="{&quot;saveDocument&quot;: true}"
+            params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true}"
             operation="CIC.ClassifyTextFile">
         </nuxeo-operation-button-with-spinner>
       </template>
@@ -195,8 +192,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
             icon="icons:fingerprint"
             input="[[document]]"
             label="label.ui.cic.ke.embeddings"
-            notification="label.ui.cic.ke.embeddings.done"
-            params="{&quot;saveDocument&quot;: true}"
+            params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true}"
             operation="CIC.GetTextEmbeddings">
         </nuxeo-operation-button-with-spinner>
       </template>
@@ -215,8 +211,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
             icon="icons:view-list"
             input="[[document]]"
             label="label.ui.cic.ke.namedEntities"
-            notification="label.ui.cic.ke.namedEntities.done"
-            params="{&quot;saveDocument&quot;: true}"
+            params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true}"
             operation="CIC.GetNamedEntitiesFromText">
         </nuxeo-operation-button-with-spinner>
       </template>
@@ -235,8 +230,7 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
             icon="icons:account-balance-wallet"
             input="[[document]]"
             label="label.ui.cic.ke.summarize"
-            notification="label.ui.cic.ke.summarize.done"
-            params="{&quot;saveDocument&quot;: true}"
+            params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true}"
             operation="CIC.SummarizeText">
         </nuxeo-operation-button-with-spinner>
       </template>

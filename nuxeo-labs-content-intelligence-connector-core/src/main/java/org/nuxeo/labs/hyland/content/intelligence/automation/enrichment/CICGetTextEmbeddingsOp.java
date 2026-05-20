@@ -75,6 +75,17 @@ public class CICGetTextEmbeddingsOp extends AbstractCICTextEnrichmentOp {
     @Param(name = "batchSize", required = false, values = "0")
     protected int batchSize = 0;
 
+    /**
+     * When {@code true}, schedule as a background {@link CICEnrichmentWork} and return the input
+     * unchanged. {@code saveDocument} is forced to {@code true} inside the Work. The
+     * descriptor-level embeddings configuration is checked synchronously before scheduling — if
+     * missing, no Work is scheduled.
+     *
+     * @since 2025.16
+     */
+    @Param(name = "runAsynchronously", required = false, values = "false")
+    protected boolean runAsynchronously = false;
+
     protected String currentConfigName;
 
     @OperationMethod
@@ -84,6 +95,10 @@ public class CICGetTextEmbeddingsOp extends AbstractCICTextEnrichmentOp {
         }
         this.xpath = xpathParam;
         this.currentConfigName = configName;
+        if (runAsynchronously) {
+            scheduleAsyncForDocument(session, doc, buildParamsJson());
+            return doc;
+        }
         return runForDocument(session, doc, configName, instructionsV2JsonStr, saveDocument);
     }
 
@@ -97,7 +112,26 @@ public class CICGetTextEmbeddingsOp extends AbstractCICTextEnrichmentOp {
         }
         this.xpath = xpathParam;
         this.currentConfigName = configName;
+        if (runAsynchronously) {
+            scheduleAsyncForDocuments(session, docs, buildParamsJson());
+            return docs;
+        }
         return runForDocuments(session, docs, configName, instructionsV2JsonStr, saveDocument, batchSize);
+    }
+
+    protected org.json.JSONObject buildParamsJson() {
+        org.json.JSONObject json = baseParamsJson(configName, instructionsV2JsonStr, saveDocument, batchSize);
+        if (xpathParam != null) {
+            json.put("xpath", xpathParam);
+        }
+        return json;
+    }
+
+    /** Restores text-op fields via {@code super} + {@code currentConfigName} (needed by applyResult). */
+    @Override
+    public void applyAsyncParams(org.json.JSONObject params) {
+        super.applyAsyncParams(params);
+        this.currentConfigName = params.has("configName") ? params.optString("configName", null) : null;
     }
 
     /** Returns true and WARN-logs when the descriptor does not configure text embeddings. */

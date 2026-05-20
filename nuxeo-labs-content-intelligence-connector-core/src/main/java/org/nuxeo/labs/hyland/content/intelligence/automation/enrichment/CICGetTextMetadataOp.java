@@ -18,6 +18,7 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.automation.enrichment;
 
+import org.apache.commons.lang3.StringUtils;
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
 import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
@@ -53,6 +54,19 @@ public class CICGetTextMetadataOp extends AbstractCICTextEnrichmentOp {
     @Param(name = "instructionsV2JsonStr", required = false)
     protected String instructionsV2JsonStr;
 
+    /**
+     * <b>Required.</b> Caller-supplied {@code kSimilarMetadata} JSON array string for KE v2
+     * {@code textMetadataGeneration} (the action will not run without it). Expected format:
+     * {@code [{"category:field":"Value1|Value2|...", ...}]}. The plugin does NOT provide a
+     * Java-side fallback: the generic example values shipped with the Web UI button live in the
+     * {@code cic-ke-text-metadata} slot-content. Real deployments should pass their own example
+     * via a Studio Automation chain wrapping this operation — see the README.
+     *
+     * @since 2025.18
+     */
+    @Param(name = "kSimilarMetadataJsonStr", required = true)
+    protected String kSimilarMetadataJsonStr;
+
     @Param(name = "saveDocument", required = false, values = "false")
     protected boolean saveDocument = false;
 
@@ -66,21 +80,78 @@ public class CICGetTextMetadataOp extends AbstractCICTextEnrichmentOp {
     @Param(name = "batchSize", required = false, values = "0")
     protected int batchSize = 0;
 
+    /**
+     * When {@code true}, schedule as a background {@link CICEnrichmentWork} and return the input
+     * unchanged. {@code saveDocument} is forced to {@code true} inside the Work.
+     *
+     * @since 2025.16
+     */
+    @Param(name = "runAsynchronously", required = false, values = "false")
+    protected boolean runAsynchronously = false;
+
     @OperationMethod
     public DocumentModel run(DocumentModel doc) {
         this.xpath = xpathParam;
+        if (runAsynchronously) {
+            scheduleAsyncForDocument(session, doc, buildParamsJson());
+            return doc;
+        }
         return runForDocument(session, doc, configName, instructionsV2JsonStr, saveDocument);
     }
 
     @OperationMethod
     public DocumentModelList run(DocumentModelList docs) {
         this.xpath = xpathParam;
+        if (runAsynchronously) {
+            scheduleAsyncForDocuments(session, docs, buildParamsJson());
+            return docs;
+        }
         return runForDocuments(session, docs, configName, instructionsV2JsonStr, saveDocument, batchSize);
+    }
+
+    protected org.json.JSONObject buildParamsJson() {
+        org.json.JSONObject json = baseParamsJson(configName, instructionsV2JsonStr, saveDocument, batchSize);
+        if (xpathParam != null) {
+            json.put("xpath", xpathParam);
+        }
+        if (StringUtils.isNotBlank(kSimilarMetadataJsonStr)) {
+            json.put("kSimilarMetadataJsonStr", kSimilarMetadataJsonStr);
+        }
+        return json;
+    }
+
+    /** Restores the text-op fields via {@code super} + the optional {@code kSimilarMetadataJsonStr}. */
+    @Override
+    public void applyAsyncParams(org.json.JSONObject params) {
+        super.applyAsyncParams(params);
+        if (params.has("kSimilarMetadataJsonStr")) {
+            this.kSimilarMetadataJsonStr = params.optString("kSimilarMetadataJsonStr", null);
+        }
     }
 
     @Override
     protected String getActionName() {
         return "textMetadataGeneration";
+    }
+
+    /**
+     * KE v2 {@code textMetadataGeneration} <b>requires</b> at least one example metadata object
+     * ({@code kSimilarMetadata}). The caller MUST provide a non-blank
+     * {@code kSimilarMetadataJsonStr} — no Java-side fallback is provided. Throws
+     * {@link org.nuxeo.ecm.core.api.NuxeoException} on blank input.
+     *
+     * @since 2025.18
+     */
+    @Override
+    protected String getSimilarMetadataJsonArrayStr() {
+        if (StringUtils.isBlank(kSimilarMetadataJsonStr)) {
+            throw new org.nuxeo.ecm.core.api.NuxeoException(
+                    "CIC.GetTextMetadata: parameter 'kSimilarMetadataJsonStr' is required."
+                            + " Provide a JSON array string of example metadata objects, e.g."
+                            + " [{\"document:type\":\"Contract|NDA|Invoice\",\"keywords:tags\":\"...\"}]."
+                            + " See the README for guidance.");
+        }
+        return kSimilarMetadataJsonStr;
     }
 
     @Override
@@ -91,7 +162,7 @@ public class CICGetTextMetadataOp extends AbstractCICTextEnrichmentOp {
     @Override
     protected void applyResult(DocumentModel doc, Object actionResult) {
         CICEnrichmentHelper helper = Framework.getService(CICEnrichmentHelper.class);
-        helper.writeTextMetadata(doc, actionResult);
+        helper.writeMetadataDetection(doc, actionResult);
     }
 
 }

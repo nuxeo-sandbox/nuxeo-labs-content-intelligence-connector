@@ -213,31 +213,6 @@ public class CICEnrichmentHelperImpl extends DefaultComponent implements CICEnri
         writeEmbeddings(doc, configName, embeddings, true);
     }
 
-    @Override
-    public void writeTextMetadata(DocumentModel doc, Object textMetadataResult) {
-        if (!(textMetadataResult instanceof JSONObject jo)) {
-            return;
-        }
-        // Studio mapping: company, keywords (array), owner, security, moreMetadata
-        if (jo.has("company")) {
-            doc.setPropertyValue(FIELD_TEXT_METADATA_COMPANY, jo.optString("company", null));
-        }
-        if (jo.has("owner")) {
-            doc.setPropertyValue(FIELD_TEXT_METADATA_OWNER, jo.optString("owner", null));
-        }
-        if (jo.has("security")) {
-            doc.setPropertyValue(FIELD_TEXT_METADATA_SECURITY, jo.optString("security", null));
-        }
-        if (jo.has("moreMetadata")) {
-            // moreMetadata may be a complex sub-object — flatten with the JS-port formatter.
-            doc.setPropertyValue(FIELD_TEXT_METADATA_MORE, metadataJsonValueToString(jo.opt("moreMetadata")));
-        }
-        if (jo.has("keywords")) {
-            doc.setPropertyValue(FIELD_TEXT_METADATA_KEYWORDS,
-                    (java.io.Serializable) toStringList(jo.opt("keywords")));
-        }
-    }
-
     /* ==================== Helpers ==================== */
 
     protected void ensureFacet(DocumentModel doc, String facet) {

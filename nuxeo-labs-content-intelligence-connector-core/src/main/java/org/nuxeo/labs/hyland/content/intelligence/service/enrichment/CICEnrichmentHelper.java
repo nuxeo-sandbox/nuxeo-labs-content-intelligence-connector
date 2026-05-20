@@ -106,14 +106,6 @@ public interface CICEnrichmentHelper {
     void writeImageEmbeddings(DocumentModel doc, String configName, Object embeddings);
 
     /**
-     * Maps the parsed {@code textMetadataGeneration} result into individual fields of the
-     * {@code cic_text_metadata} schema (company, keywords, owner, security, moreMetadata). Adds no
-     * facet (the {@code cic_text_metadata} schema is currently not facet-bound; callers wire it via
-     * the schema directly).
-     */
-    void writeTextMetadata(DocumentModel doc, Object textMetadataResult);
-
-    /**
      * Faithful Java port of the Studio JS {@code metadataJsonValueToString(value)} algorithm used
      * by the metadata-detection writers.
      * <p>
