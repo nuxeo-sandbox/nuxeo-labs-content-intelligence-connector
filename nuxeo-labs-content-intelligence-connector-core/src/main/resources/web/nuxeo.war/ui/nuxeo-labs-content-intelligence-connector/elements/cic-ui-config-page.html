@@ -672,19 +672,20 @@ this explicit: the runtime UI may differ from what is shown here.
 
       _buildFormsOutput: function(forms) {
         var header =
-            '<!-- Adapt the path. These "../../" are valid if you are placing the element\n' +
-            '     in a document layout (e.g. nuxeo.war/ui/document/<doctype>/...). -->\n\n';
+            '<!-- Paste the following at the top of the layout.\n     Adapt the path. These "../../" are valid if you are placing the element\n' +
+            '     in a document layout (e.g. nuxeo.war/ui/document/<doctype>/...). -->\n';
 
         var imports = forms.map(function(f) {
           return '<link rel="import" href="../../nuxeo-labs-content-intelligence-connector/forms/'
               + f.file + '">';
         }).join('\n');
 
+        var comment = '\n\n<!-- Then, place the following tags where you want the form(s) to appear. -->\n';
         var usages = forms.map(function(f) {
           return '<' + f.tag + ' document="[[document]]"></' + f.tag + '>';
         }).join('\n');
 
-        return header + imports + '\n\n' + usages + '\n';
+        return header + imports + comment + usages + '\n';
       },
 
       _copyFormsOutput: function() {
