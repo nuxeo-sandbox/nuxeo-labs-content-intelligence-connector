@@ -18,10 +18,10 @@ this explicit: the runtime UI may differ from what is shown here.
 <dom-module id="cic-ui-config-page">
   <template>
     <style include="nuxeo-styles">
-      :host {
-        display: block;
-        padding: 16px;
-        --paper-input-container-input: { font-size: 13px; };
+
+      .main-div {
+        /*max-width: 900px;*/
+        margin: 16px;
       }
 
       h1 {
@@ -69,6 +69,7 @@ this explicit: the runtime UI may differ from what is shown here.
         width: 100%;
         border-collapse: collapse;
         font-size: 13px;
+        table-layout: fixed;
       }
 
       table.cic-buttons th,
@@ -83,6 +84,42 @@ this explicit: the runtime UI may differ from what is shown here.
         font-weight: 600;
         color: #555;
         background: #fafafa;
+      }
+
+      /* Keep the same column sizing across all category tables. */
+      table.cic-buttons th:nth-child(1),
+      table.cic-buttons td:nth-child(1) {
+        width: 28px;
+      }
+
+      table.cic-buttons th:nth-child(2),
+      table.cic-buttons td:nth-child(2) {
+        width: 20%;
+      }
+
+      table.cic-buttons th:nth-child(3),
+      table.cic-buttons td:nth-child(3) {
+        width: 35%;
+      }
+
+      table.cic-buttons th:nth-child(4),
+      table.cic-buttons td:nth-child(4) {
+        width: 12%;
+      }
+
+      table.cic-buttons th:nth-child(5),
+      table.cic-buttons td:nth-child(5) {
+        width: 80px;
+      }
+
+      table.cic-buttons th:nth-child(6),
+      table.cic-buttons td:nth-child(6) {
+        width: 70px;
+      }
+
+      table.cic-buttons th:nth-child(7),
+      table.cic-buttons td:nth-child(7) {
+        width: 90px;
       }
 
       table.cic-buttons td.col-icon {
@@ -170,82 +207,94 @@ this explicit: the runtime UI may differ from what is shown here.
 
     <nuxeo-operation id="getConfigOp" op="CIC.GetUIBundleConfig"></nuxeo-operation>
 
-    <h1>[[i18n('label.ui.cic.ui-config.title')]]</h1>
-
-    <div class="warning">
-      [[i18n('label.ui.cic.ui-config.warning')]]
-    </div>
-
-    <template is="dom-if" if="[[_errorMessage]]">
-      <div class="error">[[_errorMessage]]</div>
-    </template>
-
-    <template is="dom-if" if="[[_loaded]]">
-      <div class="meta">
-        [[i18n('label.ui.cic.ui-config.meta.bundle')]]
-        <code>[[_bundlePath]]</code>
-        &nbsp;|&nbsp;
-        [[i18n('label.ui.cic.ui-config.meta.version')]]
-        <code>[[_pluginVersion]]</code>
+    <nuxeo-page>
+      <div slot="header">
+        <span>[[i18n('label.ui.cic.ui-config.title')]]</span>
       </div>
 
-      <template is="dom-repeat" items="[[_groups]]" as="group">
-        <div class="category-block">
-          <div class="category-title">[[group.label]]</div>
-          <table class="cic-buttons">
-            <thead>
-              <tr>
-                <th>[[i18n('label.ui.cic.ui-config.column.icon')]]</th>
-                <th>[[i18n('label.ui.cic.ui-config.column.name')]]</th>
-                <th>[[i18n('label.ui.cic.ui-config.column.label')]]</th>
-                <th>[[i18n('label.ui.cic.ui-config.column.slot')]]</th>
-                <th>[[i18n('label.ui.cic.ui-config.column.defaultOrder')]]</th>
-                <th>[[i18n('label.ui.cic.ui-config.column.enabled')]]</th>
-                <th>[[i18n('label.ui.cic.ui-config.column.order')]]</th>
-              </tr>
-            </thead>
-            <tbody>
-              <template is="dom-repeat" items="[[group.buttons]]" as="btn">
-                <tr class$="[[_rowClass(btn.*)]]">
-                  <td class="col-icon">
-                    <template is="dom-if" if="[[btn.icon]]">
-                      <iron-icon icon="[[btn.icon]]"></iron-icon>
+      <div>
+        <nuxeo-card>
+
+          <div class="main-div">
+
+          <div class="warning">
+            [[i18n('label.ui.cic.ui-config.warning')]]
+          </div>
+
+          <template is="dom-if" if="[[_errorMessage]]">
+            <div class="error">[[_errorMessage]]</div>
+          </template>
+
+          <template is="dom-if" if="[[_loaded]]">
+            <div class="meta">
+              [[i18n('label.ui.cic.ui-config.meta.bundle')]]
+              <code>[[_bundlePath]]</code>
+              &nbsp;|&nbsp;
+              [[i18n('label.ui.cic.ui-config.meta.version')]]
+              <code>[[_pluginVersion]]</code>
+            </div>
+
+            <template is="dom-repeat" items="[[_groups]]" as="group">
+              <div class="category-block">
+                <div class="category-title">[[group.label]]</div>
+                <table class="cic-buttons">
+                  <thead>
+                    <tr>
+                      <th>[[i18n('label.ui.cic.ui-config.column.icon')]]</th>
+                      <th>[[i18n('label.ui.cic.ui-config.column.name')]]</th>
+                      <th>[[i18n('label.ui.cic.ui-config.column.label')]]</th>
+                      <th>[[i18n('label.ui.cic.ui-config.column.slot')]]</th>
+                      <th>[[i18n('label.ui.cic.ui-config.column.defaultOrder')]]</th>
+                      <th>[[i18n('label.ui.cic.ui-config.column.enabled')]]</th>
+                      <th>[[i18n('label.ui.cic.ui-config.column.order')]]</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template is="dom-repeat" items="[[group.buttons]]" as="btn">
+                      <tr class$="[[_rowClass(btn.*)]]">
+                        <td class="col-icon">
+                          <template is="dom-if" if="[[btn.icon]]">
+                            <iron-icon icon="[[btn.icon]]"></iron-icon>
+                          </template>
+                        </td>
+                        <td class="col-name">[[btn.name]]</td>
+                        <td>[[_resolveLabel(btn.labelKey)]]</td>
+                        <td class="col-slot">[[btn.slot]]</td>
+                        <td class="col-default">[[btn.defaultOrder]]</td>
+                        <td class="col-enabled">
+                          <input type="checkbox" checked="{{btn.enabled::change}}">
+                        </td>
+                        <td class="col-order">
+                          <input type="number" value="{{btn.order::input}}" step="1">
+                        </td>
+                      </tr>
                     </template>
-                  </td>
-                  <td class="col-name">[[btn.name]]</td>
-                  <td>[[_resolveLabel(btn.labelKey)]]</td>
-                  <td class="col-slot">[[btn.slot]]</td>
-                  <td class="col-default">[[btn.defaultOrder]]</td>
-                  <td class="col-enabled">
-                    <input type="checkbox" checked="{{btn.enabled::change}}">
-                  </td>
-                  <td class="col-order">
-                    <input type="number" value="{{btn.order::input}}" step="1">
-                  </td>
-                </tr>
-              </template>
-            </tbody>
-          </table>
-        </div>
-      </template>
+                  </tbody>
+                </table>
+              </div>
+            </template>
 
-      <div class="actions">
-        <paper-button on-tap="_generateAll">
-          [[i18n('label.ui.cic.ui-config.generate.all')]]
-        </paper-button>
-        <paper-button on-tap="_generateChanged">
-          [[i18n('label.ui.cic.ui-config.generate.changed')]]
-        </paper-button>
-        <paper-button class="secondary" on-tap="_copyOutput" disabled$="[[!_output]]">
-          [[i18n('label.ui.cic.ui-config.copy')]]
-        </paper-button>
-        <paper-button class="secondary" on-tap="_resetState">
-          [[i18n('label.ui.cic.ui-config.reset')]]
-        </paper-button>
-      </div>
+            <div class="actions">
+              <paper-button on-tap="_generateAll">
+                [[i18n('label.ui.cic.ui-config.generate.all')]]
+              </paper-button>
+              <paper-button on-tap="_generateChanged">
+                [[i18n('label.ui.cic.ui-config.generate.changed')]]
+              </paper-button>
+              <paper-button class="secondary" on-tap="_copyOutput" disabled$="[[!_output]]">
+                [[i18n('label.ui.cic.ui-config.copy')]]
+              </paper-button>
+              <paper-button class="secondary" on-tap="_resetState">
+                [[i18n('label.ui.cic.ui-config.reset')]]
+              </paper-button>
+            </div>
 
-      <textarea class="output" readonly value="[[_output]]"></textarea>
-    </template>
+            <textarea class="output" readonly value="[[_output]]"></textarea>
+          </template>
+
+          </div>
+        </nuxeo-card>
+      </div> 
 
   </template>
 
