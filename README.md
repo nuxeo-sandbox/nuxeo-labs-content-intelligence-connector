@@ -426,7 +426,7 @@ The same pattern applies to every form listed above. For example, on a `Picture`
 
 Every artifact the plugin contributes (operations, page provider, schemas, doctypes, directories, slot-contents, i18n keys) is identified by a stable name. Contributing **the same id** from your Nuxeo Studio project takes precedence and overrides the plugin's version. Common cases:
 
-* **Replace the operation called by a button**: write a new automation chain/script (or a different operation) and override the `cic-ke-*` slot-content with the same `name`/`slot`, just change the `operation="..."` attribute on the inner `<nuxeo-operation-button-with-spinner>`.
+* **Replace the operation called by a button**: write a new automation chain/script (or a different operation) and override the `cic-ke-*` slot-content with the same `name`/`slot`, just change the `operation="..."` attribute on the inner `<nuxeo-operation-button>`.
 * **Change the default classes** used by `CIC.ClassifyImage` / `CIC.ClassifyTextFile`: edit the `cicImageClassification` / `cicTextClassification` directory entries in your Studio project (same directory name, your CSV wins).
 * **Change the page provider** that lists agents in the KD dialog: contribute a `SelectCICAgentAndConfig` page provider with the same name and your own NXQL.
 
