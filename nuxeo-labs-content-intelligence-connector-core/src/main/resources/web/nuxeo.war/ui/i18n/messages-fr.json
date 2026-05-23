@@ -66,6 +66,8 @@
   "label.ui.cic.ui-config.generate.all": "Générer (tous les boutons)",
   "label.ui.cic.ui-config.generate.changed": "Générer (modifications uniquement)",
   "label.ui.cic.ui-config.generate.nothing": "Aucune modification détectée.",
+  "label.ui.cic.ui-config.generate.minimal": "Sortie minimale (sans corps de template)",
+  "label.ui.cic.ui-config.generate.minimal.hint": "Les lignes dont l'ordre a été modifié incluent toujours le corps complet.",
   "label.ui.cic.ui-config.copy": "Copier dans le presse-papier",
   "label.ui.cic.ui-config.reset": "Réinitialiser",
   "label.ui.cic.ui-config.error.load": "Impossible de charger la configuration UI CIC.",

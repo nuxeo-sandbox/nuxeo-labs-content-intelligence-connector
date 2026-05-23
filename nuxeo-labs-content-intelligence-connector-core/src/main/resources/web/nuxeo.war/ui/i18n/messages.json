@@ -66,6 +66,8 @@
   "label.ui.cic.ui-config.generate.all": "Generate (all buttons)",
   "label.ui.cic.ui-config.generate.changed": "Generate (changed only)",
   "label.ui.cic.ui-config.generate.nothing": "No changes detected.",
+  "label.ui.cic.ui-config.generate.minimal": "Minimal output (no template body)",
+  "label.ui.cic.ui-config.generate.minimal.hint": "Rows whose order was changed always include the full body.",
   "label.ui.cic.ui-config.copy": "Copy to clipboard",
   "label.ui.cic.ui-config.reset": "Reset",
   "label.ui.cic.ui-config.error.load": "Could not load CIC UI bundle configuration.",

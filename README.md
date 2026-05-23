@@ -328,6 +328,7 @@ You can:
 
 * toggle **Enabled** to disable a button;
 * type a new integer in **Order** to reorder buttons within the same slot;
+* tick / untick **Minimal output (no template body)** to control the verbosity of the generated snippet (see below);
 * click **Generate (all buttons)** to produce a Studio Web UI override snippet covering every row;
 * click **Generate (changed only)** to produce a snippet only for the rows you actually modified;
 * click **Copy to clipboard** to paste the snippet into your Studio project's Web UI Resources.
@@ -336,7 +337,16 @@ You can:
 
 ### What the generated snippet looks like
 
-Each generated `<nuxeo-slot-content>` re-emits the **full** template body verbatim (so the override is complete regardless of the Web UI's slot-content patch-vs-replace semantics). A header comment records the plugin version, generation timestamp, source bundle path, and whether the snippet covers all buttons or only the changed ones. Paste the snippet as-is into a Studio Designer Web UI Resources HTML file (or any custom-bundle.html) — no further editing required.
+By default the **Minimal output** checkbox is ticked. With minimal output, a row that is only disabled (or only re-emitted unchanged) produces a body-less tag — enough to override the plugin's default thanks to Web UI's same-`name` slot-content patch semantics:
+
+```html
+<nuxeo-slot-content name="cic-ke-image-named-entities" slot="DOCUMENT_ACTIONS" order="4" disabled>
+</nuxeo-slot-content>
+```
+
+**Rows whose `order` was changed always emit the full `<template>` body**, regardless of the checkbox — so the reorder is unambiguous. Untick **Minimal output** to force the full body on every row (useful if you want a self-contained snippet to copy into a custom bundle that does not inherit from this plugin's defaults).
+
+A header comment in the snippet records the plugin version, generation timestamp, source bundle path, and whether the snippet covers all buttons or only the changed ones. Paste the snippet as-is into a Studio Designer Web UI Resources HTML file (or any custom-bundle.html) — no further editing required.
 
 ### Nothing is persisted
 
