@@ -357,6 +357,13 @@ this explicit: the runtime UI may differ from what is shown here.
                 </template>
 
                 <div class="actions">
+                  <label style="display:flex; align-items:center; gap:6px; font-size:13px;">
+                    <input type="checkbox" checked="{{_minimalOutput::change}}">
+                    [[i18n('label.ui.cic.ui-config.generate.minimal')]]
+                  </label>
+                  <span style="font-size:11px; color:#666;">
+                    [[i18n('label.ui.cic.ui-config.generate.minimal.hint')]]
+                  </span>
                   <paper-button on-tap="_generateAll">
                     [[i18n('label.ui.cic.ui-config.generate.all')]]
                   </paper-button>
@@ -456,6 +463,12 @@ this explicit: the runtime UI may differ from what is shown here.
         _groups:        { type: Array, value: function() { return []; } },
 
         _output:        { type: String, value: '' },
+
+        // When true, rows whose ONLY change is enabled/disabled (or unchanged rows
+        // generated via "Generate all") emit a body-less <nuxeo-slot-content> tag.
+        // Rows whose order differs from defaultOrder ALWAYS emit the full template
+        // body regardless of this toggle, so the override is unambiguous.
+        _minimalOutput: { type: Boolean, value: true },
 
         // Tab index: 0 = Buttons, 1 = Forms
         _selectedTab:   { type: Number, value: 0 },
@@ -609,11 +622,20 @@ this explicit: the runtime UI may differ from what is shown here.
       _serializeOne: function(b) {
         var order = parseInt(b.order, 10);
         if (isNaN(order)) order = 0;
+        var defOrder = parseInt(b.defaultOrder, 10);
+        if (isNaN(defOrder)) defOrder = 0;
+        var orderChanged = (order !== defOrder);
         var disabled = !b.enabled;
         var attrs = 'name="' + b.name + '" slot="' + b.slot + '" order="' + order + '"'
             + (disabled ? ' disabled' : '');
-        // Re-emit the FULL template body verbatim so the override is complete regardless
-        // of Web UI's slot-content patch-vs-replace semantics.
+        // Rule: rows whose order was changed always emit the FULL template body
+        // so the override is unambiguous. Other rows respect the "Minimal output"
+        // toggle — when minimal, we rely on Web UI's same-name slot-content patch
+        // semantics to keep the original body from the base contribution.
+        var useMinimal = this._minimalOutput && !orderChanged;
+        if (useMinimal) {
+          return '<nuxeo-slot-content ' + attrs + '></nuxeo-slot-content>\n';
+        }
         var body = b.templateBody || '';
         return '<nuxeo-slot-content ' + attrs + '>' + body + '</nuxeo-slot-content>\n';
       },
