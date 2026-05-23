@@ -153,7 +153,7 @@ public class TestCICGetUIBundleConfigOp {
                 + "  <template>\n"
                 + "    <nuxeo-filter document=\"[[document]]\" expression=\"document != null\" type=\"File\" permission=\"ReadWrite\" user=\"[[user]]\">\n"
                 + "      <template>\n"
-                + "        <nuxeo-operation-button-with-spinner icon=\"icons:account-balance-wallet\" label=\"label.ui.cic.ke.summarize\" operation=\"CIC.SummarizeText\"></nuxeo-operation-button-with-spinner>\n"
+                + "        <nuxeo-operation-button icon=\"icons:account-balance-wallet\" label=\"label.ui.cic.ke.summarize\" operation=\"CIC.SummarizeText\"></nuxeo-operation-button>\n"
                 + "      </template>\n"
                 + "    </nuxeo-filter>\n"
                 + "  </template>\n"

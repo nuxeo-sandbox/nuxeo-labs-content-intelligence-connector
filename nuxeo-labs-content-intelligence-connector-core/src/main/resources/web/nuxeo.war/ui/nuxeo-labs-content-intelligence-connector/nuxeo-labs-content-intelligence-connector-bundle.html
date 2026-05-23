@@ -9,7 +9,6 @@ All slot-content names are prefixed with `cic-` to avoid collisions with other b
 All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json files).
 -->
 
-<link rel="import" href="elements/nuxeo-operation-button-with-spinner.html">
 <link rel="import" href="elements/kd-ask-question.html">
 <link rel="import" href="elements/kd-ask-question-with-selected.html">
 <link rel="import" href="elements/kd-conversation.html">
@@ -24,14 +23,14 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
   <template>
     <nuxeo-filter document="[[document]]" permission="ReadWrite" type="CICAgenticAgentAndConfig" user="[[user]]">
       <template>
-        <nuxeo-operation-button-with-spinner
+        <nuxeo-operation-button
             event="document-updated"
             icon="icons:announcement"
             input="[[document]]"
             label="label.ui.cic.agents.lookupAgent"
             notification="label.ui.cic.agents.lookupAgent.done"
             operation="CIC.AgenticAgentLookup">
-        </nuxeo-operation-button-with-spinner>
+        </nuxeo-operation-button>
       </template>
     </nuxeo-filter>
   </template>
@@ -48,14 +47,15 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
                   expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
                   facet="Picture" permission="ReadWrite" user="[[user]]">
       <template>
-        <nuxeo-operation-button-with-spinner
+        <nuxeo-operation-button
             event="document-updated"
             icon="icons:class"
             input="[[document]]"
             label="label.ui.cic.ke.classify"
             params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true}"
+            notification="label.ui.cic.ke.classify.scheduled"
             operation="CIC.ClassifyImage">
-        </nuxeo-operation-button-with-spinner>
+        </nuxeo-operation-button>
       </template>
     </nuxeo-filter>
   </template>
@@ -67,14 +67,15 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
                   expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
                   facet="Picture" permission="ReadWrite" user="[[user]]">
       <template>
-        <nuxeo-operation-button-with-spinner
+        <nuxeo-operation-button
             event="document-updated"
             icon="icons:description"
             input="[[document]]"
             label="label.ui.cic.ke.image.description"
             params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true}"
+            notification="label.ui.cic.ke.image.description.scheduled"
             operation="CIC.GetImageDescription">
-        </nuxeo-operation-button-with-spinner>
+        </nuxeo-operation-button>
       </template>
     </nuxeo-filter>
   </template>
@@ -88,14 +89,15 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
       <template>
         <!-- kSimilarMetadataJsonStr is REQUIRED. The example below is intentionally generic;
              override it in your Studio project (see README "Customizing CIC.GetTextMetadata / CIC.GetImageMetadata"). -->
-        <nuxeo-operation-button-with-spinner
+        <nuxeo-operation-button
             event="document-updated"
             icon="icons:note-add"
             input="[[document]]"
             label="label.ui.cic.ke.metadata"
             params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true, &quot;kSimilarMetadataJsonStr&quot;: &quot;[{\&quot;image:category\&quot;:\&quot;Photo|Screenshot|Diagram|Scan|Illustration|Other\&quot;,\&quot;keywords:tags\&quot;:\&quot;general|reference|product|person|landscape|document\&quot;}]&quot;}"
+            notification="label.ui.cic.ke.metadata.scheduled"
             operation="CIC.GetImageMetadata">
-        </nuxeo-operation-button-with-spinner>
+        </nuxeo-operation-button>
       </template>
     </nuxeo-filter>
   </template>
@@ -107,14 +109,15 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
                   expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
                   facet="Picture" permission="ReadWrite" user="[[user]]">
       <template>
-        <nuxeo-operation-button-with-spinner
+        <nuxeo-operation-button
             event="document-updated"
             icon="icons:view-list"
             input="[[document]]"
             label="label.ui.cic.ke.namedEntities"
             params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true}"
+            notification="label.ui.cic.ke.namedEntities.scheduled"
             operation="CIC.GetNamedEntitiesFromImage">
-        </nuxeo-operation-button-with-spinner>
+        </nuxeo-operation-button>
       </template>
     </nuxeo-filter>
   </template>
@@ -126,14 +129,15 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
                   expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
                   facet="Picture" permission="ReadWrite" user="[[user]]">
       <template>
-        <nuxeo-operation-button-with-spinner
+        <nuxeo-operation-button
             event="document-updated"
             icon="icons:fingerprint"
             input="[[document]]"
             label="label.ui.cic.ke.embeddings"
             params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true}"
+            notification="label.ui.cic.ke.embeddings.scheduled"
             operation="CIC.GetImageEmbeddings">
-        </nuxeo-operation-button-with-spinner>
+        </nuxeo-operation-button>
       </template>
     </nuxeo-filter>
   </template>
@@ -149,14 +153,15 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
       <template>
         <!-- kSimilarMetadataJsonStr is REQUIRED. The example below is intentionally generic;
              override it in your Studio project (see README "Customizing CIC.GetTextMetadata / CIC.GetImageMetadata"). -->
-        <nuxeo-operation-button-with-spinner
+        <nuxeo-operation-button
             event="document-updated"
             icon="icons:note-add"
             input="[[document]]"
             label="label.ui.cic.ke.metadata"
             params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true, &quot;kSimilarMetadataJsonStr&quot;: &quot;[{\&quot;document:category\&quot;:\&quot;Business|Personal|Technical|Legal|Financial|Other\&quot;,\&quot;keywords:tags\&quot;:\&quot;general|reference|draft|final|important|other\&quot;}]&quot;}"
+            notification="label.ui.cic.ke.metadata.scheduled"
             operation="CIC.GetTextMetadata">
-        </nuxeo-operation-button-with-spinner>
+        </nuxeo-operation-button>
       </template>
     </nuxeo-filter>
   </template>
@@ -168,14 +173,15 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
                   expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
                   type="File" permission="ReadWrite" user="[[user]]">
       <template>
-        <nuxeo-operation-button-with-spinner
+        <nuxeo-operation-button
             event="document-updated"
             icon="icons:class"
             input="[[document]]"
             label="label.ui.cic.ke.classify"
             params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true}"
+            notification="label.ui.cic.ke.classify.scheduled"
             operation="CIC.ClassifyTextFile">
-        </nuxeo-operation-button-with-spinner>
+        </nuxeo-operation-button>
       </template>
     </nuxeo-filter>
   </template>
@@ -187,14 +193,15 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
                   expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
                   type="File" permission="ReadWrite" user="[[user]]">
       <template>
-        <nuxeo-operation-button-with-spinner
+        <nuxeo-operation-button
             event="document-updated"
             icon="icons:fingerprint"
             input="[[document]]"
             label="label.ui.cic.ke.embeddings"
             params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true}"
+            notification="label.ui.cic.ke.embeddings.scheduled"
             operation="CIC.GetTextEmbeddings">
-        </nuxeo-operation-button-with-spinner>
+        </nuxeo-operation-button>
       </template>
     </nuxeo-filter>
   </template>
@@ -206,14 +213,15 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
                   expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
                   type="File" permission="ReadWrite" user="[[user]]">
       <template>
-        <nuxeo-operation-button-with-spinner
+        <nuxeo-operation-button
             event="document-updated"
             icon="icons:view-list"
             input="[[document]]"
             label="label.ui.cic.ke.namedEntities"
             params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true}"
+            notification="label.ui.cic.ke.namedEntities.scheduled"
             operation="CIC.GetNamedEntitiesFromText">
-        </nuxeo-operation-button-with-spinner>
+        </nuxeo-operation-button>
       </template>
     </nuxeo-filter>
   </template>
@@ -225,14 +233,15 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
                   expression='document.properties !== null &amp;&amp; document.properties["file:content"] !== null &amp;&amp; !document.isVersion &amp;&amp; !document.isProxy'
                   type="File" permission="ReadWrite" user="[[user]]">
       <template>
-        <nuxeo-operation-button-with-spinner
+        <nuxeo-operation-button
             event="document-updated"
             icon="icons:account-balance-wallet"
             input="[[document]]"
             label="label.ui.cic.ke.summarize"
             params="{&quot;saveDocument&quot;: true, &quot;runAsynchronously&quot;: true}"
+            notification="label.ui.cic.ke.summarize.scheduled"
             operation="CIC.SummarizeText">
-        </nuxeo-operation-button-with-spinner>
+        </nuxeo-operation-button>
       </template>
     </nuxeo-filter>
   </template>
