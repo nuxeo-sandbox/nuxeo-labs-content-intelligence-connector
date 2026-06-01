@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.labs.hyland.content.intelligence.listeners">
+
+  <extension target="org.nuxeo.ecm.core.event.EventServiceComponent" point="listener">
+
+    <listener name="cicAgenticAgentLookupListener" async="true" postCommit="true"
+              class="org.nuxeo.labs.hyland.content.intelligence.listener.CICAgenticAgentLookupListener"
+              priority="120">
+      <event>documentCreated</event>
+    </listener>
+
+  </extension>
+
+</component>
