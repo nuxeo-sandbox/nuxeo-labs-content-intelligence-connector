@@ -18,5 +18,6 @@ Nuxeo-Component: OSGI-INF/service-enrichment-contrib.xml,
  OSGI-INF/cic-ui-directories-contrib.xml,
  OSGI-INF/cic-ui-pageproviders-contrib.xml,
  OSGI-INF/cic-ui-bundle-contrib.xml,
- OSGI-INF/cic-enrichment-helper-contrib.xml
+ OSGI-INF/cic-enrichment-helper-contrib.xml,
+ OSGI-INF/cic-listeners-contrib.xml
 
