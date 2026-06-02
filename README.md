@@ -298,9 +298,14 @@ The `show-label="true"` attribute makes the button display its localized label (
 
 ### Agents
 
-| Slot-content name | Slot | Icon | Operation | Visible on |
+| Slot-content name | Slot | Icon | Operation(s) | Visible on |
 | --- | --- | --- | --- | --- |
 | `cic-agents-lookupAgent` | `DOCUMENT_ACTIONS` | `icons:announcement` | `CIC.AgenticAgentLookup` | `CICAgenticAgentAndConfig` documents (`ReadWrite`) |
+| `cic-agentic-invoke-agent` *(disabled by default)* | `DOCUMENT_ACTIONS` | `notification:phone-in-talk` | `HylandAgents.AvailableAgenticAgents` + `HylandAgents.InvokeTaskAgent` | every document |
+
+The **Invoke an Agent** dialog (`<cic-agentic-invoke-agent>`) lets an end-user pick one of the locally registered `CICAgenticAgentAndConfig` documents, fill in its input fields, and run the agent. The dropdown is populated by `HylandAgents.AvailableAgenticAgents`, which queries `CICAgenticAgentAndConfig` documents with the **current user's** session — so READ permission on those docs governs which agents a user sees (same mechanism as `kd-conversation`). On **Run**, the dialog calls `HylandAgents.InvokeTaskAgent` with `{configName, agentId, jsonPayloadStr}` and renders the agent's structured outputs back in the same dialog (best-effort: it reads `response.output[0].content[0].text`, JSON-parses it, and pretty-prints object values).
+
+The slot-content is **disabled by default**. Enable it from the **CIC UI Config** admin page, or drop the element into a custom page (Dashboard, custom doctype layout) by importing `nuxeo-labs-content-intelligence-connector/elements/cic-agentic-invoke-agent.html` — same pattern as `<kd-conversation>` documented above.
 
 > Polymer `iron-icons` are part of the standard Web UI icon set; previews live at https://www.webcomponents.org/element/@polymer/iron-icons/demo/demo/index.html.
 

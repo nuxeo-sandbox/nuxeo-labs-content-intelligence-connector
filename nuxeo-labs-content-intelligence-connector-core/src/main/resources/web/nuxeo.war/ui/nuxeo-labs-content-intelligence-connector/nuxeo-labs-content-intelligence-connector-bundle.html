@@ -14,8 +14,9 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
 <link rel="import" href="elements/kd-conversation.html">
 <link rel="import" href="elements/cic-ui-config-page.html">
 <link rel="import" href="elements/cic-agent-selector.html">
+<link rel="import" href="elements/cic-agentic-invoke-agent.html">
 
-<!-- ==================== Agents (single-document actions) ==================== -->
+<!-- ==================== Agents ==================== -->
 
 <!-- Lookup an agent definition and persist its data on a CICAgenticAgentAndConfig document.
      Calls CIC.AgenticAgentLookup. -->
@@ -34,6 +35,19 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
         </nuxeo-operation-button>
       </template>
     </nuxeo-filter>
+  </template>
+</nuxeo-slot-content>
+
+<!-- Display the "Invoke Agent" dialog. As it has limitations, like you can't pass
+     a document to CIC agents (not directly), the default is disabled
+     A good location would be the dashboard (see README)-->
+<nuxeo-slot-content name="cic-agentic-invoke-agent" slot="DOCUMENT_ACTIONS" order="50" disabled>
+  <template>
+    <cic-agentic-invoke-agent
+        icon="notification:phone-in-talk"
+        label="label.ui.cic.agentic-invoke.invokeAgenticAgent"
+        show-label="true">
+    </cic-agentic-invoke-agent>
   </template>
 </nuxeo-slot-content>
 
