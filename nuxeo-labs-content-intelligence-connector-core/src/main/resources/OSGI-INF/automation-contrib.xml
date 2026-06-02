@@ -42,6 +42,7 @@
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsInvokeRagOp"/>
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsInvokeToolOp"/>
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsAskKDQuestionViaRagOp"/>
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.agents.HylandAgentsAvailableAgenticAgentsOp"/>
 
         <!-- CIC Agent helper operations -->
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.agents.CICGetAllAgentsOp"/>
