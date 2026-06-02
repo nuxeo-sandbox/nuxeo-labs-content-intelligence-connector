@@ -12,16 +12,15 @@
             KD call.
         -->
         <coreQueryPageProvider name="SelectCICAgentAndConfig">
-            <pattern>
+            <pattern quoteParameters="false" escapeParameters="true">
                 SELECT * FROM CICAgentAndConfig
                 WHERE ecm:isVersion = 0
                   AND ecm:isTrashed = 0
                   AND ecm:isProxy = 0
                   AND ecm:mixinType != 'HiddenInNavigation'
-                  AND ecm:fulltext = '?'
             </pattern>
             <sort column="dc:title" ascending="true"/>
-            <pageSize>10</pageSize>
+            <pageSize>20</pageSize>
         </coreQueryPageProvider>
 
     </extension>

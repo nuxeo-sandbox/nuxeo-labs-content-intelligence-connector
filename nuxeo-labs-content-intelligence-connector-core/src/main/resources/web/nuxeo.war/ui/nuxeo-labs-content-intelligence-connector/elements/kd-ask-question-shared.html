@@ -171,7 +171,7 @@ to answer the question.
     <nuxeo-operation id="askQuestionOp" op="CIC.KDAskQuestionForUI"></nuxeo-operation>
     <nuxeo-document id="agentAndConfigDocFetcher"
                     response="{{agentAndConfigDoc}}"
-                    schemas="cicagentandconfig">
+                    schemas="cic_agent_and_config">
     </nuxeo-document>
 
     <div class="action" on-tap="_toggleDialog">
@@ -182,7 +182,11 @@ to answer the question.
 
     <nuxeo-dialog id="dialog" on-iron-overlay-closed="_dialogClosed" with-backdrop>
       <div class="content">
-        <nuxeo-document-suggestion value="{{agentAndConfigDocId}}" label="[[i18n('label.ui.cic.kd-ask.agent')]]" min-chars="0" name="agentAndConfigDocId" role="widget" page-provider="SelectCICAgentAndConfig"></nuxeo-document-suggestion>
+        <nuxeo-document-suggestion value="{{agentAndConfigDocId}}"
+                                   label="[[i18n('label.ui.cic.kd-ask.agent')]]"
+                                   min-chars="0" name="agentAndConfigDocId" role="widget"
+                                   schemas="*"
+                                   page-provider="SelectCICAgentAndConfig"></nuxeo-document-suggestion>
 
         <template is="dom-if" if="[[hasSelectedItems]]">
           [[_getDocumentsPrompt(selectedItems)]]
@@ -274,12 +278,6 @@ to answer the question.
           type: String,
           value: 'label.ui.cic.kd-ask.askKD'
         },
-
-        agentAndConfigDocId: {
-          type: String,
-          observer: '_agentAndConfigDocIdChanged'
-        },
-        agentAndConfigDoc: Object,
 
         showLabel: {
           type: Boolean,

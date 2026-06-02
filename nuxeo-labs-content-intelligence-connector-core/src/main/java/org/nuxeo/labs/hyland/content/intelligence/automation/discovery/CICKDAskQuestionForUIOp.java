@@ -36,6 +36,7 @@ import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentModelList;
+import org.nuxeo.ecm.core.api.impl.DocumentModelListImpl;
 import org.nuxeo.ecm.core.schema.SchemaManager;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService;
@@ -93,6 +94,11 @@ public class CICKDAskQuestionForUIOp {
 
     @Param(name = "configName", required = false)
     protected String configName;
+
+    @OperationMethod
+    public Blob run() {
+        return run(new DocumentModelListImpl());
+    }
 
     @OperationMethod
     public Blob run(DocumentModelList input) {
