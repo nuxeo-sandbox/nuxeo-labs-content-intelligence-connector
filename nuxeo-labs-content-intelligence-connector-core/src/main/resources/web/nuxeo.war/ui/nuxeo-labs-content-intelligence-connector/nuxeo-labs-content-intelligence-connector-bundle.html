@@ -9,6 +9,7 @@ All slot-content names are prefixed with `cic-` to avoid collisions with other b
 All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json files).
 -->
 
+<link rel="import" href="elements/cic-agent-and-config-picker.html">
 <link rel="import" href="elements/kd-ask-question.html">
 <link rel="import" href="elements/kd-ask-question-with-selected.html">
 <link rel="import" href="elements/kd-conversation.html">
@@ -280,9 +281,11 @@ All i18n keys are namespaced under `label.ui.cic.*` (see the i18n/messages*.json
 
 <!-- ==================== Knowledge Discovery - Conversation ==================== -->
 
-<!-- Open a multi-turn KD conversation dialog. The agent picker is populated by
-     HylandKD.AvailableAgents which queries local CICAgentAndConfig documents
-     (only those the current user can READ). -->
+<!-- Open a multi-turn KD conversation dialog. The agent picker is the shared
+     <cic-agent-and-config-picker> populated by HylandKD.AvailableAgents, which
+     queries local CICAgentAndConfig documents (only those the current user can
+     READ). The selected CICAgentAndConfig's configName is passed through to
+     the KD start/continue conversation operations. -->
 <nuxeo-slot-content name="cic-kd-conversation" slot="DOCUMENT_ACTIONS" order="-20">
   <template>
     <kd-conversation icon="icons:question-answer" label="label.ui.cic.kd-conversation"></kd-conversation>

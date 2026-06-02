@@ -169,10 +169,6 @@ to answer the question.
     </style>
 
     <nuxeo-operation id="askQuestionOp" op="CIC.KDAskQuestionForUI"></nuxeo-operation>
-    <nuxeo-document id="agentAndConfigDocFetcher"
-                    response="{{agentAndConfigDoc}}"
-                    schemas="cic_agent_and_config">
-    </nuxeo-document>
 
     <div class="action" on-tap="_toggleDialog">
       <paper-icon-button id="bt" icon="[[icon]]"></paper-icon-button>
@@ -182,11 +178,11 @@ to answer the question.
 
     <nuxeo-dialog id="dialog" on-iron-overlay-closed="_dialogClosed" with-backdrop>
       <div class="content">
-        <nuxeo-document-suggestion value="{{agentAndConfigDocId}}"
-                                   label="[[i18n('label.ui.cic.kd-ask.agent')]]"
-                                   min-chars="0" name="agentAndConfigDocId" role="widget"
-                                   schemas="*"
-                                   page-provider="SelectCICAgentAndConfig"></nuxeo-document-suggestion>
+        <cic-agent-and-config-picker id="agentPicker"
+                                     label="label.ui.cic.kd-ask.agent"
+                                     selected-agent-id="{{agentId}}"
+                                     selected-config-name="{{configName}}">
+        </cic-agent-and-config-picker>
 
         <template is="dom-if" if="[[hasSelectedItems]]">
           [[_getDocumentsPrompt(selectedItems)]]
@@ -257,11 +253,15 @@ to answer the question.
           value: 'label.ui.cic.kd-ask.askKD'
         },
 
-        agentAndConfigDocId: {
+        // Notified by <cic-agent-and-config-picker>.
+        agentId: {
           type: String,
-          observer: '_agentAndConfigDocIdChanged'
+          value: ''
         },
-        agentAndConfigDoc: Object,
+        configName: {
+          type: String,
+          value: ''
+        },
 
         showLabel: {
           type: Boolean,
@@ -352,15 +352,6 @@ to answer the question.
         this.questionLabel = questionLabel;
       },
 
-      _agentAndConfigDocIdChanged: function(newVal) {
-        if (newVal) {
-          this.$.agentAndConfigDocFetcher.docId = newVal;
-          this.$.agentAndConfigDocFetcher.execute();
-        } else {
-          this.agentAndConfigDoc = null;
-        }
-      },
-
       _loadMarkedJs: function() {
         // Check if marked is already loaded
         if (window.marked) {
@@ -392,9 +383,11 @@ to answer the question.
         const op = this.$.askQuestionOp;
         op.input = this.selectedItems;
         op.params = { "question": this.question };
-        if (this.agentAndConfigDoc && this.agentAndConfigDoc.properties) {
-          op.params.configName = this.agentAndConfigDoc.properties["cicagentandconfig:configName"];
-          op.params.agentId = this.agentAndConfigDoc.properties["cicagentandconfig:agentId"];
+        if (this.agentId) {
+          op.params.agentId = this.agentId;
+        }
+        if (this.configName) {
+          op.params.configName = this.configName;
         }
 
         this.$.spinner.active = true;
@@ -479,8 +472,11 @@ to answer the question.
 
       _cleanupStuff: function(preserveAgent) {
         if (!preserveAgent) {
-          this.agentAndConfigDocId = null;
-          this.agentAndConfigDoc = null;
+          if (this.$.agentPicker) {
+            this.$.agentPicker.reset();
+          }
+          this.agentId = '';
+          this.configName = '';
         }
         this.answer = '';
         this.htmlAnswer = '';

@@ -1,0 +1,238 @@
+<!--
+(C) Copyright 2025 Hyland (http://hyland.com/)  and others.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contributors:
+    Thibaud Arguillere (With the help of Opencode/Claude for the Web UI port from a Studio project)
+-->
+<!--
+`cic-agent-and-config-picker`
+@group Nuxeo UI
+@element cic-agent-and-config-picker
+
+Shared dropdown that lets the user pick a locally registered `CICAgentAndConfig`
+document. The list is populated by the `HylandKD.AvailableAgents` automation
+operation, which queries `CICAgentAndConfig` documents using the current user's
+session (so visibility is governed by READ ACLs).
+
+Used by both the Knowledge Discovery "Ask a question" dialog
+(`kd-ask-question-shared`) and the multi-turn conversation dialog
+(`kd-conversation`).
+
+Implementation note: uses a native HTML <select> with Polymer's
+`{{prop::change}}` two-way binding. We previously tried <paper-dropdown-menu>
++ <paper-listbox> + iron-select, but the event-ordering / attr-for-selected
+plumbing was unreliable with a dom-repeat-fed list (the listbox's `selected`
+property did not propagate back through the two-way binding before our
+`iron-select` handler ran, so the picker reported an empty selection).
+A native <select> sidesteps all of that and fires `change` synchronously
+after its `value` has been written.
+
+Notifies parent via four `notify: true` properties:
+  - `selectedAgentId`    the agent id picked by the user
+  - `selectedConfigName` the corresponding XML configuration name
+  - `selectedTitle`      the doc title (for display)
+  - `selectedDocId`      the CICAgentAndConfig docId
+
+Example:
+    <cic-agent-and-config-picker
+        label="label.ui.cic.kd-ask.agent"
+        selected-agent-id="{{agentId}}"
+        selected-config-name="{{configName}}">
+    </cic-agent-and-config-picker>
+
+NOTE: do NOT confuse with `cic-agent-selector`. That element picks an agent from
+the FULL CIC platform list (via `CIC.GetAllAgents`) and is used inside the
+admin create/edit layouts of `CICAgentAndConfig`. This one picks among the
+locally registered `CICAgentAndConfig` documents.
+-->
+<dom-module id="cic-agent-and-config-picker">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      label {
+        font-size: 13px;
+        font-weight: 500;
+        color: #555;
+        white-space: nowrap;
+      }
+
+      select {
+        flex: 1;
+        padding: 6px 8px;
+        font-size: 13px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: #fff;
+        color: #333;
+      }
+
+      select:disabled {
+        background: #f5f5f5;
+        color: #999;
+      }
+    </style>
+
+    <nuxeo-operation id="getAvailableAgentsOp" op="HylandKD.AvailableAgents"></nuxeo-operation>
+
+    <div class="row">
+      <label hidden$="[[!label]]">[[i18n(label)]]</label>
+      <select id="select"
+              value="{{selectedAgentId::change}}"
+              on-change="_onSelected"
+              disabled$="[[disabled]]">
+        <option value="">[[i18n(placeholder)]]</option>
+        <template is="dom-repeat" items="[[_agents]]">
+          <option value$="[[item.agentId]]">[[item.title]]</option>
+        </template>
+      </select>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'cic-agent-and-config-picker',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        /** i18n key (or pre-translated string) used as the dropdown label. */
+        label: {
+          type: String,
+          value: 'label.ui.cic.kd-ask.agent'
+        },
+
+        /** i18n key (or pre-translated string) for the empty-selection option. */
+        placeholder: {
+          type: String,
+          value: 'label.ui.cic.kd-conversation.agent.select.prompt'
+        },
+
+        /** When true, the dropdown is disabled. */
+        disabled: {
+          type: Boolean,
+          value: false
+        },
+
+        /** Auto-load the list on attach (default: true). */
+        autoLoad: {
+          type: Boolean,
+          value: true
+        },
+
+        /** Currently selected agent id (notified). */
+        selectedAgentId: {
+          type: String,
+          value: '',
+          notify: true
+        },
+
+        /** Currently selected configuration name (notified). */
+        selectedConfigName: {
+          type: String,
+          value: '',
+          notify: true
+        },
+
+        /** Currently selected agent title (notified, for convenience). */
+        selectedTitle: {
+          type: String,
+          value: '',
+          notify: true
+        },
+
+        /** Currently selected CICAgentAndConfig docId (notified, for convenience). */
+        selectedDocId: {
+          type: String,
+          value: '',
+          notify: true
+        },
+
+        /* ==================== Private ==================== */
+
+        _agents: {
+          type: Array,
+          value: function() { return []; }
+        }
+      },
+
+      attached: function() {
+        if (this.autoLoad) {
+          this.load();
+        }
+      },
+
+      /**
+       * Public API: (re)load the agents list. Returns a Promise.
+       * Useful when the parent wants to refresh the list when opening a dialog.
+       */
+      load: function() {
+        return this.$.getAvailableAgentsOp.execute().then(function(response) {
+          var jsonStr = response;
+          if (response && typeof response.getString === 'function') {
+            jsonStr = response.getString();
+          }
+          var agents;
+          if (typeof jsonStr === 'string') {
+            agents = JSON.parse(jsonStr);
+          } else {
+            agents = jsonStr;
+          }
+          this._agents = agents || [];
+        }.bind(this)).catch(function(err) {
+          console.error('cic-agent-and-config-picker: Error loading agents', err);
+          this._agents = [];
+        }.bind(this));
+      },
+
+      /** Public API: reset the selection (does not reload the list). */
+      reset: function() {
+        this.selectedAgentId = '';
+        this.selectedConfigName = '';
+        this.selectedTitle = '';
+        this.selectedDocId = '';
+        if (this.$.select) {
+          this.$.select.value = '';
+        }
+      },
+
+      _onSelected: function() {
+        // {{selectedAgentId::change}} has already written the new value
+        // by the time this native change handler runs.
+        var agentId = this.selectedAgentId || '';
+        if (!agentId) {
+          this.selectedConfigName = '';
+          this.selectedTitle = '';
+          this.selectedDocId = '';
+          return;
+        }
+        for (var i = 0; i < this._agents.length; i++) {
+          if (this._agents[i].agentId === agentId) {
+            this.selectedConfigName = this._agents[i].configName || '';
+            this.selectedTitle = this._agents[i].title || '';
+            this.selectedDocId = this._agents[i].docId || '';
+            return;
+          }
+        }
+      }
+    });
+  </script>
+</dom-module>
