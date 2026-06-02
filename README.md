@@ -2,13 +2,13 @@
 
 ## TL;DR
 
-Version **2025.16** of this pluging **ships a full Web UI on top of the existing CIC automation operations.** Out of the box you get:
+Since its **2025.16** version this plugin **ships a full Web UI on top of the existing CIC automation operations.** Out of the box you get:
 
-- **Document action buttons** for the common Knowledge Enrichment calls (summarize, classify, extract entities, get metadata, image description, embeddings) — results stored in dedicated schemas/doctypes shipped with the plugin.
+- **Document action buttons** for the common Knowledge Enrichment calls (summarize, classify, extract entities, get metadata, image description, embeddings) — results stored in dedicated schemas/doctypes shipped with the plugin. Calls are asynchronous.
 - **Knowledge Discovery dialogs**: an "Ask a Question" popup (single doc and multi-select) and a `kd-conversation` chat panel with citations linked back to Nuxeo documents.
 - **Multi-document `CIC.*` ops** with batching, per-doc error markers, and inter-batch commits — safe for listeners, BAF, and bulk actions.
 - **Easy to override** for you nown usage. There even is an **Admin "CIC UI Config" page** that lists every `cic-*` slot-content and generates ready-to-paste Studio override snippets (demo build/tests utility).
-- **Connection to CIC** stays easy: Add nuxeo.conf parameters (URLs, secrets, ...)
+- **Connection to CIC** stays simple: Add nuxeo.conf parameters (URLs, secrets, ...)
 
 
 > [!IMPORTANT]
@@ -460,7 +460,7 @@ The Studio bundle is loaded **after** the plugin bundle, so a same-name `<nuxeo-
 
 ## Automatic Enrichment (via event handlers in your Studio project)
 
-The plugin intentionally ships only **synchronous, on-demand buttons** (visibility and filters tunable from your Studio project — see [Show / hide buttons per project](#show--hide-buttons-per-project) and [Configuring which CIC buttons are visible (presales helper page)](#configuring-which-cic-buttons-are-visible-presales-helper-page)). It does NOT ship listeners that automatically push every `File` or `Picture` to CIC. The reason is simple: deciding **which** documents to enrich is a business decision (cost, throughput, lifecycle, ACLs, metadata flags, container path, user, document subtype, …) and varies per project. Calling CIC for every newly created document is rarely what you want.
+The plugin intentionally ships only **on-demand buttons** (visibility and filters tunable from your Studio project — see [Show / hide buttons per project](#show--hide-buttons-per-project) and [Configuring which CIC buttons are visible (presales helper page)](#configuring-which-cic-buttons-are-visible-presales-helper-page)). It does NOT ship listeners that automatically push every `File` or `Picture` to CIC. The reason is simple: deciding **which** documents to enrich is a business decision (cost, throughput, lifecycle, ACLs, metadata flags, container path, user, document subtype, …) and varies per project. Calling CIC for every newly created document is rarely what you want.
 
 That said, wiring automatic enrichment yourself is straightforward. Every operation the plugin exposes (`CIC.*`, `HylandKnowledgeEnrichment.*`, `HylandKnowledgeDiscovery.*`, etc.) is a regular Nuxeo automation operation, so a few minutes in Studio are enough:
 
