@@ -1,0 +1,427 @@
+<!--
+`cic-agentic-invoke-agent`
+@group Nuxeo UI
+@element cic-agentic-invoke-agent
+
+This element provides a UI to invoke an agentic agent, allowing users to select an agent, provide necessary inputs, and view the outputs returned by the agent.
+It interacts with the backend to fetch available agents (operation `HylandAgents.AvailableAgenticAgents`).
+This list depends on permissions of current user. To change the behavior, you can override the operation.
+On Run, the selected agent is invoked via `HylandAgents.InvokeTaskAgent` with user-provided inputs.
+-->
+<dom-module id="cic-agentic-invoke-agent">
+  <template>
+    <style include="iron-flex iron-flex-alignment nuxeo-styles">
+      :host {
+        display: block;
+      }
+
+      #invokeAgentDialog {
+        top: 25px;
+        max-height: 90%;
+        overflow-y: auto;
+        width: 80%;
+      }
+
+      .dialog-content {
+        margin: 0;
+        padding: 24px;
+      }
+
+      .section {
+        margin-bottom: 24px;
+      }
+
+      .section-title {
+        font-size: 14px;
+        font-weight: bold;
+        color: var(--nuxeo-text-default);
+        margin-bottom: 12px;
+        text-transform: uppercase;
+      }
+
+      .field-group {
+        margin-bottom: 16px;
+        margin-left: 25px;
+      }
+
+      .field-label {
+        display: flex;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+
+      .field-description {
+        font-size: 11px;
+        color: var(--nuxeo-text-light);
+        font-style: italic;
+      }
+
+      paper-input,
+      paper-textarea {
+        width: 100%;
+      }
+
+      paper-dropdown-menu {
+        width: 100%;
+      }
+
+      .output-section {
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid var(--divider-color);
+      }
+
+      .output-value {
+        font-size: 13px;
+        color: var(--nuxeo-text-default);
+        word-wrap: break-word;
+        white-space: pre-wrap;
+      }
+
+      .buttons {
+        margin-top: 24px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+
+      .empty-message {
+        font-size: 13px;
+        color: var(--nuxeo-text-light);
+        font-style: italic;
+      }
+    </style>
+
+    <nuxeo-operation id="fetchAgentsOp"
+                     op="HylandAgents.AvailableAgenticAgents"
+                     response="{{agents}}"
+                     auto></nuxeo-operation>
+    <nuxeo-operation id="invokeTaskOp"
+                     op="HylandAgents.InvokeTaskAgent"></nuxeo-operation>
+
+    <div class="action" on-tap="_toggleDialog">
+      <paper-icon-button id="bt" icon="[[icon]]"></paper-icon-button>
+      <span class="label" hidden$="[[!showLabel]]">[[i18n(label)]]</span>
+    </div>
+    <paper-tooltip for="bt">[[i18n(label)]]</paper-tooltip>
+
+    <nuxeo-dialog id="invokeAgentDialog" with-backdrop>
+      <div class="dialog-content">
+        <h2>[[i18n('label.ui.cic.agentic-invoke.agentRequest')]]</h2>
+
+        <!-- Agent Selection -->
+        <div class="section">
+          <paper-dropdown-menu label="[[i18n('label.ui.cic.agentic-invoke.selectAgent')]]" required>
+            <paper-listbox slot="dropdown-content"
+                          selected="{{selectedAgentIndex}}"
+                          attr-for-selected="index">
+              <template is="dom-repeat" items="[[agents]]">
+                <paper-item index="[[index]]">[[item.agent]]</paper-item>
+              </template>
+            </paper-listbox>
+          </paper-dropdown-menu>
+        </div>
+
+        <!-- Dynamic Input Fields -->
+        <template is="dom-if" if="[[selectedAgent]]">
+          <div class="section">
+            <div class="section-title">[[i18n('label.ui.cic.agentic-invoke.inputs')]]</div>
+            <template is="dom-if" if="[[_hasInputs(selectedAgent)]]">
+              <template is="dom-repeat" items="[[_getInputFields(selectedAgent)]]" as="field">
+                <div class="field-group">
+                  <div class="field-label">
+                    [[field.name]]
+                  </div>
+                  <span class="field-description">[[field.description]]</span>
+                  <paper-textarea
+                    value="{{field.value}}"
+                    placeholder="[[_placeholder(field.name)]]"
+                    rows="2">
+                  </paper-textarea>
+                </div>
+              </template>
+            </template>
+            <template is="dom-if" if="[[!_hasInputs(selectedAgent)]]">
+              <div class="empty-message">[[i18n('label.ui.cic.agentic-invoke.noInputs')]]</div>
+            </template>
+          </div>
+
+          <!-- Dynamic Output Fields -->
+          <div class="section output-section">
+            <div class="section-title">[[_getOutputsLabel(selectedAgent)]]</div>
+            <template is="dom-if" if="[[_hasOutputs(selectedAgent)]]">
+              <template is="dom-repeat" items="[[_getOutputFields(selectedAgent)]]" as="field">
+                <div class="field-group">
+                  <div class="field-label">
+                    [[field.name]]
+                  </div>
+                  <span class="field-description">[[field.description]]</span>
+                  <div class="output-value">
+                    [[_getOutputValue(field.name, agentResults, _running)]]
+                  </div>
+                </div>
+              </template>
+            </template>
+            <template is="dom-if" if="[[!_hasOutputs(selectedAgent)]]">
+              <div class="empty-message">[[i18n('label.ui.cic.agentic-invoke.noOutputs')]]</div>
+            </template>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="buttons">
+            <paper-button dialog-dismiss>[[i18n('command.close')]]</paper-button>
+            <paper-spinner-lite active$="[[_running]]" hidden$="[[!_running]]"></paper-spinner-lite>
+            <paper-button class="primary" on-tap="_invokeAgent" hidden$="[[_running]]">
+              [[i18n('label.ui.cic.agentic-invoke.run')]]
+            </paper-button>
+          </div>
+        </template>
+      </div>
+    </nuxeo-dialog>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'cic-agentic-invoke-agent',
+
+      behaviors: [Nuxeo.LayoutBehavior],
+
+      properties: {
+
+        icon: {
+          type: String,
+          value: 'notification:phone-in-talk',
+          reflectToAttribute: true
+        },
+
+        // i18n KEY (not pre-translated). Resolved in the template via [[i18n(label)]].
+        // This pattern lets any consumer (bundle, layout, Studio override) pass either a key
+        // or an already-translated string -- both work.
+        label: {
+          type: String,
+          value: 'label.ui.cic.agentic-invoke.invokeAgenticAgent'
+        },
+
+        showLabel: {
+          type: Boolean,
+          value: false
+        },
+
+        agents: {
+          type: Array,
+          value: function() {
+            return [];
+          }
+        },
+
+        selectedAgentIndex: {
+          type: Number,
+          value: -1,
+          observer: '_selectedAgentIndexChanged'
+        },
+
+        selectedAgent: {
+          type: Object,
+          value: null
+        },
+
+        agentResults: {
+          type: Object,
+          value: function() {
+            return {};
+          }
+        },
+
+        _running: {
+          type: Boolean,
+          value: false
+        }
+      },
+
+      _toggleDialog: function() {
+        this.$.invokeAgentDialog.toggle();
+      },
+
+      open: function() {
+        this.$.invokeAgentDialog.open();
+      },
+
+      close: function() {
+        this.$.invokeAgentDialog.close();
+      },
+
+      _selectedAgentIndexChanged: function(index) {
+        if (index >= 0 && this.agents && this.agents[index]) {
+          this.set('selectedAgent', this.agents[index]);
+          this._resetFields();
+        } else {
+          this.set('selectedAgent', null);
+        }
+      },
+
+      _resetFields: function() {
+        this.set('agentResults', {});
+        // Force re-render of input/output fields
+        this.notifyPath('selectedAgent');
+      },
+
+      _hasInputs: function(agent) {
+        if (!agent || !agent.inputs) {
+          return false;
+        }
+        return Object.keys(agent.inputs).length > 0;
+      },
+
+      _hasOutputs: function(agent) {
+        if (!agent || !agent.outputs) {
+          return false;
+        }
+        return Object.keys(agent.outputs).length > 0;
+      },
+
+      _getOutputsLabel: function(agent) {
+        if (agent && agent.outputs && Object.keys(agent.outputs).length === 1) {
+          return this.i18n('label.ui.cic.agentic-invoke.output');
+        }
+        return this.i18n('label.ui.cic.agentic-invoke.outputs');
+      },
+
+      _placeholder: function(name) {
+        return this.i18n('label.ui.cic.agentic-invoke.enterField', name);
+      },
+
+      _getInputFields: function(agent) {
+        if (!agent || !agent.inputs) {
+          return [];
+        }
+        var fields = [];
+        for (var key in agent.inputs) {
+          if (agent.inputs.hasOwnProperty(key)) {
+            fields.push({
+              name: key,
+              description: agent.inputs[key].description || '',
+              type: agent.inputs[key].type || 'string',
+              value: ''
+            });
+          }
+        }
+        return fields;
+      },
+
+      _getOutputFields: function(agent) {
+        if (!agent || !agent.outputs) {
+          return [];
+        }
+        var fields = [];
+        for (var key in agent.outputs) {
+          if (agent.outputs.hasOwnProperty(key)) {
+            fields.push({
+              name: key,
+              description: agent.outputs[key].description || '',
+              type: agent.outputs[key].type || 'string'
+            });
+          }
+        }
+        return fields;
+      },
+
+      _getOutputValue: function(fieldName, results, running) {
+        if (results && results[fieldName] !== undefined && results[fieldName] !== null) {
+          var value = results[fieldName];
+          if (typeof value === 'object') {
+            return JSON.stringify(value, null, 2);
+          }
+          return value;
+        }
+        return running ? this.i18n('label.ui.cic.agentic-invoke.waitingForResults') : '';
+      },
+
+      _gatherInputValues: function() {
+        var inputs = {};
+        var inputFields = this.shadowRoot.querySelectorAll('paper-textarea');
+
+        if (this.selectedAgent && this.selectedAgent.inputs) {
+          var keys = Object.keys(this.selectedAgent.inputs);
+          inputFields.forEach(function(field, index) {
+            if (index < keys.length) {
+              inputs[keys[index]] = field.value || '';
+            }
+          });
+        }
+
+        return inputs;
+      },
+
+      _invokeAgent: function() {
+        if (!this.selectedAgent) {
+          return;
+        }
+
+        /* This is a direct call to the operation provided by Nuxeo Labs Content Intelligence Connector.
+           No filtering, no simplification. See plugin doc _and_ CIC Agentic doc for the result, which looks like:
+        {
+          responseCode: 200,
+          responseMessage: "OK",
+          response: the actual response as returned by the agent.
+        }
+        Response is complex :-), something like...
+{
+  "createdAt": 1767964905,
+  "model": "anthropic.claude-3-haiku-20240307-v1:0",
+  "object": "response",
+  "output": [{
+    "type": "message",
+    "status": "completed",
+    "content": [{
+      "type": "output_text",
+      "text": "{\"result\": \"DONE\"}"
+    }],
+    "role": "assistant"
+  }]
+}
+        ...so we must go to the JSON stringified value at "content" :-)
+          */
+
+        var op = this.$.invokeTaskOp;
+        var inputs = this._gatherInputValues();
+        var jsonPayload = { 'inputs': inputs };
+        op.params = {
+          configName: this.selectedAgent.configName,
+          agentId: this.selectedAgent.agentId,
+          // agentVersion - we always use latest
+          jsonPayloadStr: JSON.stringify(jsonPayload)
+          // no need for extraHeadersJsonStr
+        };
+
+        // Clear previous results and show progress
+        this.set('agentResults', {});
+        this.set('_running', true);
+
+        op.execute().then((result) => {
+          this.set('_running', false);
+          if (result.responseCode !== 200) {
+            alert(this.i18n('label.ui.cic.agentic-invoke.invokeFailed')
+                + ' ' + result.responseCode + ', ' + result.responseMessage);
+            return;
+          }
+
+          try {
+            var value = result.response.output[0].content[0].text;
+            var valueJson = JSON.parse(value);
+            this.updateResults(valueJson);
+          } catch (e) {
+            alert(this.i18n('label.ui.cic.agentic-invoke.parseError') + ' ' + e);
+          }
+        }).catch((error) => {
+          this.set('_running', false);
+          alert(this.i18n('label.ui.cic.agentic-invoke.invokeError') + ' ' + error);
+        });
+      },
+
+      updateResults: function(results) {
+        this.set('agentResults', results);
+      }
+    });
+  </script>
+</dom-module>
