@@ -1,7 +1,7 @@
 /*
- * kd-conversation-libs.js
+ * cic-kd-conversation-libs.js
  *
- * Dynamically loads external libraries used by the kd-conversation element:
+ * Dynamically loads external libraries used by the cic-kd-conversation element:
  *   - marked.js (MIT) -- converts markdown to HTML
  *   - DOMPurify (Apache/MPL) -- sanitizes HTML to prevent XSS
  *
@@ -10,7 +10,7 @@
  * a <script> block (it interprets the string as a nested HTML tag).
  *
  * Once loaded, the libraries are available as window.marked and
- * window.DOMPurify. The kd-conversation element checks for their
+ * window.DOMPurify. The cic-kd-conversation element checks for their
  * presence at usage time and falls back to plain text if unavailable.
  */
 (function() {
@@ -24,7 +24,7 @@
     var script = document.createElement('script');
     script.src = url;
     script.onerror = function() {
-      console.warn('kd-conversation-libs: Could not load ' + name + ' from ' + url);
+      console.warn('cic-kd-conversation-libs: Could not load ' + name + ' from ' + url);
     };
     document.head.appendChild(script);
   }

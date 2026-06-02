@@ -27,8 +27,8 @@ operation, which queries `CICAgentAndConfig` documents using the current user's
 session (so visibility is governed by READ ACLs).
 
 Used by both the Knowledge Discovery "Ask a question" dialog
-(`kd-ask-question-shared`) and the multi-turn conversation dialog
-(`kd-conversation`).
+(`cic-kd-ask-question-shared`) and the multi-turn conversation dialog
+(`cic-kd-conversation`).
 
 Implementation note: uses a native HTML <select> with Polymer's
 `{{prop::change}}` two-way binding. We previously tried <paper-dropdown-menu>

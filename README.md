@@ -5,7 +5,7 @@
 Since its **2025.16** version this plugin **ships a full Web UI on top of the existing CIC automation operations.** Out of the box you get:
 
 - **Document action buttons** for the common Knowledge Enrichment calls (summarize, classify, extract entities, get metadata, image description, embeddings) — results stored in dedicated schemas/doctypes shipped with the plugin. Calls are asynchronous.
-- **Knowledge Discovery dialogs**: an "Ask a Question" popup (single doc and multi-select) and a `kd-conversation` chat panel with citations linked back to Nuxeo documents.
+- **Knowledge Discovery dialogs**: an "Ask a Question" popup (single doc and multi-select) and a `cic-kd-conversation` chat panel with citations linked back to Nuxeo documents.
 - **Multi-document `CIC.*` ops** with batching, per-doc error markers, and inter-batch commits — safe for listeners, BAF, and bulk actions.
 - **Easy to override** for you nown usage. There even is an **Admin "CIC UI Config" page** that lists every `cic-*` slot-content and generates ready-to-paste Studio override snippets (demo build/tests utility).
 - **Connection to CIC** stays simple: Add nuxeo.conf parameters (URLs, secrets, ...)
@@ -228,8 +228,8 @@ Visible on documents of type `File`, with a `file:content` blob, not version/pro
 
 | Slot-content name | Slot | Icon | Element |
 | --- | --- | --- | --- |
-| `cic-kd-ask-question` | `DOCUMENT_ACTIONS` | `icons:question-answer` | `<kd-ask-question>` |
-| `cic-kd-ask-question-with-selected` | `RESULTS_SELECTION_ACTIONS` | `icons:question-answer` | `<kd-ask-question-with-selected>` |
+| `cic-kd-ask-question` | `DOCUMENT_ACTIONS` | `icons:question-answer` | `<cic-kd-ask-question>` |
+| `cic-kd-ask-question-with-selected` | `RESULTS_SELECTION_ACTIONS` | `icons:question-answer` | `<cic-kd-ask-question-with-selected>` |
 
 The dialog lets the user:
 * pick an agent from the picker (the shared `<cic-agent-and-config-picker>`, populated by `HylandKD.AvailableAgents` — same picker used by the Conversation dialog);
@@ -240,7 +240,7 @@ The dialog lets the user:
 
 | Slot-content name | Slot | Icon | Element |
 | --- | --- | --- | --- |
-| `cic-kd-conversation` | `DOCUMENT_ACTIONS` | `icons:forum` | `<kd-conversation>` |
+| `cic-kd-conversation` | `DOCUMENT_ACTIONS` | `icons:forum` | `<cic-kd-conversation>` |
 
 The dialog lets the user have a multi-turn conversation with a Knowledge Discovery agent:
 * pick an agent from the picker (populated by `HylandKD.AvailableAgents`);
@@ -255,10 +255,10 @@ The dialog lets the user have a multi-turn conversation with a Knowledge Discove
 The conversation is not bound to a current document or a selection, so it also makes sense to expose it from the Home page.
 
 * In **Studio Designer > UI**, click **Dashboard** — this opens the full default `nuxeo-home.html` file.
-* Import the element at the top, then drop `<kd-conversation>` wherever you want. In the example below it is centered in the page header:
+* Import the element at the top, then drop `<cic-kd-conversation>` wherever you want. In the example below it is centered in the page header:
 
 ```html
-<link rel="import" href="nuxeo-labs-content-intelligence-connector/elements/kd-conversation.html">
+<link rel="import" href="nuxeo-labs-content-intelligence-connector/elements/cic-kd-conversation.html">
 <dom-module id="nuxeo-home">
   <template>
     <style include="nuxeo-styles">
@@ -288,7 +288,7 @@ The conversation is not bound to a current document or a selection, so it also m
         </div>
         <!-- conversation -->
         <div class="header-center">
-          <kd-conversation icon="icons:question-answer" show-label="true"></kd-conversation>
+          <cic-kd-conversation icon="icons:question-answer" show-label="true"></cic-kd-conversation>
         </div>
       </div>
       . . .
@@ -303,9 +303,9 @@ The `show-label="true"` attribute makes the button display its localized label (
 | `cic-agents-lookupAgent` | `DOCUMENT_ACTIONS` | `icons:announcement` | `CIC.AgenticAgentLookup` | `CICAgenticAgentAndConfig` documents (`ReadWrite`) |
 | `cic-agentic-invoke-agent` *(disabled by default)* | `DOCUMENT_ACTIONS` | `notification:phone-in-talk` | `HylandAgents.AvailableAgenticAgents` + `HylandAgents.InvokeTaskAgent` | every document |
 
-The **Invoke an Agent** dialog (`<cic-agentic-invoke-agent>`) lets an end-user pick one of the locally registered `CICAgenticAgentAndConfig` documents, fill in its input fields, and run the agent. The dropdown is populated by `HylandAgents.AvailableAgenticAgents`, which queries `CICAgenticAgentAndConfig` documents with the **current user's** session — so READ permission on those docs governs which agents a user sees (same mechanism as `kd-conversation`). On **Run**, the dialog calls `HylandAgents.InvokeTaskAgent` with `{configName, agentId, jsonPayloadStr}` and renders the agent's structured outputs back in the same dialog (best-effort: it reads `response.output[0].content[0].text`, JSON-parses it, and pretty-prints object values).
+The **Invoke an Agent** dialog (`<cic-agentic-invoke-agent>`) lets an end-user pick one of the locally registered `CICAgenticAgentAndConfig` documents, fill in its input fields, and run the agent. The dropdown is populated by `HylandAgents.AvailableAgenticAgents`, which queries `CICAgenticAgentAndConfig` documents with the **current user's** session — so READ permission on those docs governs which agents a user sees (same mechanism as `cic-kd-conversation`). On **Run**, the dialog calls `HylandAgents.InvokeTaskAgent` with `{configName, agentId, jsonPayloadStr}` and renders the agent's structured outputs back in the same dialog (best-effort: it reads `response.output[0].content[0].text`, JSON-parses it, and pretty-prints object values).
 
-The slot-content is **disabled by default**. Enable it from the **CIC UI Config** admin page, or drop the element into a custom page (Dashboard, custom doctype layout) by importing `nuxeo-labs-content-intelligence-connector/elements/cic-agentic-invoke-agent.html` — same pattern as `<kd-conversation>` documented above.
+The slot-content is **disabled by default**. Enable it from the **CIC UI Config** admin page, or drop the element into a custom page (Dashboard, custom doctype layout) by importing `nuxeo-labs-content-intelligence-connector/elements/cic-agentic-invoke-agent.html` — same pattern as `<cic-kd-conversation>` documented above.
 
 > Polymer `iron-icons` are part of the standard Web UI icon set; previews live at https://www.webcomponents.org/element/@polymer/iron-icons/demo/demo/index.html.
 
@@ -447,7 +447,7 @@ For example, to **hide** the "Ask a question" button on documents:
 ```html
 <nuxeo-slot-content name="cic-kd-ask-question" slot="DOCUMENT_ACTIONS" order="1" disabled>
   <template>
-    <kd-ask-question icon="icons:question-answer"></kd-ask-question>
+    <cic-kd-ask-question icon="icons:question-answer"></cic-kd-ask-question>
   </template>
 </nuxeo-slot-content>
 ```

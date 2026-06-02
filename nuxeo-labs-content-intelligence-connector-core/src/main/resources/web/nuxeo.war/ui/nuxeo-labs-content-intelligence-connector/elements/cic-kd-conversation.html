@@ -1,18 +1,18 @@
 <!--
-`kd-conversation`
+`cic-kd-conversation`
 A chat-like conversation element for Knowledge Discovery.
 Displays a button that opens a dialog where the user can select an agent,
 then start and continue a conversation.
 
 Examples usage :
-  <kd-conversation></kd-conversation>
-  <kd-conversation icon="communication:chat" show-label="true"></kd-conversation>
+  <cic-kd-conversation></cic-kd-conversation>
+  <cic-kd-conversation icon="communication:chat" show-label="true"></cic-kd-conversation>
 
 ====================
 INFO/WARNING/TODO
 ====================
 * The JS code uses JS dependencies to display the markdown and sanitize it. 
-  These are loaded in a separate file kd-conversation-libs.js, to avoid issues with Designer's HTML validator.
+  These are loaded in a separate file cic-kd-conversation-libs.js, to avoid issues with Designer's HTML validator.
   If you want to use other libraries, or load them differently, you may need to adjust the code.
 
 * See _fetchDocumentTitles(). We use a NXQL that searches for UUIDs, but not only in ecm:uuid.
@@ -41,7 +41,7 @@ INFO/WARNING/TODO
   "label.ui.cic.kd-ask.close": "Close"
 }
 -->
-<dom-module id="kd-conversation">
+<dom-module id="cic-kd-conversation">
   <template>
     <style include="nuxeo-action-button-styles nuxeo-styles">
       :host {
@@ -341,7 +341,7 @@ INFO/WARNING/TODO
         <h2>[[i18n('label.ui.cic.kd-conversation')]]</h2>
       </div>
 
-      <!-- Agent picker (shared element used by both kd-conversation and kd-ask-question-shared). -->
+      <!-- Agent picker (shared element used by both cic-kd-conversation and cic-kd-ask-question-shared). -->
       <div class="agent-selector">
         <cic-agent-and-config-picker id="agentPicker"
                                      label="label.ui.cic.kd-conversation.agent"
@@ -420,11 +420,11 @@ INFO/WARNING/TODO
 
   <!-- Load marked.js and DOMPurify for markdown rendering and XSS sanitization.
        Kept in a separate .js file to avoid Designer's HTML validator issues. -->
-  <script src="kd-conversation-libs.js"></script>
+  <script src="cic-kd-conversation-libs.js"></script>
 
   <script>
     Polymer({
-      is: 'kd-conversation',
+      is: 'cic-kd-conversation',
       behaviors: [Nuxeo.LayoutBehavior],
       properties: {
         label: {
@@ -590,7 +590,7 @@ INFO/WARNING/TODO
             }
           }.bind(this), 100);
         }.bind(this)).catch(function(err) {
-          console.error('kd-conversation: Error fetching document titles', err);
+          console.error('cic-kd-conversation: Error fetching document titles', err);
           // Fallback: use UIDs as titles
           var refs = uids.map(function(uid) { return { uid: uid, title: uid }; });
           this.set('_messages.' + messageIndex + '.references', refs);
@@ -605,7 +605,7 @@ INFO/WARNING/TODO
       },
 
       // ====================> Markdown to HTML
-      // Uses marked.js (loaded by kd-conversation-libs.js) for rendering,
+      // Uses marked.js (loaded by cic-kd-conversation-libs.js) for rendering,
       // and DOMPurify for XSS sanitization. Falls back to escaped plain
       // text if either library is not available.
       _markdownToHtml: function(text) {
@@ -617,9 +617,9 @@ INFO/WARNING/TODO
               return window.DOMPurify.sanitize(html);
             }
             // DOMPurify not available: fall through to safe plain-text rendering
-            console.warn('kd-conversation: DOMPurify not loaded, falling back to plain text for safety.');
+            console.warn('cic-kd-conversation: DOMPurify not loaded, falling back to plain text for safety.');
           } catch(e) {
-            console.warn('kd-conversation: marked.parse() failed, using plain text.', e);
+            console.warn('cic-kd-conversation: marked.parse() failed, using plain text.', e);
           }
         }
         // Fallback: escape HTML and convert newlines
@@ -787,7 +787,7 @@ INFO/WARNING/TODO
       },
 
       _handleError: function(message) {
-        console.error('kd-conversation:', message);
+        console.error('cic-kd-conversation:', message);
         this._errorMessage = message;
         this._isThinking = false;
       }

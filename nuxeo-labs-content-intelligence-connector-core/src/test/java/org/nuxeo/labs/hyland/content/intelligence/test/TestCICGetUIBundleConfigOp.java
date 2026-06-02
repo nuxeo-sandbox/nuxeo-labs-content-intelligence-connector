@@ -160,7 +160,7 @@ public class TestCICGetUIBundleConfigOp {
                 + "</nuxeo-slot-content>\n"
                 + "<nuxeo-slot-content name=\"cic-kd-ask-question\" slot=\"DOCUMENT_ACTIONS\" order=\"3\" disabled>\n"
                 + "  <template>\n"
-                + "    <kd-ask-question icon=\"icons:question-answer\"></kd-ask-question>\n"
+                + "    <cic-kd-ask-question icon=\"icons:question-answer\"></cic-kd-ask-question>\n"
                 + "  </template>\n"
                 + "</nuxeo-slot-content>\n"
                 + "<nuxeo-slot-content name=\"cic-something-bare\" slot=\"USER_MENU_ACTIONS\" order=\"1\">\n"
