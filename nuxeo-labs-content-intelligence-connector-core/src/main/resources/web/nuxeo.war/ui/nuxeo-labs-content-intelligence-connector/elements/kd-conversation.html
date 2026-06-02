@@ -324,8 +324,6 @@ INFO/WARNING/TODO
       }
     </style>
 
-    <nuxeo-operation id="getAvailableAgentsOp" op="HylandKD.AvailableAgents"></nuxeo-operation>
-
     <nuxeo-operation id="startConversationOp" op="HylandKnowledgeDiscovery.startConversation"></nuxeo-operation>
     <nuxeo-operation id="continueConversationOp" op="HylandKnowledgeDiscovery.continueConversation"></nuxeo-operation>
     <nuxeo-operation id="queryDocumentsOp" op="Repository.Query"></nuxeo-operation>
@@ -343,15 +341,14 @@ INFO/WARNING/TODO
         <h2>[[i18n('label.ui.cic.kd-conversation')]]</h2>
       </div>
 
-      <!-- Agent selector -->
+      <!-- Agent picker (shared element used by both kd-conversation and kd-ask-question-shared). -->
       <div class="agent-selector">
-        <label>[[i18n('label.ui.cic.kd-conversation.agent')]]</label>
-        <select id="agentSelect" value="{{_selectedAgentId::change}}" disabled$="[[_conversationStarted]]">
-          <option value="">[[i18n('label.ui.cic.kd-conversation.agent.select.prompt')]]</option>
-          <template is="dom-repeat" items="[[_agents]]">
-            <option value="[[item.agentId]]">[[item.title]]</option>
-          </template>
-        </select>
+        <cic-agent-and-config-picker id="agentPicker"
+                                     label="label.ui.cic.kd-conversation.agent"
+                                     disabled="[[_conversationStarted]]"
+                                     selected-agent-id="{{_selectedAgentId}}"
+                                     selected-config-name="{{_selectedConfigName}}">
+        </cic-agent-and-config-picker>
       </div>
 
       <!-- Conversation messages -->
@@ -448,12 +445,16 @@ INFO/WARNING/TODO
 
         /* ==================== Private properties ==================== */
 
-        _agents: {
-          type: Array,
-          value: function() { return []; }
+        // Notified by <cic-agent-and-config-picker>.
+        _selectedAgentId: {
+          type: String,
+          value: ''
         },
 
-        _selectedAgentId: {
+        // Notified by <cic-agent-and-config-picker>. Passed through to the
+        // KD conversation operations so the dialog respects whichever
+        // service contribution is configured on the selected CICAgentAndConfig.
+        _selectedConfigName: {
           type: String,
           value: ''
         },
@@ -628,9 +629,6 @@ INFO/WARNING/TODO
 
       // ====================> Handle Dialog
       _toggleDialog: function() {
-        if (!this.$.conversationDialog.opened) {
-          this._loadAgents();
-        }
         this.$.conversationDialog.toggle();
       },
 
@@ -645,11 +643,11 @@ INFO/WARNING/TODO
         this._currentQuestion = '';
         this._isThinking = false;
         this._errorMessage = '';
-        this._selectedAgentId = '';
-        // Reset the select element
-        if (this.$.agentSelect) {
-          this.$.agentSelect.value = '';
+        if (this.$.agentPicker) {
+          this.$.agentPicker.reset();
         }
+        this._selectedAgentId = '';
+        this._selectedConfigName = '';
       },
 
       _clearForNewConversation: function() {
@@ -659,28 +657,7 @@ INFO/WARNING/TODO
         this._currentQuestion = '';
         this._isThinking = false;
         this._errorMessage = '';
-        // Keep _selectedAgentId and agent selector unchanged
-      },
-
-      // ====================> Load agents
-      _loadAgents: function() {
-        this.$.getAvailableAgentsOp.execute().then(function(response) {
-          var jsonStr = response;
-          // The operation returns a Blob; calling getString() if needed
-          if (response && typeof response.getString === 'function') {
-            jsonStr = response.getString();
-          }
-          var agents;
-          if (typeof jsonStr === 'string') {
-            agents = JSON.parse(jsonStr);
-          } else {
-            agents = jsonStr;
-          }
-          this._agents = agents || [];
-        }.bind(this)).catch(function(err) {
-          console.error('kd-conversation: Error loading agents', err);
-          this._agents = [];
-        }.bind(this));
+        // Keep _selectedAgentId / _selectedConfigName and agent selector unchanged
       },
 
       // ====================> Handle user input
@@ -714,6 +691,9 @@ INFO/WARNING/TODO
           agentId: this._selectedAgentId,
           question: question
         };
+        if (this._selectedConfigName) {
+          op.params.configName = this._selectedConfigName;
+        }
         op.execute().then(function(response) {
           var result = this._parseOperationResponse(response);
           if (!result) return;
@@ -739,6 +719,9 @@ INFO/WARNING/TODO
           conversationId: this._conversationId,
           question: question
         };
+        if (this._selectedConfigName) {
+          op.params.configName = this._selectedConfigName;
+        }
         op.execute().then(function(response) {
           var result = this._parseOperationResponse(response);
           if (!result) return;

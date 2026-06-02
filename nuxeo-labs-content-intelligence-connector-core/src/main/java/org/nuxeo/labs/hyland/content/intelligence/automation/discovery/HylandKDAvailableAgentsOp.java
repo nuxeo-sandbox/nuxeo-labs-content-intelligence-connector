@@ -41,27 +41,30 @@ import org.nuxeo.ecm.core.api.DocumentModel;
  * Output is a JSON {@link Blob} holding a plain array (NOT the canonical
  * {@code {responseCode, response, ...}} envelope used by ops that wrap a CIC HTTP
  * call), each entry being:
- * 
+ *
  * <pre>
- * { "title": "...", "agentId": "..." }
+ * { "title": "...", "agentId": "...", "configName": "...", "docId": "..." }
  * </pre>
  *
- * Used by Web UI elements (e.g. {@code kd-conversation}) that need to populate
- * an agent picker.
+ * Used by Web UI elements (e.g. {@code cic-agent-and-config-picker}, consumed by
+ * both {@code kd-conversation} and {@code kd-ask-question-shared}) that need to
+ * populate an agent picker.
  *
- * @since 2025.16
+ * @since 2025.16 (extended in 2025.19 to also expose {@code configName} and {@code docId})
  */
 @Operation(id = HylandKDAvailableAgentsOp.ID, category = "Hyland Content Intelligence", label = "Get Available KD Agents (Local)", description = ""
         + "Returns a JSON Blob holding a plain array of the locally registered CICAgentAndConfig"
-        + " documents the current user has READ access to. Each entry is {title, agentId}."
-        + " Intended for Web UI elements (e.g. kd-conversation) that need to populate an agent picker."
+        + " documents the current user has READ access to. Each entry is {title, agentId, configName, docId}."
+        + " Intended for Web UI elements (e.g. the shared cic-agent-and-config-picker used by kd-conversation"
+        + " and the KD ask-question dialog) that need to populate an agent picker."
         + " This is NOT the full list of agents declared on the CIC platform; use HylandKnowledgeDiscovery.getAllAgents for that.")
 public class HylandKDAvailableAgentsOp {
 
     public static final String ID = "HylandKD.AvailableAgents";
 
     protected static final String NXQL = "SELECT * FROM CICAgentAndConfig"
-            + " WHERE ecm:isVersion = 0 AND ecm:isTrashed = 0 AND ecm:isProxy = 0";
+            + " WHERE ecm:isVersion = 0 AND ecm:isTrashed = 0 AND ecm:isProxy = 0"
+            + " ORDER BY dc:title";
 
     @Context
     protected CoreSession session;
@@ -75,6 +78,8 @@ public class HylandKDAvailableAgentsOp {
             var entry = new JSONObject();
             entry.put("title", doc.getTitle());
             entry.put("agentId", (String) doc.getPropertyValue("cicagentandconfig:agentId"));
+            entry.put("configName", (String) doc.getPropertyValue("cicagentandconfig:configName"));
+            entry.put("docId", doc.getId());
             agents.put(entry);
         }
         return Blobs.createJSONBlob(agents.toString());

@@ -173,7 +173,7 @@ The following **facets** are declared and added **dynamically at runtime** by th
 
 ### Document types (CIC agent registry)
 
-Used by the KD "Ask a question" dialog (the agent picker is a `nuxeo-document-suggestion` backed by the `SelectCICAgentAndConfig` page provider):
+Used by the KD "Ask a question" and "Conversation" dialogs (both share the `<cic-agent-and-config-picker>` element, populated by the `HylandKD.AvailableAgents` operation that queries the documents below with the current user's session):
 
 | Doctype | Extends | Purpose |
 | --- | --- | --- |
@@ -232,7 +232,7 @@ Visible on documents of type `File`, with a `file:content` blob, not version/pro
 | `cic-kd-ask-question-with-selected` | `RESULTS_SELECTION_ACTIONS` | `icons:question-answer` | `<kd-ask-question-with-selected>` |
 
 The dialog lets the user:
-* pick a `CICAgentAndConfig` document (via the `SelectCICAgentAndConfig` page provider);
+* pick an agent from the picker (the shared `<cic-agent-and-config-picker>`, populated by `HylandKD.AvailableAgents` — same picker used by the Conversation dialog);
 * type a question;
 * see the answer + the **Nuxeo documents** matching the agent's `objectReferences` (resolved via `CIC.KDAskQuestionForUI`, which extracts the trailing UUID and runs an NXQL `IN (...)` lookup).
 
@@ -429,11 +429,11 @@ The same pattern applies to every form listed above. For example, on a `Picture`
 
 ### Override the default behavior from Studio
 
-Every artifact the plugin contributes (operations, page provider, schemas, doctypes, directories, slot-contents, i18n keys) is identified by a stable name. Contributing **the same id** from your Nuxeo Studio project takes precedence and overrides the plugin's version. Common cases:
+Every artifact the plugin contributes (operations, schemas, doctypes, directories, slot-contents, i18n keys) is identified by a stable name. Contributing **the same id** from your Nuxeo Studio project takes precedence and overrides the plugin's version. Common cases:
 
 * **Replace the operation called by a button**: write a new automation chain/script (or a different operation) and override the `cic-ke-*` slot-content with the same `name`/`slot`, just change the `operation="..."` attribute on the inner `<nuxeo-operation-button>`.
 * **Change the default classes** used by `CIC.ClassifyImage` / `CIC.ClassifyTextFile`: edit the `cicImageClassification` / `cicTextClassification` directory entries in your Studio project (same directory name, your CSV wins).
-* **Change the page provider** that lists agents in the KD dialog: contribute a `SelectCICAgentAndConfig` page provider with the same name and your own NXQL.
+* **Control which agents appear in the KD pickers**: the dropdown is populated by `HylandKD.AvailableAgents` from the local `CICAgentAndConfig` documents using the current user's session — grant / revoke READ on those documents to filter who sees which agent. If you need a different NXQL or different fields, override the `HylandKD.AvailableAgents` operation in your Studio project (same operation id) and return the same JSON shape `[{title, agentId, configName, docId}, ...]`.
 
 ### Show / hide buttons per project
 
