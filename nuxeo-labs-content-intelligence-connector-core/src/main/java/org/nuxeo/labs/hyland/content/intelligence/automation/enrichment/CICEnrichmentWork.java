@@ -18,8 +18,21 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.automation.enrichment;
 
+import static org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICEnrichmentEvents.CIC_CALL_KE_DONE;
+import static org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICEnrichmentEvents.CTX_ACTION_NAME;
+import static org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICEnrichmentEvents.CTX_BATCH_COUNT;
+import static org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICEnrichmentEvents.CTX_BATCH_INDEX;
+import static org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICEnrichmentEvents.CTX_CONFIG_NAME;
+import static org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICEnrichmentEvents.CTX_DOC_IDS;
+import static org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICEnrichmentEvents.CTX_IS_LIST_INPUT;
+import static org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICEnrichmentEvents.CTX_OP_CLASS_NAME;
+import static org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICEnrichmentEvents.CTX_RESPONSE_CODE;
+import static org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICEnrichmentEvents.CTX_RESPONSE_ENVELOPE_JSON;
+import static org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICEnrichmentEvents.CTX_RESPONSE_STATUS;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,13 +42,18 @@ import org.nuxeo.ecm.core.api.DocumentRef;
 import org.nuxeo.ecm.core.api.IdRef;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.api.impl.DocumentModelListImpl;
+import org.nuxeo.ecm.core.event.EventProducer;
+import org.nuxeo.ecm.core.event.impl.DocumentEventContext;
 import org.nuxeo.ecm.core.work.AbstractWork;
+import org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.AbstractCICEnrichmentOp.BatchOutcome;
+import org.nuxeo.runtime.api.Framework;
 
 /**
  * Generic background {@link org.nuxeo.ecm.core.work.api.Work Work} that executes a
  * {@code CIC.*} Knowledge Enrichment operation asynchronously.
  * <p>
- * Scheduled by {@link AbstractCICEnrichmentOp#scheduleAsync} when the caller passes
+ * Scheduled by {@link AbstractCICEnrichmentOp#scheduleAsyncForDocument} /
+ * {@link AbstractCICEnrichmentOp#scheduleAsyncForDocuments} when the caller passes
  * {@code runAsynchronously=true} on any of the {@code CIC.*} document operations. The Work:
  * <ul>
  * <li>Re-instantiates the concrete operation class via reflection.</li>
@@ -45,6 +63,10 @@ import org.nuxeo.ecm.core.work.AbstractWork;
  * {@link AbstractCICEnrichmentOp#runForDocuments} (list) with {@code saveDocument=true} —
  * the caller's {@code saveDocument} value is intentionally overridden because the Work owns
  * persistence (the caller has no other way to see the resulting documents).</li>
+ * <li>Fires one {@link CICEnrichmentEvents#CIC_CALL_KE_DONE} event per batch (one per actual
+ * KE call). Single-doc Work = 1 event; multi-doc Work with N batches = N events. A listener
+ * throwing does not fail the Work (logged at WARN). See {@link CICEnrichmentEvents} for the
+ * full event-context contract.</li>
  * </ul>
  * <p>
  * Errors are recorded on each document via the existing {@code CICError} facet by the same
@@ -131,6 +153,40 @@ public class CICEnrichmentWork extends AbstractWork {
 
         openSystemSession();
 
+        // Per-batch event firer. Builds a DocumentEventContext (principal = first batch doc) and
+        // fires cicCallKEDone via the EventProducer. A listener throwing must NOT fail the Work.
+        Consumer<BatchOutcome> fireEvent = outcome -> {
+            try {
+                if (outcome == null || outcome.docIds == null || outcome.docIds.isEmpty()) {
+                    return;
+                }
+                DocumentRef principalRef = new IdRef(outcome.docIds.get(0));
+                if (!session.exists(principalRef)) {
+                    LOG.debug("CICEnrichmentWork: principal doc {} no longer exists, event skipped",
+                            outcome.docIds.get(0));
+                    return;
+                }
+                DocumentModel principal = session.getDocument(principalRef);
+                DocumentEventContext ctx = new DocumentEventContext(session, session.getPrincipal(), principal);
+                ctx.setProperty(CTX_ACTION_NAME, op.getActionName());
+                ctx.setProperty(CTX_OP_CLASS_NAME, opClassName);
+                if (configName != null) {
+                    ctx.setProperty(CTX_CONFIG_NAME, configName);
+                }
+                // ArrayList is Serializable; defensive copy to decouple from BatchOutcome's view.
+                ctx.setProperty(CTX_DOC_IDS, new ArrayList<>(outcome.docIds));
+                ctx.setProperty(CTX_RESPONSE_ENVELOPE_JSON, outcome.responseEnvelopeJson);
+                ctx.setProperty(CTX_RESPONSE_CODE, Integer.valueOf(outcome.responseCode));
+                ctx.setProperty(CTX_RESPONSE_STATUS, outcome.responseStatus);
+                ctx.setProperty(CTX_BATCH_INDEX, Integer.valueOf(outcome.batchIndex));
+                ctx.setProperty(CTX_BATCH_COUNT, Integer.valueOf(outcome.batchCount));
+                ctx.setProperty(CTX_IS_LIST_INPUT, Boolean.valueOf(isListInput));
+                Framework.getService(EventProducer.class).fireEvent(ctx.newEvent(CIC_CALL_KE_DONE));
+            } catch (RuntimeException ex) {
+                LOG.warn("Failed to fire {} event for op {}: {}", CIC_CALL_KE_DONE, opClassName, ex.getMessage(), ex);
+            }
+        };
+
         if (isListInput) {
             DocumentModelListImpl docs = new DocumentModelListImpl();
             for (String id : docIds) {
@@ -142,7 +198,7 @@ public class CICEnrichmentWork extends AbstractWork {
                 }
             }
             if (!docs.isEmpty()) {
-                op.runForDocuments(session, docs, configName, instructionsV2, true, batchSize);
+                op.runForDocuments(session, docs, configName, instructionsV2, true, batchSize, fireEvent);
             }
         } else {
             // Single-doc path.
@@ -153,7 +209,7 @@ public class CICEnrichmentWork extends AbstractWork {
                 return;
             }
             DocumentModel doc = session.getDocument(ref);
-            op.runForDocument(session, doc, configName, instructionsV2, true);
+            op.runForDocument(session, doc, configName, instructionsV2, true, fireEvent);
         }
     }
 

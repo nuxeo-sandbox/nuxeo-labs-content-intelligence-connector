@@ -106,7 +106,7 @@ public class CICSummarizeTextOp extends AbstractCICTextEnrichmentOp {
     }
 
     @Override
-    protected String getActionName() {
+    public String getActionName() {
         return "textSummarization";
     }
 

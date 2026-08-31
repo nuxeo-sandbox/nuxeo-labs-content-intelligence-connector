@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -71,8 +72,62 @@ public abstract class AbstractCICEnrichmentOp {
 
     private static final Logger LOG = LogManager.getLogger(AbstractCICEnrichmentOp.class);
 
-    /** Returns the v2 action name (e.g. {@code "textSummarization"}). */
-    protected abstract String getActionName();
+    /**
+     * Outcome of a single CIC call (one document for the single-doc path; one batch for the
+     * multi-doc path). Populated by the run methods and handed to the optional batch-completion
+     * {@link Consumer} so callers (notably {@link CICEnrichmentWork}) can observe the result of
+     * each KE call without re-deriving it from the document state.
+     *
+     * @since 2025.20
+     */
+    public static final class BatchOutcome {
+
+        /** Document UIDs covered by this call (size 1 for single-doc, batch size for multi). */
+        public final List<String> docIds;
+
+        /**
+         * Canonical CIC envelope as a JSON string, or a synthetic envelope when no real call was
+         * made (e.g. document had no blob). Never {@code null}.
+         */
+        public final String responseEnvelopeJson;
+
+        /** HTTP-style response code, or {@code 0} when no call was made. */
+        public final int responseCode;
+
+        /** {@code "SUCCESS"}, {@code "FAILURE"}, or {@code "NO_CALL"}. */
+        public final String responseStatus;
+
+        /** Zero-based batch index within the current Work (always 0 for single-doc). */
+        public final int batchIndex;
+
+        /** Total number of batches in the current Work (1 for single-doc). */
+        public final int batchCount;
+
+        public BatchOutcome(List<String> docIds, String responseEnvelopeJson, int responseCode,
+                String responseStatus, int batchIndex, int batchCount) {
+            this.docIds = List.copyOf(docIds);
+            this.responseEnvelopeJson = responseEnvelopeJson == null ? "{}" : responseEnvelopeJson;
+            this.responseCode = responseCode;
+            this.responseStatus = responseStatus;
+            this.batchIndex = batchIndex;
+            this.batchCount = batchCount;
+        }
+    }
+
+    /** No-op {@link BatchOutcome} consumer used by the legacy run-method overloads. */
+    private static final Consumer<BatchOutcome> NOOP_BATCH_OUTCOME_CONSUMER = o -> {
+    };
+
+    /**
+     * Returns the v2 action name (e.g. {@code "textSummarization"}).
+     * <p>
+     * Visibility was widened from {@code protected} to {@code public} so external callers (in
+     * particular {@link CICEnrichmentWork} when populating
+     * {@link CICEnrichmentEvents#CTX_ACTION_NAME}) can read the action name without reflection.
+     *
+     * @since 2025.20 (visibility change; method itself older)
+     */
+    public abstract String getActionName();
 
     /**
      * Returns the result key inside {@code response.results[0]} for this action
@@ -151,21 +206,43 @@ public abstract class AbstractCICEnrichmentOp {
      */
     public DocumentModel runForDocument(CoreSession session, DocumentModel doc, String configName,
             String instructionsV2JsonStr, boolean saveDocument) {
+        return runForDocument(session, doc, configName, instructionsV2JsonStr, saveDocument,
+                NOOP_BATCH_OUTCOME_CONSUMER);
+    }
+
+    /**
+     * Variant of {@link #runForDocument(CoreSession, DocumentModel, String, String, boolean)} that
+     * notifies {@code onBatchComplete} exactly once with the outcome of the call (success, failure,
+     * or no-call). Used by {@link CICEnrichmentWork} to fire the
+     * {@link CICEnrichmentEvents#CIC_CALL_KE_DONE} event.
+     *
+     * @since 2025.20
+     */
+    public DocumentModel runForDocument(CoreSession session, DocumentModel doc, String configName,
+            String instructionsV2JsonStr, boolean saveDocument, Consumer<BatchOutcome> onBatchComplete) {
 
         if (doc == null) {
             throw new NuxeoException("Input document is required");
         }
+        Consumer<BatchOutcome> consumer = onBatchComplete == null ? NOOP_BATCH_OUTCOME_CONSUMER : onBatchComplete;
+
         HylandKEService ke = Framework.getService(HylandKEService.class);
         CICEnrichmentHelper helper = Framework.getService(CICEnrichmentHelper.class);
+
+        // Outcome accumulators (populated below; flushed at the single return point).
+        String outcomeStatus;
+        int outcomeCode;
+        String outcomeEnvelopeJson;
 
         Blob blob = getBlob(doc);
         if (blob == null) {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 0, "No blob",
                     "No blob available for action " + getActionName() + " on " + doc.getId(), null);
-            if (saveDocument) {
-                doc = session.saveDocument(doc);
-            }
-            return doc;
+            outcomeStatus = "NO_CALL";
+            outcomeCode = 0;
+            outcomeEnvelopeJson = noCallEnvelopeJson("No blob");
+            return finishSingleDoc(session, doc, saveDocument, consumer, outcomeEnvelopeJson, outcomeCode,
+                    outcomeStatus);
         }
 
         String extra = ServicesUtils.addInstructionsToExtraPayload(instructionsV2JsonStr, null);
@@ -177,31 +254,33 @@ public abstract class AbstractCICEnrichmentOp {
         } catch (IOException e) {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 0, "IO error calling KE",
                     e.getMessage(), null);
-            if (saveDocument) {
-                doc = session.saveDocument(doc);
-            }
-            return doc;
+            outcomeStatus = "FAILURE";
+            outcomeCode = 0;
+            outcomeEnvelopeJson = noCallEnvelopeJson("IO error calling KE: " + e.getMessage());
+            return finishSingleDoc(session, doc, saveDocument, consumer, outcomeEnvelopeJson, outcomeCode,
+                    outcomeStatus);
         }
+
+        outcomeEnvelopeJson = result.toJsonString();
+        outcomeCode = result.getResponseCode();
 
         // Top-level response code
         if (result.getResponseCode() != 200) {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, result.getResponseCode(),
-                    "KE call failed", result.getResponseMessage(), result.toJsonString());
-            if (saveDocument) {
-                doc = session.saveDocument(doc);
-            }
-            return doc;
+                    "KE call failed", result.getResponseMessage(), outcomeEnvelopeJson);
+            outcomeStatus = "FAILURE";
+            return finishSingleDoc(session, doc, saveDocument, consumer, outcomeEnvelopeJson, outcomeCode,
+                    outcomeStatus);
         }
 
         // Inspect inner envelope
-        JSONObject envelope = helper.parseEnrichmentResponse(result.toJsonString());
+        JSONObject envelope = helper.parseEnrichmentResponse(outcomeEnvelopeJson);
         if (envelope == null) {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Invalid envelope",
-                    "Could not parse KE envelope", result.toJsonString());
-            if (saveDocument) {
-                doc = session.saveDocument(doc);
-            }
-            return doc;
+                    "Could not parse KE envelope", outcomeEnvelopeJson);
+            outcomeStatus = "FAILURE";
+            return finishSingleDoc(session, doc, saveDocument, consumer, outcomeEnvelopeJson, outcomeCode,
+                    outcomeStatus);
         }
 
         JSONObject response = envelope.optJSONObject("response");
@@ -209,11 +288,10 @@ public abstract class AbstractCICEnrichmentOp {
         if (response == null || !"SUCCESS".equals(status)) {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200,
                     "KE response not SUCCESS",
-                    "status=" + status, result.toJsonString());
-            if (saveDocument) {
-                doc = session.saveDocument(doc);
-            }
-            return doc;
+                    "status=" + status, outcomeEnvelopeJson);
+            outcomeStatus = "FAILURE";
+            return finishSingleDoc(session, doc, saveDocument, consumer, outcomeEnvelopeJson, outcomeCode,
+                    outcomeStatus);
         }
 
         // results[0].<resultKey>
@@ -222,46 +300,73 @@ public abstract class AbstractCICEnrichmentOp {
         JSONObject actionWrapper = resultEntry == null ? null : resultEntry.optJSONObject(getResultKey());
         if (actionWrapper == null) {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200,
-                    "Missing action result", "Result key not found: " + getResultKey(), result.toJsonString());
-            if (saveDocument) {
-                doc = session.saveDocument(doc);
-            }
-            return doc;
+                    "Missing action result", "Result key not found: " + getResultKey(), outcomeEnvelopeJson);
+            outcomeStatus = "FAILURE";
+            return finishSingleDoc(session, doc, saveDocument, consumer, outcomeEnvelopeJson, outcomeCode,
+                    outcomeStatus);
         }
         // Action-level error?
         Object actionError = actionWrapper.opt("error");
         if (actionError != null && actionError != JSONObject.NULL && !String.valueOf(actionError).isEmpty()) {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Action error",
-                    String.valueOf(actionError), result.toJsonString());
-            if (saveDocument) {
-                doc = session.saveDocument(doc);
-            }
-            return doc;
+                    String.valueOf(actionError), outcomeEnvelopeJson);
+            outcomeStatus = "FAILURE";
+            return finishSingleDoc(session, doc, saveDocument, consumer, outcomeEnvelopeJson, outcomeCode,
+                    outcomeStatus);
         }
 
         Object actionResult = actionWrapper.opt("result");
         if (actionResult == null || actionResult == JSONObject.NULL) {
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Empty action result",
-                    "Action returned no result", result.toJsonString());
-            if (saveDocument) {
-                doc = session.saveDocument(doc);
-            }
-            return doc;
+                    "Action returned no result", outcomeEnvelopeJson);
+            outcomeStatus = "FAILURE";
+            return finishSingleDoc(session, doc, saveDocument, consumer, outcomeEnvelopeJson, outcomeCode,
+                    outcomeStatus);
         }
 
+        // applyResult is the only branch that can flip the status from SUCCESS to FAILURE late.
         try {
             applyResult(doc, actionResult);
             ke.clearCICError(doc);
+            outcomeStatus = "SUCCESS";
         } catch (RuntimeException ex) {
             LOG.warn("applyResult failed for action {}: {}", getActionName(), ex.getMessage(), ex);
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Failed writing result",
-                    ex.getMessage(), result.toJsonString());
+                    ex.getMessage(), outcomeEnvelopeJson);
+            outcomeStatus = "FAILURE";
         }
 
+        return finishSingleDoc(session, doc, saveDocument, consumer, outcomeEnvelopeJson, outcomeCode, outcomeStatus);
+    }
+
+    /**
+     * Saves the document if requested, fires the single-doc {@link BatchOutcome} consumer, and
+     * returns the (possibly reassigned) document. Single return point for
+     * {@link #runForDocument(CoreSession, DocumentModel, String, String, boolean, Consumer)}.
+     */
+    private DocumentModel finishSingleDoc(CoreSession session, DocumentModel doc, boolean saveDocument,
+            Consumer<BatchOutcome> consumer, String envelopeJson, int code, String status) {
         if (saveDocument) {
             doc = session.saveDocument(doc);
         }
+        try {
+            consumer.accept(new BatchOutcome(List.of(doc.getId()), envelopeJson, code, status, 0, 1));
+        } catch (RuntimeException ex) {
+            LOG.warn("Batch-outcome consumer failed for action {}: {}", getActionName(), ex.getMessage(), ex);
+        }
         return doc;
+    }
+
+    /**
+     * Builds a synthetic {@link CICEnrichmentEvents#CTX_RESPONSE_ENVELOPE_JSON} value for paths
+     * where no real CIC call was made (e.g. document with no blob, IO error before sending).
+     * Mirrors the canonical {@code {responseCode, responseMessage, response}} envelope shape.
+     */
+    private static String noCallEnvelopeJson(String message) {
+        return new JSONObject().put("responseCode", 0)
+                               .put("responseMessage", message == null ? "" : message)
+                               .put("response", JSONObject.NULL)
+                               .toString();
     }
 
     /**
@@ -303,6 +408,22 @@ public abstract class AbstractCICEnrichmentOp {
      */
     public DocumentModelList runForDocuments(CoreSession session, DocumentModelList docs, String configName,
             String instructionsV2JsonStr, boolean saveDocument, int batchSize) {
+        return runForDocuments(session, docs, configName, instructionsV2JsonStr, saveDocument, batchSize,
+                NOOP_BATCH_OUTCOME_CONSUMER);
+    }
+
+    /**
+     * Variant of
+     * {@link #runForDocuments(CoreSession, DocumentModelList, String, String, boolean, int)} that
+     * notifies {@code onBatchComplete} once per batch with the outcome of that batch's KE call
+     * (success, failure, or no-call). Used by {@link CICEnrichmentWork} to fire one
+     * {@link CICEnrichmentEvents#CIC_CALL_KE_DONE} event per batch.
+     *
+     * @since 2025.20
+     */
+    public DocumentModelList runForDocuments(CoreSession session, DocumentModelList docs, String configName,
+            String instructionsV2JsonStr, boolean saveDocument, int batchSize,
+            Consumer<BatchOutcome> onBatchComplete) {
 
         if (docs == null) {
             throw new NuxeoException("Input document list is required");
@@ -310,6 +431,7 @@ public abstract class AbstractCICEnrichmentOp {
         if (docs.isEmpty()) {
             return docs;
         }
+        Consumer<BatchOutcome> consumer = onBatchComplete == null ? NOOP_BATCH_OUTCOME_CONSUMER : onBatchComplete;
 
         HylandKEService ke = Framework.getService(HylandKEService.class);
         CICEnrichmentHelper helper = Framework.getService(CICEnrichmentHelper.class);
@@ -330,12 +452,15 @@ public abstract class AbstractCICEnrichmentOp {
         String effectiveConfig = StringUtils.isBlank(configName) ? null : configName;
 
         int total = docs.size();
+        int batchCount = (int) Math.ceil((double) total / (double) effectiveBatch);
         int fromIndex = 0;
+        int batchIndex = 0;
         while (fromIndex < total) {
             int toIndex = Math.min(fromIndex + effectiveBatch, total);
             List<DocumentModel> batch = docs.subList(fromIndex, toIndex);
 
-            processBatch(session, batch, effectiveConfig, extra, saveDocument, ke, helper);
+            processBatch(session, batch, effectiveConfig, extra, saveDocument, ke, helper, batchIndex, batchCount,
+                    consumer);
 
             boolean moreBatches = toIndex < total;
             if (moreBatches) {
@@ -345,6 +470,7 @@ public abstract class AbstractCICEnrichmentOp {
                 TransactionHelper.startTransaction();
             }
             fromIndex = toIndex;
+            batchIndex++;
         }
 
         return docs;
@@ -352,159 +478,198 @@ public abstract class AbstractCICEnrichmentOp {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void processBatch(CoreSession session, List<DocumentModel> batch, String configName, String extra,
-            boolean saveDocument, HylandKEService ke, CICEnrichmentHelper helper) {
+            boolean saveDocument, HylandKEService ke, CICEnrichmentHelper helper, int batchIndex, int batchCount,
+            Consumer<BatchOutcome> consumer) {
 
-        // Build payload list (only docs with a blob); keep sourceId -> DocumentModel mapping.
-        // Use LinkedHashMap to preserve insertion order (helps logs and debugging).
-        Map<String, DocumentModel> bySourceId = new LinkedHashMap<>();
-        List<ContentToProcess> contentObjects = new ArrayList<>();
-        for (DocumentModel doc : batch) {
-            if (doc == null) {
-                continue;
+        // Capture every doc UID covered by this batch (including those skipped for missing blobs)
+        // so the BatchOutcome event reflects the full batch composition, not only the docs that
+        // made it into the CIC payload.
+        List<String> batchDocIds = new ArrayList<>(batch.size());
+        for (DocumentModel d : batch) {
+            if (d != null) {
+                batchDocIds.add(d.getId());
             }
-            Blob blob = getBlob(doc);
-            if (blob == null) {
-                // getBlob may already have recorded a CICError (e.g. image ops record "Picture view
-                // not found" via the service). If not, fall back to a generic "No blob".
-                if (!doc.hasFacet(CIC_ERROR_FACET)) {
-                    ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 0, "No blob",
-                            "No blob available for action " + getActionName() + " on " + doc.getId(), null);
-                }
-                if (saveDocument) {
-                    session.saveDocument(doc);
-                }
-                continue;
-            }
-            String sourceId = doc.getId();
-            bySourceId.put(sourceId, doc);
-            contentObjects.add(new ContentToProcess(sourceId, blob));
         }
 
-        if (contentObjects.isEmpty()) {
-            return;
-        }
+        // Outcome accumulators (set by the early-exit branches below; flushed at the single
+        // end-of-method call to the consumer).
+        String outcomeStatus = "SUCCESS";
+        int outcomeCode = 200;
+        String outcomeEnvelopeJson = null;
 
-        ServiceCallResult result;
         try {
-            result = ke.enrich(configName, contentObjects, List.of(getActionName()), getClasses(),
-                    getSimilarMetadataJsonArrayStr(), extra);
-        } catch (IOException e) {
-            String msg = "IO error calling KE: " + e.getMessage();
-            LOG.warn("KE batch failed (IO): {}", e.getMessage(), e);
-            failBatch(session, bySourceId, ke, 0, "IO error calling KE", msg, null, saveDocument);
-            return;
-        }
-
-        if (result.getResponseCode() != 200) {
-            String fullJson = result.toJsonString();
-            LOG.warn("KE batch failed (HTTP {}): {}", result.getResponseCode(), result.getResponseMessage());
-            failBatch(session, bySourceId, ke, result.getResponseCode(), "KE call failed",
-                    result.getResponseMessage(), fullJson, saveDocument);
-            return;
-        }
-
-        JSONObject envelope = helper.parseEnrichmentResponse(result.toJsonString());
-        if (envelope == null) {
-            String fullJson = result.toJsonString();
-            LOG.warn("KE batch failed: could not parse envelope");
-            failBatch(session, bySourceId, ke, 200, "Invalid envelope", "Could not parse KE envelope", fullJson,
-                    saveDocument);
-            return;
-        }
-        JSONObject response = envelope.optJSONObject("response");
-        String status = response == null ? null : response.optString("status", null);
-        if (response == null || !"SUCCESS".equals(status)) {
-            String fullJson = result.toJsonString();
-            LOG.warn("KE batch returned status={} (not SUCCESS)", status);
-            failBatch(session, bySourceId, ke, 200, "KE response not SUCCESS", "status=" + status, fullJson,
-                    saveDocument);
-            return;
-        }
-
-        JSONArray results = response.optJSONArray("results");
-        JSONArray mapping = result.getObjectKeysMapping();
-        // objectKey -> sourceId
-        Map<String, String> objectKeyToSourceId = new HashMap<>();
-        if (mapping != null) {
-            for (int i = 0; i < mapping.length(); i++) {
-                JSONObject entry = mapping.optJSONObject(i);
-                if (entry == null) {
-                    continue;
-                }
-                String objectKey = entry.optString("objectKey", null);
-                String sourceId = entry.optString("sourceId", null);
-                if (objectKey != null && sourceId != null) {
-                    objectKeyToSourceId.put(objectKey, sourceId);
-                }
-            }
-        }
-
-        // Track which sourceIds got a result so we can mark missing ones at the end.
-        java.util.Set<String> seenSourceIds = new java.util.HashSet<>();
-        String fullJson = result.toJsonString();
-
-        if (results != null) {
-            for (int i = 0; i < results.length(); i++) {
-                JSONObject resultEntry = results.optJSONObject(i);
-                if (resultEntry == null) {
-                    continue;
-                }
-                String objectKey = resultEntry.optString("objectKey", null);
-                String sourceId = objectKey == null ? null : objectKeyToSourceId.get(objectKey);
-                if (sourceId == null) {
-                    LOG.warn("Orphan KE result entry (no matching sourceId for objectKey={})", objectKey);
-                    continue;
-                }
-                DocumentModel doc = bySourceId.get(sourceId);
+            // Build payload list (only docs with a blob); keep sourceId -> DocumentModel mapping.
+            // Use LinkedHashMap to preserve insertion order (helps logs and debugging).
+            Map<String, DocumentModel> bySourceId = new LinkedHashMap<>();
+            List<ContentToProcess> contentObjects = new ArrayList<>();
+            for (DocumentModel doc : batch) {
                 if (doc == null) {
-                    LOG.warn("Orphan KE result entry (sourceId={} not in current batch)", sourceId);
                     continue;
                 }
-                seenSourceIds.add(sourceId);
-
-                JSONObject actionWrapper = resultEntry.optJSONObject(getResultKey());
-                if (actionWrapper == null) {
-                    ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Missing action result",
-                            "Result key not found: " + getResultKey(), fullJson);
-                    persistIfNeeded(session, doc, saveDocument);
+                Blob blob = getBlob(doc);
+                if (blob == null) {
+                    // getBlob may already have recorded a CICError (e.g. image ops record "Picture view
+                    // not found" via the service). If not, fall back to a generic "No blob".
+                    if (!doc.hasFacet(CIC_ERROR_FACET)) {
+                        ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 0, "No blob",
+                                "No blob available for action " + getActionName() + " on " + doc.getId(), null);
+                    }
+                    if (saveDocument) {
+                        session.saveDocument(doc);
+                    }
                     continue;
                 }
-                Object actionError = actionWrapper.opt("error");
-                if (actionError != null && actionError != JSONObject.NULL
-                        && !String.valueOf(actionError).isEmpty()) {
-                    ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Action error",
-                            String.valueOf(actionError), fullJson);
-                    persistIfNeeded(session, doc, saveDocument);
-                    continue;
-                }
-                Object actionResult = actionWrapper.opt("result");
-                if (actionResult == null || actionResult == JSONObject.NULL) {
-                    ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Empty action result",
-                            "Action returned no result", fullJson);
-                    persistIfNeeded(session, doc, saveDocument);
-                    continue;
-                }
-                try {
-                    applyResult(doc, actionResult);
-                    ke.clearCICError(doc);
-                } catch (RuntimeException ex) {
-                    LOG.warn("applyResult failed for action {} on doc {}: {}", getActionName(), doc.getId(),
-                            ex.getMessage(), ex);
-                    ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Failed writing result",
-                            ex.getMessage(), fullJson);
-                }
-                persistIfNeeded(session, doc, saveDocument);
+                String sourceId = doc.getId();
+                bySourceId.put(sourceId, doc);
+                contentObjects.add(new ContentToProcess(sourceId, blob));
             }
-        }
 
-        // Mark missing docs (sent in payload but absent from results)
-        for (Map.Entry<String, DocumentModel> e : bySourceId.entrySet()) {
-            if (!seenSourceIds.contains(e.getKey())) {
-                DocumentModel doc = e.getValue();
-                LOG.warn("Doc {} is missing from KE response", doc.getId());
-                ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Missing in CIC response",
-                        "Doc " + doc.getId() + " absent from response.results", fullJson);
-                persistIfNeeded(session, doc, saveDocument);
+            if (contentObjects.isEmpty()) {
+                // No CIC call made: every doc in the batch was either null or missing a blob.
+                outcomeStatus = "NO_CALL";
+                outcomeCode = 0;
+                outcomeEnvelopeJson = noCallEnvelopeJson("No usable blob in batch");
+                return;
+            }
+
+            ServiceCallResult result;
+            try {
+                result = ke.enrich(configName, contentObjects, List.of(getActionName()), getClasses(),
+                        getSimilarMetadataJsonArrayStr(), extra);
+            } catch (IOException e) {
+                String msg = "IO error calling KE: " + e.getMessage();
+                LOG.warn("KE batch failed (IO): {}", e.getMessage(), e);
+                failBatch(session, bySourceId, ke, 0, "IO error calling KE", msg, null, saveDocument);
+                outcomeStatus = "FAILURE";
+                outcomeCode = 0;
+                outcomeEnvelopeJson = noCallEnvelopeJson(msg);
+                return;
+            }
+
+            outcomeEnvelopeJson = result.toJsonString();
+            outcomeCode = result.getResponseCode();
+
+            if (result.getResponseCode() != 200) {
+                LOG.warn("KE batch failed (HTTP {}): {}", result.getResponseCode(), result.getResponseMessage());
+                failBatch(session, bySourceId, ke, result.getResponseCode(), "KE call failed",
+                        result.getResponseMessage(), outcomeEnvelopeJson, saveDocument);
+                outcomeStatus = "FAILURE";
+                return;
+            }
+
+            JSONObject envelope = helper.parseEnrichmentResponse(outcomeEnvelopeJson);
+            if (envelope == null) {
+                LOG.warn("KE batch failed: could not parse envelope");
+                failBatch(session, bySourceId, ke, 200, "Invalid envelope", "Could not parse KE envelope",
+                        outcomeEnvelopeJson, saveDocument);
+                outcomeStatus = "FAILURE";
+                return;
+            }
+            JSONObject response = envelope.optJSONObject("response");
+            String status = response == null ? null : response.optString("status", null);
+            if (response == null || !"SUCCESS".equals(status)) {
+                LOG.warn("KE batch returned status={} (not SUCCESS)", status);
+                failBatch(session, bySourceId, ke, 200, "KE response not SUCCESS", "status=" + status,
+                        outcomeEnvelopeJson, saveDocument);
+                outcomeStatus = "FAILURE";
+                return;
+            }
+
+            JSONArray results = response.optJSONArray("results");
+            JSONArray mapping = result.getObjectKeysMapping();
+            // objectKey -> sourceId
+            Map<String, String> objectKeyToSourceId = new HashMap<>();
+            if (mapping != null) {
+                for (int i = 0; i < mapping.length(); i++) {
+                    JSONObject entry = mapping.optJSONObject(i);
+                    if (entry == null) {
+                        continue;
+                    }
+                    String objectKey = entry.optString("objectKey", null);
+                    String sourceId = entry.optString("sourceId", null);
+                    if (objectKey != null && sourceId != null) {
+                        objectKeyToSourceId.put(objectKey, sourceId);
+                    }
+                }
+            }
+
+            // Track which sourceIds got a result so we can mark missing ones at the end.
+            java.util.Set<String> seenSourceIds = new java.util.HashSet<>();
+
+            if (results != null) {
+                for (int i = 0; i < results.length(); i++) {
+                    JSONObject resultEntry = results.optJSONObject(i);
+                    if (resultEntry == null) {
+                        continue;
+                    }
+                    String objectKey = resultEntry.optString("objectKey", null);
+                    String sourceId = objectKey == null ? null : objectKeyToSourceId.get(objectKey);
+                    if (sourceId == null) {
+                        LOG.warn("Orphan KE result entry (no matching sourceId for objectKey={})", objectKey);
+                        continue;
+                    }
+                    DocumentModel doc = bySourceId.get(sourceId);
+                    if (doc == null) {
+                        LOG.warn("Orphan KE result entry (sourceId={} not in current batch)", sourceId);
+                        continue;
+                    }
+                    seenSourceIds.add(sourceId);
+
+                    JSONObject actionWrapper = resultEntry.optJSONObject(getResultKey());
+                    if (actionWrapper == null) {
+                        ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Missing action result",
+                                "Result key not found: " + getResultKey(), outcomeEnvelopeJson);
+                        persistIfNeeded(session, doc, saveDocument);
+                        continue;
+                    }
+                    Object actionError = actionWrapper.opt("error");
+                    if (actionError != null && actionError != JSONObject.NULL
+                            && !String.valueOf(actionError).isEmpty()) {
+                        ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Action error",
+                                String.valueOf(actionError), outcomeEnvelopeJson);
+                        persistIfNeeded(session, doc, saveDocument);
+                        continue;
+                    }
+                    Object actionResult = actionWrapper.opt("result");
+                    if (actionResult == null || actionResult == JSONObject.NULL) {
+                        ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Empty action result",
+                                "Action returned no result", outcomeEnvelopeJson);
+                        persistIfNeeded(session, doc, saveDocument);
+                        continue;
+                    }
+                    try {
+                        applyResult(doc, actionResult);
+                        ke.clearCICError(doc);
+                    } catch (RuntimeException ex) {
+                        LOG.warn("applyResult failed for action {} on doc {}: {}", getActionName(), doc.getId(),
+                                ex.getMessage(), ex);
+                        ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Failed writing result",
+                                ex.getMessage(), outcomeEnvelopeJson);
+                    }
+                    persistIfNeeded(session, doc, saveDocument);
+                }
+            }
+
+            // Mark missing docs (sent in payload but absent from results)
+            for (Map.Entry<String, DocumentModel> e : bySourceId.entrySet()) {
+                if (!seenSourceIds.contains(e.getKey())) {
+                    DocumentModel doc = e.getValue();
+                    LOG.warn("Doc {} is missing from KE response", doc.getId());
+                    ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Missing in CIC response",
+                            "Doc " + doc.getId() + " absent from response.results", outcomeEnvelopeJson);
+                    persistIfNeeded(session, doc, saveDocument);
+                }
+            }
+            // outcomeStatus stays "SUCCESS" (envelope-level success; per-doc errors are tracked
+            // via CICError, not by switching the batch-level event status).
+        } finally {
+            try {
+                String envelopeJson = outcomeEnvelopeJson != null ? outcomeEnvelopeJson
+                        : noCallEnvelopeJson("No KE call made");
+                consumer.accept(new BatchOutcome(batchDocIds, envelopeJson, outcomeCode, outcomeStatus, batchIndex,
+                        batchCount));
+            } catch (RuntimeException ex) {
+                LOG.warn("Batch-outcome consumer failed for action {}: {}", getActionName(), ex.getMessage(), ex);
             }
         }
     }

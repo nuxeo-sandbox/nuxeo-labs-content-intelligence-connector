@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.labs.hyland.content.intelligence.test.ke-done-throwing-listener" version="1.0">
+
+  <extension target="org.nuxeo.ecm.core.event.EventServiceComponent" point="listener">
+    <!-- Synchronous post-commit listener (class implements PostCommitEventListener). It throws and
+         marks its own transaction rollback-only; TestCICEnrichmentEventIsolation asserts the enriched
+         document survives, proving post-commit rollback isolation. -->
+    <listener name="testRollbackThrowingKEDoneListener" postCommit="true" async="false"
+              class="org.nuxeo.labs.hyland.content.intelligence.test.RollbackThrowingKEDoneListener">
+      <event>cicCallKEDone</event>
+    </listener>
+  </extension>
+
+</component>

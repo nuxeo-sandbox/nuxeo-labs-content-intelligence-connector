@@ -130,7 +130,7 @@ public class CICGetTextMetadataOp extends AbstractCICTextEnrichmentOp {
     }
 
     @Override
-    protected String getActionName() {
+    public String getActionName() {
         return "textMetadataGeneration";
     }
 

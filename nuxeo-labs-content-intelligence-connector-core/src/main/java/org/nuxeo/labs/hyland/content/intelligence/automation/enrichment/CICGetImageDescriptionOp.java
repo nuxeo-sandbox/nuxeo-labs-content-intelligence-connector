@@ -125,7 +125,7 @@ public class CICGetImageDescriptionOp extends AbstractCICImageEnrichmentOp {
     }
 
     @Override
-    protected String getActionName() {
+    public String getActionName() {
         return "imageDescription";
     }
 

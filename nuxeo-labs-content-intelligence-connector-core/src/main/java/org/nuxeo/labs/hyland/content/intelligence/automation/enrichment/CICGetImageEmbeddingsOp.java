@@ -141,7 +141,7 @@ public class CICGetImageEmbeddingsOp extends AbstractCICImageEnrichmentOp {
     }
 
     @Override
-    protected String getActionName() {
+    public String getActionName() {
         return "imageEmbeddings";
     }
 

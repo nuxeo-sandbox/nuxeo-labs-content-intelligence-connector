@@ -587,6 +587,104 @@ CIC.SummarizeText(input, {
 // returns immediately; CIC call runs in the background
 ```
 
+### Listening for completion: the `cicCallKEDone` event
+
+Async callers do not see the result of the CIC call. To react when an asynchronous KE call finishes, register a listener on the `cicCallKEDone` event. **The event is fired ONLY when the operation runs asynchronously** — synchronous callers already get the response back from the operation itself and no event is fired for them.
+
+> One event per CIC call: a multi-document Work that processes 25 documents with `batchSize=10` fires **3 events** (one per batch). The single-document path fires exactly **1 event** per Work.
+
+The event is a standard `DocumentEventContext`. Its **principal document** is the first document of the batch (so doctype-based filters still work), and the full UID list lives in the `cicDocIds` context property.
+
+| Context property             | Type                | Meaning                                                                                       |
+| ---------------------------- | ------------------- | --------------------------------------------------------------------------------------------- |
+| `cicActionName`              | `String`            | KE action key (e.g. `"imageDescription"`, `"textSummarization"`, `"image-classification"`)    |
+| `cicOpClassName`             | `String`            | FQN of the executing `CIC*Op` class                                                           |
+| `cicConfigName`              | `String` (nullable) | Contribution name the op was invoked with (`null` means the op fell back to `"default"`)      |
+| `cicDocIds`                  | `ArrayList<String>` | Full UID list covered by this batch (size 1 for single-doc; full batch for multi-doc)         |
+| `cicResponseEnvelopeJson`    | `String`            | JSON string of the canonical CIC envelope (or a synthetic envelope when no real call was made — see `cicResponseStatus`) |
+| `cicResponseCode`            | `Integer`           | HTTP-style response code, or `0` when no call was made                                        |
+| `cicResponseStatus`          | `String`            | `"SUCCESS"`, `"FAILURE"`, or `"NO_CALL"` (see below)                                          |
+| `cicBatchIndex`              | `Integer`           | Zero-based batch index within the Work (always `0` for single-doc)                            |
+| `cicBatchCount`              | `Integer`           | Total batches in the Work (`1` for single-doc)                                                |
+| `cicIsListInput`             | `Boolean`           | `true` when the original op input was a `DocumentModelList`                                   |
+
+**`cicResponseStatus` values**:
+
+- `SUCCESS` — KE call returned and the inner envelope reports `response.status == "SUCCESS"`.
+- `FAILURE` — A KE call was made but the envelope is non-2xx, missing, malformed, has `status != SUCCESS`, an action-level error, or an empty action result. Per-document errors (e.g. `applyResult` failed on one doc inside a successful batch) are tracked via the `CICError` facet and do NOT flip the batch-level status.
+- `NO_CALL` — No CIC call was made (e.g. document had no usable blob, or an `IOException` happened before sending). `cicResponseEnvelopeJson` carries a synthetic envelope `{"responseCode":0,"responseMessage":"…","response":null}`.
+
+**Constants for the event name and context keys** are exposed by `org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICEnrichmentEvents`. Importing them avoids string typos.
+
+#### Java listener
+
+A post-commit listener implements `PostCommitEventListener` (its `handleEvent` receives an `EventBundle`). **This interface — not the `postCommit="true"` XML attribute — is what makes the listener post-commit** (a class implementing the plain `EventListener` interface is always treated as an inline listener, regardless of the attribute; see the warning below).
+
+```java
+package com.acme.cic;
+
+import static org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.CICEnrichmentEvents.*;
+
+import org.nuxeo.ecm.core.event.Event;
+import org.nuxeo.ecm.core.event.EventBundle;
+import org.nuxeo.ecm.core.event.PostCommitEventListener;
+import org.nuxeo.ecm.core.event.impl.DocumentEventContext;
+
+public class MyKEDoneListener implements PostCommitEventListener {
+    @Override
+    public void handleEvent(EventBundle events) {
+        for (Event event : events) {
+            if (!CIC_CALL_KE_DONE.equals(event.getName())) {
+                continue;
+            }
+            if (!(event.getContext() instanceof DocumentEventContext ctx)) {
+                continue;
+            }
+            String action = (String) ctx.getProperty(CTX_ACTION_NAME);
+            String status = (String) ctx.getProperty(CTX_RESPONSE_STATUS);
+            @SuppressWarnings("unchecked")
+            java.util.List<String> docIds = (java.util.List<String>) ctx.getProperty(CTX_DOC_IDS);
+            String envelopeJson = (String) ctx.getProperty(CTX_RESPONSE_ENVELOPE_JSON);
+            // … your logic (parse envelopeJson, update docs, send a notification, …)
+        }
+    }
+}
+```
+
+Listener contribution (`OSGI-INF/my-ke-done-listener-contrib.xml`):
+
+```xml
+<?xml version="1.0"?>
+<component name="com.acme.cic.listeners">
+  <extension target="org.nuxeo.ecm.core.event.EventServiceComponent" point="listener">
+    <!-- postCommit="true" async="false" = synchronous post-commit (see "Listener safety").
+         The class MUST implement PostCommitEventListener for this to take effect. -->
+    <listener name="myKeDoneListener" postCommit="true" async="false"
+              class="com.acme.cic.MyKEDoneListener">
+      <event>cicCallKEDone</event>
+    </listener>
+  </extension>
+</component>
+```
+
+#### Listener safety
+
+> [!IMPORTANT]
+> **Make your `cicCallKEDone` listener post-commit by implementing `PostCommitEventListener`** (and declaring `postCommit="true"`). This guarantees that an error in your handler can never roll back the documents that were just enriched.
+
+Nuxeo runs post-commit listeners **after** the transaction that processed the batch has already committed, and **each listener runs in its own separate transaction**. So if your handler throws — or marks its transaction rollback-only — only that handler's own transaction is rolled back: the enriched documents are already committed and are never affected. This is exactly the behaviour you want when the event is fired from the background `cicEnrichment` Work.
+
+- **Recommended — synchronous post-commit** (`PostCommitEventListener` + `async="false"`, as in the example above): your handler runs immediately after the batch commits, on the Work thread, in a fresh isolated transaction. You get near-immediate, ordered handling while staying fully protected from rollback.
+- **Also safe — asynchronous post-commit** (`PostCommitEventListener` + `async="true"`): your handler is scheduled as its own separate Work after the batch commits. Same rollback isolation, offloaded to another thread.
+
+> [!WARNING]
+> **Do NOT implement the plain `EventListener` interface for this listener.** A class implementing `EventListener` is registered as a synchronous **inline** listener — the runtime decides this from the interface and **ignores** any `postCommit="true"` attribute you may have set. An inline listener runs *inside* the Work's own transaction, so a failure — or a `setRollbackOnly()` — in your handler **can roll back the documents that were just enriched**. The plugin's firing side wraps the call in a `try/catch` (a thrown inline listener is logged at WARN and the Work moves on), but that does not undo a transaction that your inline handler poisoned.
+
+Other safety notes:
+
+- If the principal document was deleted between scheduling and event firing, the event is silently skipped.
+- If you need "Work fully drained" semantics rather than per-batch granularity, use Nuxeo's `WorkManager.awaitCompletion("cicEnrichment", timeout, unit)` instead of listening for the event.
+
 <br>
 
 ## Response envelope (still applies in both usage levels)

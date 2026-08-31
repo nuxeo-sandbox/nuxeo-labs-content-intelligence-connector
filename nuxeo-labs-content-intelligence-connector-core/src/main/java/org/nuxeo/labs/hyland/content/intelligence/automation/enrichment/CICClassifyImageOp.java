@@ -143,7 +143,7 @@ public class CICClassifyImageOp extends AbstractCICImageEnrichmentOp {
     }
 
     @Override
-    protected String getActionName() {
+    public String getActionName() {
         return "imageClassification";
     }
 

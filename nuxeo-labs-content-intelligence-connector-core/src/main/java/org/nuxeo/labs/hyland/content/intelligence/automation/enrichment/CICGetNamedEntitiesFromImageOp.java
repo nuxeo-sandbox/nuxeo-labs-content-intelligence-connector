@@ -106,7 +106,7 @@ public class CICGetNamedEntitiesFromImageOp extends AbstractCICImageEnrichmentOp
     }
 
     @Override
-    protected String getActionName() {
+    public String getActionName() {
         return "namedEntityRecognitionImage";
     }
 

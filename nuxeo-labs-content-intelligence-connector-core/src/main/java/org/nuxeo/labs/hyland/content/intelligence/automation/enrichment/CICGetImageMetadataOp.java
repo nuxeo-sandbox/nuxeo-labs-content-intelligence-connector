@@ -132,7 +132,7 @@ public class CICGetImageMetadataOp extends AbstractCICImageEnrichmentOp {
     }
 
     @Override
-    protected String getActionName() {
+    public String getActionName() {
         return "imageMetadataGeneration";
     }
 

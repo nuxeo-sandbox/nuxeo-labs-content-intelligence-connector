@@ -103,7 +103,7 @@ public class CICGetNamedEntitiesFromTextOp extends AbstractCICTextEnrichmentOp {
     }
 
     @Override
-    protected String getActionName() {
+    public String getActionName() {
         return "namedEntityRecognitionText";
     }
 

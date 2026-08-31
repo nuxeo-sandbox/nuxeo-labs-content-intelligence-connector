@@ -149,7 +149,7 @@ public class CICGetTextEmbeddingsOp extends AbstractCICTextEnrichmentOp {
     }
 
     @Override
-    protected String getActionName() {
+    public String getActionName() {
         return "textEmbeddings";
     }
 
