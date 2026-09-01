@@ -29,4 +29,12 @@ public class AuthenticationTokenAgents extends AuthenticationToken {
         super(ServiceType.AGENTS, authFullUrl, params);
     }
 
+    /**
+     * @param configName the name of the contribution this token belongs to
+     * @since 2025.20
+     */
+    public AuthenticationTokenAgents(String authFullUrl, AuthenticationTokenParams params, String configName) {
+        super(ServiceType.AGENTS, authFullUrl, params, configName);
+    }
+
 }

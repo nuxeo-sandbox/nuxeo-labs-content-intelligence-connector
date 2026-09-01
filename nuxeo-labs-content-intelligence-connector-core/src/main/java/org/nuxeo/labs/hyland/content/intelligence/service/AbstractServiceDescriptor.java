@@ -18,6 +18,9 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.nuxeo.common.xmap.annotation.XNode;
@@ -80,6 +83,96 @@ public abstract class AbstractServiceDescriptor {
         return authTokenParams;
     }
 
+    /**
+     * Merges another contribution having the SAME name into this one.
+     * <p>
+     * Only <b>non-blank</b> values of {@code other} override the current ones. This is deliberate: a value can be
+     * missing either because the XML element is absent ({@code null}) or because it resolved to an empty string (the
+     * very common {@code ${some.undefined.config.param:=}} case). In both situations the contribution must NOT wipe
+     * an already configured value.
+     * <p>
+     * This allows a partial override, typically from a Studio project, to add or change a couple of fields without
+     * having to redeclare the whole configuration:
+     *
+     * <pre>
+     * &lt;knowledgeEnrichment&gt;
+     *   &lt;name&gt;default&lt;/name&gt;
+     *   &lt;embeddingsFacet&gt;Embeddings&lt;/embeddingsFacet&gt;
+     * &lt;/knowledgeEnrichment&gt;
+     * </pre>
+     * <p>
+     * {@code name} is the map key and is identical by construction, so it is never merged.
+     * <p>
+     * <b>Subclasses declaring their own {@code @XNode} fields MUST override this method</b> and chain to
+     * {@code super.merge(other)}, else those fields are silently lost when a configuration is overridden.
+     *
+     * @param other the contribution to merge into this one
+     * @since 2025.20
+     */
+    public void merge(AbstractServiceDescriptor other) {
+
+        if (other == null) {
+            return;
+        }
+
+        if (StringUtils.isNotBlank(other.authenticationBaseUrl)) {
+            authenticationBaseUrl = other.authenticationBaseUrl;
+        }
+        if (StringUtils.isNotBlank(other.baseUrl)) {
+            baseUrl = other.baseUrl;
+        }
+        if (StringUtils.isNotBlank(other.tokenGrantType)) {
+            tokenGrantType = other.tokenGrantType;
+        }
+        if (StringUtils.isNotBlank(other.tokenScope)) {
+            tokenScope = other.tokenScope;
+        }
+        if (StringUtils.isNotBlank(other.clientId)) {
+            clientId = other.clientId;
+        }
+        if (StringUtils.isNotBlank(other.clientSecret)) {
+            clientSecret = other.clientSecret;
+        }
+
+        // Invalidate the lazily built cache, it would otherwise keep the pre-merge values
+        authTokenParams = null;
+    }
+
+    /**
+     * Returns the list of the mandatory fields that are missing (blank) in this configuration, as a comma separated
+     * string. Returns an empty string when the configuration is complete.
+     *
+     * @since 2025.20
+     */
+    public String getMissingValuesAsString() {
+
+        List<String> missing = new ArrayList<>();
+
+        if (StringUtils.isBlank(authenticationBaseUrl)) {
+            missing.add("authenticationBaseUrl");
+        }
+        if (StringUtils.isBlank(baseUrl)) {
+            missing.add("baseUrl");
+        }
+        if (StringUtils.isBlank(tokenGrantType)) {
+            missing.add("tokenGrantType");
+        }
+        if (StringUtils.isBlank(tokenScope)) {
+            missing.add("tokenScope");
+        }
+        if (StringUtils.isBlank(clientId)) {
+            missing.add("clientId");
+        }
+        if (StringUtils.isBlank(clientSecret)) {
+            missing.add("clientSecret");
+        }
+        if (requiresEnvironment() && StringUtils.isBlank(getEnvironment())) {
+            missing.add("environment");
+        }
+
+        return String.join(", ", missing);
+    }
+
     public boolean hasAllValues() {
         if (StringUtils.isBlank(authenticationBaseUrl) || StringUtils.isBlank(baseUrl)
                 || StringUtils.isBlank(tokenGrantType) || StringUtils.isBlank(tokenScope)
@@ -93,6 +186,11 @@ public abstract class AbstractServiceDescriptor {
         return true;
     }
 
+    /**
+     * @deprecated since 2025.20, superseded by {@link #getMissingValuesAsString()}, which produces one single
+     *             actionable message instead of up to seven separate WARN lines.
+     */
+    @Deprecated
     public void checkConfigAndLogErrors() {
         final String serviceLabel = serviceLabel();
 

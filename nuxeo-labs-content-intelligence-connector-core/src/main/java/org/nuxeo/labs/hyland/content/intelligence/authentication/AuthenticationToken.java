@@ -21,7 +21,9 @@ package org.nuxeo.labs.hyland.content.intelligence.authentication;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -58,13 +60,73 @@ public class AuthenticationToken {
 
     ServiceType serviceType;
 
+    /** The name of the contribution this token belongs to, used to build actionable error messages. @since 2025.20 */
+    protected String configName;
+
     public AuthenticationToken(ServiceType serviceType, String authFullUrl, AuthenticationTokenParams params) {
+        this(serviceType, authFullUrl, params, null);
+    }
+
+    /**
+     * @param configName the name of the contribution this token belongs to
+     * @since 2025.20
+     */
+    public AuthenticationToken(ServiceType serviceType, String authFullUrl, AuthenticationTokenParams params,
+            String configName) {
 
         this.serviceType = serviceType;
 
         this.authFullUrl = authFullUrl;
         this.tokenParams = params;
+        this.configName = configName;
 
+    }
+
+    /**
+     * Fails fast, with an actionable message, when the configuration is unusable.
+     * <p>
+     * Without this check the missing values reach the request body, where {@code URLEncoder.encode} throws a bare
+     * {@code NullPointerException} for {@code clientId}/{@code clientSecret}, and where {@code grantType}/
+     * {@code grantScope} are silently concatenated as the literal string {@code "null"}.
+     *
+     * @since 2025.20
+     */
+    protected void checkConfigOrThrow() {
+
+        List<String> missing = new ArrayList<>();
+
+        if (StringUtils.isBlank(authFullUrl)) {
+            missing.add("authenticationBaseUrl");
+        }
+        if (tokenParams == null) {
+            missing.add("all authentication parameters");
+        } else {
+            if (StringUtils.isBlank(tokenParams.getClientId())) {
+                missing.add("clientId");
+            }
+            if (StringUtils.isBlank(tokenParams.getClientSecret())) {
+                missing.add("clientSecret");
+            }
+            if (StringUtils.isBlank(tokenParams.getGrantType())) {
+                missing.add("tokenGrantType");
+            }
+            if (StringUtils.isBlank(tokenParams.getGrantScope())) {
+                missing.add("tokenScope");
+            }
+            if ((serviceType == ServiceType.DISCOVERY || serviceType == ServiceType.INGEST)
+                    && StringUtils.isBlank(tokenParams.getEnvironment())) {
+                missing.add("environment");
+            }
+        }
+
+        if (!missing.isEmpty()) {
+            throw new NuxeoException("Cannot authenticate to the CIC " + serviceType + " service using configuration '"
+                    + (configName == null ? "default" : configName) + "': missing value(s): "
+                    + String.join(", ", missing)
+                    + ". Check the corresponding nuxeo.conf parameters and the XML contribution."
+                    + " Note that contributing a configuration with an already existing name only overrides the fields"
+                    + " you declare, the other ones are kept.");
+        }
     }
 
     /**
@@ -82,6 +144,8 @@ public class AuthenticationToken {
             return token;
         }
 
+        checkConfigOrThrow();
+
         Map<String, String> headers = new HashMap<>();
         headers.put("Accept", "*/*");
         headers.put("Accept-Encoding", "gzip, deflate, br");
@@ -96,7 +160,7 @@ public class AuthenticationToken {
         try {
             postData = "client_id=" + URLEncoder.encode(tokenParams.getClientId(), "UTF-8");
             postData += "&client_secret=" + URLEncoder.encode(tokenParams.getClientSecret(), "UTF-8");
-            postData += "&grant_type=" + tokenParams.getGrantType();
+            postData += "&grant_type=" + URLEncoder.encode(tokenParams.getGrantType(), "UTF-8");
             postData += "&scope=" + URLEncoder.encode(tokenParams.grantScope, "UTF-8");
 
         } catch (UnsupportedEncodingException e) {

@@ -29,4 +29,12 @@ public class AuthenticationTokenIngest extends AuthenticationToken {
         super(ServiceType.INGEST, authFullUrl, params);
     }
 
+    /**
+     * @param configName the name of the contribution this token belongs to
+     * @since 2025.20
+     */
+    public AuthenticationTokenIngest(String authFullUrl, AuthenticationTokenParams params, String configName) {
+        super(ServiceType.INGEST, authFullUrl, params, configName);
+    }
+
 }

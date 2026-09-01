@@ -18,6 +18,7 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.service.ingest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.nuxeo.common.xmap.annotation.XNode;
@@ -35,6 +36,21 @@ public class IngestDescriptor extends AbstractServiceDescriptor {
 
     @XNode("environment")
     protected String environment;
+
+    /**
+     * Merges the {@code environment} field, then chains to the common ones.
+     *
+     * @since 2025.20
+     */
+    @Override
+    public void merge(AbstractServiceDescriptor other) {
+
+        super.merge(other);
+
+        if (other instanceof IngestDescriptor otherDesc && StringUtils.isNotBlank(otherDesc.environment)) {
+            environment = otherDesc.environment;
+        }
+    }
 
     @Override
     protected Logger log() {

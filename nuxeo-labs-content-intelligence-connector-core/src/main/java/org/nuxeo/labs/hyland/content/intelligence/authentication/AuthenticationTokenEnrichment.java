@@ -31,4 +31,12 @@ public class AuthenticationTokenEnrichment extends AuthenticationToken {
         super(ServiceType.ENRICHMENT, authFullUrl, params);
     }
 
+    /**
+     * @param configName the name of the contribution this token belongs to
+     * @since 2025.20
+     */
+    public AuthenticationTokenEnrichment(String authFullUrl, AuthenticationTokenParams params, String configName) {
+        super(ServiceType.ENRICHMENT, authFullUrl, params, configName);
+    }
+
 }

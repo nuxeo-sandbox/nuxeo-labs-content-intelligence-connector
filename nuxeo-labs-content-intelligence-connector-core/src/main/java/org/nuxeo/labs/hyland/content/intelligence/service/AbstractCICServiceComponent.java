@@ -101,8 +101,9 @@ public abstract class AbstractCICServiceComponent<D extends AbstractServiceDescr
     //Called in every start() method of each service so they initialize their auth tokens map
     protected Map<String, AuthenticationToken> initAuthTokens(Function<D, AuthenticationToken> tokenFactory) {
 
+        Logger log = LogManager.getLogger(this.getClass());
+
         if (getContribMap().isEmpty()) {
-            Logger log = LogManager.getLogger(this.getClass());
             log.error("No configuration found for {}. Calls, if any, will fail.", getServiceLabel());
             return null;
         }
@@ -111,7 +112,18 @@ public abstract class AbstractCICServiceComponent<D extends AbstractServiceDescr
         for (D desc : getContribMap().values()) {
             AuthenticationToken token = tokenFactory.apply(desc);
             tokens.put(desc.getName(), token);
-            desc.checkConfigAndLogErrors();
+            if (!desc.hasAllValues()) {
+                /*
+                 * One single, actionable ERROR instead of one WARN per missing field. The most frequent cause is an
+                 * incomplete override of an existing configuration name, so we say it explicitly.
+                 */
+                log.error(
+                        "Configuration '{}' of {} is incomplete, missing value(s): {}."
+                                + " Calls using this configuration will fail."
+                                + " If you contribute a configuration with an already existing name, note that only the"
+                                + " fields you declare are overridden, the other ones are kept.",
+                        desc.getName(), getServiceLabel(), desc.getMissingValuesAsString());
+            }
         }
 
         return tokens;
@@ -132,7 +144,18 @@ public abstract class AbstractCICServiceComponent<D extends AbstractServiceDescr
         if (contributions != null) {
             for (Object contribution : contributions) {
                 D descriptor = (D) contribution;
-                contribs.put(descriptor.getName(), descriptor);
+                D existing = contribs.get(descriptor.getName());
+                if (existing == null) {
+                    contribs.put(descriptor.getName(), descriptor);
+                } else {
+                    /*
+                     * A contribution with the same name already exists => MERGE it instead of replacing it, so a
+                     * partial override (typically from a Studio project adding one or two fields) does not silently
+                     * wipe the values it does not redeclare. Only non-blank values of the new contribution win.
+                     * See AbstractServiceDescriptor#merge.
+                     */
+                    existing.merge(descriptor);
+                }
             }
         }
     }

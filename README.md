@@ -4,7 +4,7 @@
 
 Since its **2025.16** version this plugin **ships a full Web UI on top of the existing CIC automation operations.** Out of the box you get:
 
-- **Document action buttons** for the common Knowledge Enrichment calls (summarize, classify, extract entities, get metadata, image description, embeddings) — results stored in dedicated schemas/doctypes shipped with the plugin. Calls are asynchronous.
+- **Document action buttons** for the common Knowledge Enrichment calls (summarize, classify, extract entities, get metadata, image description, embeddings) — results stored in dedicated schemas/doctypes shipped with the plugin. Calls are asynchronous. An event is fired after succesful asynchronous calls.
 - **Knowledge Discovery dialogs**: an "Ask a Question" popup (single doc and multi-select) and a `cic-kd-conversation` chat panel with citations linked back to Nuxeo documents.
 - **Multi-document `CIC.*` ops** with batching, per-doc error markers, and inter-batch commits — safe for listeners, BAF, and bulk actions.
 - **Easy to override** for you nown usage. There even is an **Admin "CIC UI Config" page** that lists every `cic-*` slot-content and generates ready-to-paste Studio override snippets (demo build/tests utility).
@@ -109,6 +109,36 @@ To declare an additional account, add an XML contribution from your Studio proje
 ```
 
 Then call any operation with `configName: "tenantA"`. The list of registered names per service is exposed by `HylandContentIntelligence.GetContributionNames`.
+
+### Overriding an existing configuration (partial override)
+
+Contributing a configuration whose `name` **already exists** merges into it: only the fields you declare are overridden, the others are kept. This is the standard Nuxeo behaviour, and it is what you want when you only need to adjust one or two settings of the `default` configuration without repeating the credentials:
+
+```xml
+<extension target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
+           point="knowledgeEnrichment">
+  <knowledgeEnrichment>
+    <!-- Same name as the contribution shipped by the plugin -->
+    <name>default</name>
+    <!-- Only add the embeddings storage. Credentials, URLs and scopes are kept. -->
+    <embeddingsFacet>Embeddings</embeddingsFacet>
+    <embeddingsImageXpath>embeddings:image</embeddingsImageXpath>
+    <embeddingsTextXpath>embeddings:text</embeddingsTextXpath>
+  </knowledgeEnrichment>
+</extension>
+```
+
+A field is overridden only when the value you contribute is **non-blank**. Both an absent element and an empty one are ignored, which matters because an undefined configuration parameter written as `${my.undefined.param:=}` resolves to an empty string. Consequently, a partial override cannot be used to deliberately *clear* a value.
+
+> [!IMPORTANT]
+> Before version 2025.20 this was a plain replacement: a partial override silently wiped every field it did not redeclare, including `clientId` and `clientSecret`, and enrichment then failed with a `NullPointerException`. If you worked around this by duplicating the full `default` configuration in your Studio project, you can now reduce it to the fields you actually change. Doing so is recommended: a full copy freezes the defaults and would not pick up new fields added by future versions of the plugin.
+
+When a configuration ends up incomplete, the server log now names the culprit at startup instead of failing later:
+
+```
+ERROR Configuration 'default' of Knowledge Enrichment is incomplete, missing value(s): clientId, clientSecret. ...
+```
+
 
 ### Optional: where to persist embeddings (KE only)
 
@@ -521,7 +551,7 @@ A new `batchSize` parameter controls how many documents are sent to CIC per HTTP
 - `batchSize <= 0` (default) → falls back to the configured default `nuxeo.hyland.cic.enrichment.batchSize` (defaults to `10`).
 - `batchSize > default` → honored, but a single WARN is logged.
 
-Between batches (only when more batches remain) the plugin commiots the transaction.
+Between batches (only when more batches remain) the plugin commits the transaction.
 
 > [!CAUTION]
 > Processing is strictly sequential. To avoid time-out, we strongly recommend running these operations asynchronously when passing them a list of documents.
@@ -567,7 +597,7 @@ function run(input, params) {
 
 ## Async execution (`runAsynchronously`)
 
-Every `CIC.*` document operation accepts an optional `runAsynchronously` boolean parameter (default `false`). When set to `true`, the call to Hyland CIC is scheduled as a background [Nuxeo Work](https://doc.nuxeo.com/nxdoc/work-and-workmanager/) and the operation returns the input document(s) immediately, unchanged. The Web UI buttons shipped by this plugin use this mode so the user is not blocked while CIC processes (which can take several seconds).
+Every `CIC.*` document operation accepts an optional `runAsynchronously` boolean parameter (default `false`). When set to `true`, the call to Hyland CIC is scheduled as a background [Nuxeo Work](https://doc.nuxeo.com/nxdoc/work-and-workmanager/) and the operation returns the input document(s) immediately, unchanged. The Web UI buttons shipped by this plugin use this mode so the user is not blocked while CIC processes (which can take several seconds, even minutes depending on complexity and service access).
 
 Key points:
 

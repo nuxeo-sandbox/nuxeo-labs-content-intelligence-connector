@@ -201,7 +201,7 @@ public class IngestServiceImpl extends AbstractCICServiceComponent<IngestDescrip
         ingestAuthTokens = initAuthTokens(
                 desc -> new AuthenticationTokenIngest(
                         desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
-                desc.getAuthenticationTokenParams()));
+                desc.getAuthenticationTokenParams(), desc.getName()));
     }
 
     /**

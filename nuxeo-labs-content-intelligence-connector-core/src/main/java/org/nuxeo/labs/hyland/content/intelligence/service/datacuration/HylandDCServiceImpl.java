@@ -329,7 +329,7 @@ public class HylandDCServiceImpl extends AbstractCICServiceComponent<DCDescripto
         dataCurationAuthTokens = initAuthTokens(
                 desc -> new AuthenticationTokenEnrichment(
                         desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
-                desc.getAuthenticationTokenParams()));
+                desc.getAuthenticationTokenParams(), desc.getName()));
     }
 
     /**

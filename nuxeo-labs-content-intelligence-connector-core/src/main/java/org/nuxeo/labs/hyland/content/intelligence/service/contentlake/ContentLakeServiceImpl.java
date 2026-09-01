@@ -180,7 +180,7 @@ public class ContentLakeServiceImpl extends AbstractCICServiceComponent<ContentL
 
         clAuthTokens = initAuthTokens(desc -> new AuthenticationTokenContentLake(
                 desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
-                desc.getAuthenticationTokenParams()));
+                desc.getAuthenticationTokenParams(), desc.getName()));
     }
 
     /**

@@ -446,7 +446,7 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
         discoveryAuthTokens = initAuthTokens(
                 desc -> new AuthenticationTokenDiscovery(
                         desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
-                desc.getAuthenticationTokenParams()));
+                desc.getAuthenticationTokenParams(), desc.getName()));
     }
 
     /**

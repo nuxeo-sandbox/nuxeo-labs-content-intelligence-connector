@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!--
+	Reproduces the real world Studio contribution that used to break authentication:
+	it overrides the *existing* "default" configuration and only declares the embeddings
+	fields, expecting the other values (clientId, clientSecret, tokenScope, ...) to be kept.
+
+	Before 2025.20 this replaced the whole "default" contribution, nulling the credentials.
+-->
+<component name="org.nuxeo.labs.hyland.content.intelligence.test.partialoverride" version="1.0">
+
+	<require>org.nuxeo.labs.hyland.content.intelligence.HylandKEService</require>
+
+	<extension
+		target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
+		point="knowledgeEnrichment">
+		<knowledgeEnrichment>
+			<name>default</name>
+			<embeddingsFacet>Embeddings</embeddingsFacet>
+			<embeddingsImageXpath>embeddings:image</embeddingsImageXpath>
+			<embeddingsTextXpath>embeddings:text</embeddingsTextXpath>
+		</knowledgeEnrichment>
+	</extension>
+
+	<!-- Same idea, with an explicitly EMPTY value: it must not erase anything either.
+	     This is what `${some.undefined.config.param:=}` resolves to. -->
+	<extension
+		target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
+		point="knowledgeEnrichment">
+		<knowledgeEnrichment>
+			<name>default</name>
+			<tokenScope></tokenScope>
+			<pictureRenditionName>Medium</pictureRenditionName>
+		</knowledgeEnrichment>
+	</extension>
+
+</component>

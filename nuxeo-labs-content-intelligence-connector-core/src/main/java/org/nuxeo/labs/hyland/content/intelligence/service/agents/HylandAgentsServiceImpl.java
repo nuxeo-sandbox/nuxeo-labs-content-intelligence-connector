@@ -213,7 +213,7 @@ public class HylandAgentsServiceImpl extends AbstractCICServiceComponent<AgentDe
         agentsAuthTokens = initAuthTokens(
                 desc -> new AuthenticationTokenAgents(
                         desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
-                desc.getAuthenticationTokenParams()));
+                desc.getAuthenticationTokenParams(), desc.getName()));
     }
 
     /**

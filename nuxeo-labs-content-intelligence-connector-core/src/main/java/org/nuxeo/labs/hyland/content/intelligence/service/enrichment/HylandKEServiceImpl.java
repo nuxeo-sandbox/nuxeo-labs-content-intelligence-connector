@@ -729,7 +729,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
 
         enrichmentAuthTokens = initAuthTokens(desc -> new AuthenticationTokenEnrichment(
                 desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
-                desc.getAuthenticationTokenParams()));
+                desc.getAuthenticationTokenParams(), desc.getName()));
     }
 
     /**

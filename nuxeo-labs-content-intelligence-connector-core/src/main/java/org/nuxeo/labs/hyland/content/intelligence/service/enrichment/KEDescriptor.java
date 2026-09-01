@@ -18,6 +18,7 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.service.enrichment;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.nuxeo.common.xmap.annotation.XNode;
@@ -81,6 +82,32 @@ public class KEDescriptor extends AbstractServiceDescriptor {
 
     /** @since 2025.18 */
     public static final String DEFAULT_PICTURE_RENDITION_NAME = "FullHD";
+
+    /**
+     * Merges the KE specific fields, then chains to the common ones.
+     *
+     * @since 2025.20
+     */
+    @Override
+    public void merge(AbstractServiceDescriptor other) {
+
+        super.merge(other);
+
+        if (other instanceof KEDescriptor otherKE) {
+            if (StringUtils.isNotBlank(otherKE.embeddingsFacet)) {
+                embeddingsFacet = otherKE.embeddingsFacet;
+            }
+            if (StringUtils.isNotBlank(otherKE.embeddingsImageXpath)) {
+                embeddingsImageXpath = otherKE.embeddingsImageXpath;
+            }
+            if (StringUtils.isNotBlank(otherKE.embeddingsTextXpath)) {
+                embeddingsTextXpath = otherKE.embeddingsTextXpath;
+            }
+            if (StringUtils.isNotBlank(otherKE.pictureRenditionName)) {
+                pictureRenditionName = otherKE.pictureRenditionName;
+            }
+        }
+    }
 
     @Override
     protected Logger log() {

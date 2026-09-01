@@ -29,4 +29,12 @@ public class AuthenticationTokenDiscovery extends AuthenticationToken {
         super(ServiceType.DISCOVERY, authFullUrl, params);
     }
 
+    /**
+     * @param configName the name of the contribution this token belongs to
+     * @since 2025.20
+     */
+    public AuthenticationTokenDiscovery(String authFullUrl, AuthenticationTokenParams params, String configName) {
+        super(ServiceType.DISCOVERY, authFullUrl, params, configName);
+    }
+
 }
