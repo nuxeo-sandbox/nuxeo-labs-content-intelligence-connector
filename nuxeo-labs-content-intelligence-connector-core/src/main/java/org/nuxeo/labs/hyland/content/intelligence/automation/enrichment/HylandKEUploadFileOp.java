@@ -31,6 +31,8 @@ import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.platform.mimetype.interfaces.MimetypeRegistry;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
+import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.runtime.api.Framework;
 
 @Operation(id = HylandKEUploadFileOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Knowledge Enrichement Upload File", description = ""
@@ -57,6 +59,8 @@ public class HylandKEUploadFileOp {
 
             ServiceCall serviceCall = new ServiceCall();
 
+            ServicesUtils.logCICCall(getClass(), CICServiceConstants.SERVICE_CODE_KE, "uploadFile",
+                    ServicesUtils.targetBlobs(1));
             ServiceCallResult result = serviceCall.uploadFileWithPut(closeableFile.getFile(), presignedUrl, mimeType);
             return Blobs.createJSONBlob(result.toJsonString());
 

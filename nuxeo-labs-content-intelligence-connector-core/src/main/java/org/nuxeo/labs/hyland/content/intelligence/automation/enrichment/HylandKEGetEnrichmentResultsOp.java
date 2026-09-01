@@ -28,6 +28,8 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
+import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 
 @Operation(id = HylandKEGetEnrichmentResultsOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Knowledge Enrichement Get Results", description = ""
@@ -52,6 +54,7 @@ public class HylandKEGetEnrichmentResultsOp {
 
         ServiceCallResult result;
         try {
+            ServicesUtils.logCICCall(getClass(), CICServiceConstants.SERVICE_CODE_KE, "getResults", "job " + jobId);
             result = keService.getJobIdResult(configName, jobId);
         } catch (IOException e) {
             throw new NuxeoException(e);

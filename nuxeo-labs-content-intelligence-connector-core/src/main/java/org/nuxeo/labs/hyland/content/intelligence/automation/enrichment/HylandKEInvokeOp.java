@@ -25,6 +25,8 @@ import org.nuxeo.ecm.automation.core.annotations.Param;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
+import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 
 @Operation(id = HylandKEInvokeOp.ID, category = "Hyland Knowledge Enrichment", label = "Call Hyland Knowledge Enrichment Service", description = ""
@@ -52,6 +54,9 @@ public class HylandKEInvokeOp {
 
     @OperationMethod
     public Blob run() {
+        // No action name here: this is the raw, low-level entry point, so we trace the HTTP method + endpoint.
+        ServicesUtils.logCICCall(getClass(), CICServiceConstants.SERVICE_CODE_KE, null,
+                httpMethod + " " + endpoint);
         ServiceCallResult result = keService.invokeEnrichment(configName, httpMethod, endpoint, jsonPayload);
         
         return Blobs.createJSONBlob(result.toJsonString());

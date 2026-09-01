@@ -36,6 +36,7 @@ import org.nuxeo.ecm.core.api.DocumentModelList;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.labs.hyland.content.intelligence.ContentToProcess;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 
@@ -81,10 +82,19 @@ public class HylandKEEnrichSeveralOp {
     @Param(name = "configName", required = false)
     protected String configName;
 
+    /*
+     * Description of the input used by the "moreLogs" trace. run(DocumentModelList) delegates to run(BlobList), so
+     * the log is emitted at the single place where the service is actually called. This field lets that single log
+     * report "n documents" instead of "n blobs" when the caller passed documents.
+     */
+    protected String logTarget = null;
+
     @OperationMethod
     public Blob run(DocumentModelList docs) {
 
         BlobList blobs = new BlobList();
+
+        logTarget = ServicesUtils.targetDocuments(docs.size());
 
         if (StringUtils.isBlank(sourceIds)) {
             List<String> ids = new ArrayList<>();
@@ -133,6 +143,8 @@ public class HylandKEEnrichSeveralOp {
 
         ServiceCallResult result;
         try {
+            ServicesUtils.logCICCall(getClass(), CICServiceConstants.SERVICE_CODE_KE, String.join(",", theActions),
+                    logTarget != null ? logTarget : ServicesUtils.targetBlobs(blobs.size()));
             result = keService.enrich(configName, contentToProcess, theActions, theClasses, similarMetadataJsonArrayStr,
                     extraJsonPayloadStr);
         } catch (IOException e) {

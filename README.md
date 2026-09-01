@@ -89,6 +89,26 @@ Set these via standard `nuxeo.conf` properties. The default mapping is:
 
 Optional per-service `auth.grantType` and `auth.scope` overrides also exist (see the `service-*-contrib.xml` files); the defaults match Hyland's documented values and rarely need to change.
 
+### Tracing the calls to CIC (`nuxeo.hyland.cic.moreLogs`)
+
+| Parameter | Type | Default |
+| --- | --- | --- |
+| `nuxeo.hyland.cic.moreLogs` | boolean | `false` |
+
+This parameter is **global**: unlike every other parameter above, it is not tied to a service family nor to a named contribution. Set it to `true` in `nuxeo.conf` (a restart is required) to have every call to Content Intelligence logged at `INFO` level:
+
+```
+Calling CIC KE/imageDescription for document b9f58861-acf0-4918-9c23-2aee5820cad5
+Calling CIC KE/textSummarization for 10 documents
+Calling CIC DC/curate for 1 blob
+```
+
+Notes:
+
+* When a `CIC.*` operation runs on several documents, the documents are split into batches and **one line is logged per batch**, i.e. one line per actual call to CIC. The reported count is the number of documents really sent — documents without a usable blob are filtered out beforehand and never appear in the count.
+* Nothing is logged when no call is made at all (for instance when no document in the batch has a blob).
+* Only Knowledge Enrichment and Data Curation emit these traces today. Knowledge Discovery, Agents, Ingest and Content Lake will be covered later.
+
 ### Multiple accounts: named contributions (`configName`)
 
 Each service exposes an extension point (`knowledgeEnrichment`, `dataCuration`, `knowledgeDiscovery`, `agent`, `ingest`, `contentLake`). The plugin ships a `default` contribution wired to the `nuxeo.conf` parameters above. Every operation accepts a `configName` parameter (defaults to `"default"`); pass another name to target a different CIC account.

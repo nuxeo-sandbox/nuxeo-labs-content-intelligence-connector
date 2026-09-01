@@ -40,6 +40,7 @@ import org.nuxeo.ecm.directory.Session;
 import org.nuxeo.ecm.directory.api.DirectoryService;
 import org.nuxeo.labs.hyland.content.intelligence.ContentToProcess;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.CICEnrichmentHelper;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
@@ -249,6 +250,8 @@ public abstract class AbstractCICEnrichmentOp {
 
         ServiceCallResult result;
         try {
+            ServicesUtils.logCICCall(getClass(), CICServiceConstants.SERVICE_CODE_KE, getActionName(),
+                    ServicesUtils.targetDocument(doc.getId()));
             result = ke.enrich(StringUtils.isBlank(configName) ? null : configName, blob,
                     List.of(getActionName()), getClasses(), getSimilarMetadataJsonArrayStr(), extra);
         } catch (IOException e) {
@@ -534,6 +537,10 @@ public abstract class AbstractCICEnrichmentOp {
 
             ServiceCallResult result;
             try {
+                // Log the actual number of documents sent to CIC, not batch.size(): docs without a usable blob
+                // were filtered out above and are never sent.
+                ServicesUtils.logCICCall(getClass(), CICServiceConstants.SERVICE_CODE_KE, getActionName(),
+                        ServicesUtils.targetDocuments(contentObjects.size()));
                 result = ke.enrich(configName, contentObjects, List.of(getActionName()), getClasses(),
                         getSimilarMetadataJsonArrayStr(), extra);
             } catch (IOException e) {

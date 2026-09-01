@@ -31,6 +31,7 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 
@@ -87,6 +88,8 @@ public class HylandKESendForEnrichmentOp {
 
         ServiceCallResult result;
         try {
+            ServicesUtils.logCICCall(getClass(), CICServiceConstants.SERVICE_CODE_KE, String.join(",", theActions),
+                    ServicesUtils.targetBlobs(1) + " (sourceId " + sourceId + ")");
             result = keService.sendForEnrichment(configName, blob, sourceId, theActions, theClasses,
                     similarMetadataJsonArrayStr, extraJsonPayloadStr);
         } catch (IOException e) {

@@ -28,6 +28,8 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
+import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
+import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.datacuration.HylandDCService;
 
 @Operation(id = HylandKECurateOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Data Curation on Blob", description = ""
@@ -52,6 +54,10 @@ public class HylandKECurateOp {
 
         ServiceCallResult result;
         try {
+            // DC, not KE: this operation lives in the enrichment package for historical reasons, but it calls the
+            // Data Curation service.
+            ServicesUtils.logCICCall(getClass(), CICServiceConstants.SERVICE_CODE_DC, "curate",
+                    ServicesUtils.targetBlobs(1));
             result = dcService.curate(configName, blob, jsonOptions);
         } catch (IOException e) {
             throw new NuxeoException(e);

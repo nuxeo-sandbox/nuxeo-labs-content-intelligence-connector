@@ -160,4 +160,93 @@ public class ServicesUtils {
         String msg = "[On behalf " + clazz.getName() + "] " + message;
         tempLogger.info(msg);
     }
+
+    /**
+     * Tells whether the global {@code nuxeo.hyland.cic.moreLogs} configuration parameter is enabled.
+     * <p>
+     * The value is read on every call: {@link Framework#getProperty} is a cheap in-memory lookup, negligible
+     * compared to the HTTP call to Content Intelligence it precedes. Caching it in a static field would also make
+     * both values impossible to exercise in the same JVM at test time.
+     *
+     * @return true when extra INFO logging is requested
+     * @since 2025.20
+     */
+    public static boolean isMoreLogs() {
+
+        return configParamToBoolean(CICServiceConstants.MORE_LOGS_PARAM, CICServiceConstants.MORE_LOGS_DEFAULT);
+    }
+
+    /**
+     * Logs, at INFO level, a single call to Content Intelligence, but only when {@link #isMoreLogs()} is true.
+     * Does nothing otherwise, so callers never need to guard the call.
+     * <p>
+     * This helper is service-agnostic on purpose: it is meant to be used by every service family, not only by
+     * Knowledge Enrichment. The resulting message is
+     * {@code "Calling CIC <service>/<action> for <target>"}, for example
+     * {@code "Calling CIC KE/imageDescription for document 1234-5678"}.
+     *
+     * @param clazz the calling class, reported by {@link #forceLogInfo}
+     * @param service a short service code, see the {@code SERVICE_CODE_*} constants in {@link CICServiceConstants}
+     * @param action the action/endpoint being called. When blank, it is simply omitted from the message
+     * @param target a human readable description of what is being processed, typically built with
+     *            {@link #targetDocument}, {@link #targetDocuments} or {@link #targetBlobs}. When blank, the
+     *            {@code " for ..."} part is omitted
+     * @since 2025.20
+     */
+    public static void logCICCall(Class<?> clazz, String service, String action, String target) {
+
+        if (!isMoreLogs()) {
+            return;
+        }
+
+        StringBuilder msg = new StringBuilder("Calling CIC ").append(service);
+        if (StringUtils.isNotBlank(action)) {
+            msg.append("/").append(action);
+        }
+        if (StringUtils.isNotBlank(target)) {
+            msg.append(" for ").append(target);
+        }
+
+        forceLogInfo(clazz, msg.toString());
+    }
+
+    /**
+     * Same as {@link #logCICCall(Class, String, String, String)} without a target description.
+     *
+     * @since 2025.20
+     */
+    public static void logCICCall(Class<?> clazz, String service, String action) {
+
+        logCICCall(clazz, service, action, null);
+    }
+
+    /**
+     * Formats a single document as a {@link #logCICCall} target: {@code "document <id>"}.
+     *
+     * @since 2025.20
+     */
+    public static String targetDocument(String docId) {
+
+        return "document " + docId;
+    }
+
+    /**
+     * Formats a document count as a {@link #logCICCall} target: {@code "<n> documents"}.
+     *
+     * @since 2025.20
+     */
+    public static String targetDocuments(int count) {
+
+        return count + (count == 1 ? " document" : " documents");
+    }
+
+    /**
+     * Formats a blob count as a {@link #logCICCall} target: {@code "<n> blobs"}.
+     *
+     * @since 2025.20
+     */
+    public static String targetBlobs(int count) {
+
+        return count + (count == 1 ? " blob" : " blobs");
+    }
 }
