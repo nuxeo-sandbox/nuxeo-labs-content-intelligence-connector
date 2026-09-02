@@ -46,7 +46,9 @@ import org.nuxeo.ecm.core.event.EventProducer;
 import org.nuxeo.ecm.core.event.impl.DocumentEventContext;
 import org.nuxeo.ecm.core.work.AbstractWork;
 import org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.AbstractCICEnrichmentOp.BatchOutcome;
+import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.runtime.api.Framework;
+import org.nuxeo.runtime.transaction.TransactionHelper;
 
 /**
  * Generic background {@link org.nuxeo.ecm.core.work.api.Work Work} that executes a
@@ -166,6 +168,15 @@ public class CICEnrichmentWork extends AbstractWork {
                             outcome.docIds.get(0));
                     return;
                 }
+                
+                // ake sure we don't loose all the values if a listener is not declared
+                // post commit and fails.
+                ServicesUtils.forceLogInfo(this.getClass(), "TransactionHelper.isTransactionActive() => " + TransactionHelper.isTransactionActive());
+                if(TransactionHelper.isTransactionActive()) {
+                    TransactionHelper.commitOrRollbackTransaction();
+                    TransactionHelper.startTransaction();
+                }
+                
                 DocumentModel principal = session.getDocument(principalRef);
                 DocumentEventContext ctx = new DocumentEventContext(session, session.getPrincipal(), principal);
                 ctx.setProperty(CTX_ACTION_NAME, op.getActionName());
