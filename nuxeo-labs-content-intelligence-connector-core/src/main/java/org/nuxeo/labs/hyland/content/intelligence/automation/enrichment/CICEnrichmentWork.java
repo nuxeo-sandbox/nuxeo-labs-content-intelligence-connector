@@ -185,7 +185,7 @@ public class CICEnrichmentWork extends AbstractWork {
 
                 DocumentRef principalRef = new IdRef(outcome.docIds.get(0));
                 if (!session.exists(principalRef)) {
-                    LOG.debug("CICEnrichmentWork: principal doc {} no longer exists, event skipped",
+                    LOG.warn("CICEnrichmentWork: principal doc {} no longer exists, event skipped",
                             outcome.docIds.get(0));
                     return;
                 }
@@ -207,7 +207,7 @@ public class CICEnrichmentWork extends AbstractWork {
                 ctx.setProperty(CTX_IS_LIST_INPUT, Boolean.valueOf(isListInput));
                 Framework.getService(EventProducer.class).fireEvent(ctx.newEvent(CIC_CALL_KE_DONE));
             } catch (RuntimeException ex) {
-                LOG.warn("Failed to fire {} event for op {}: {}", CIC_CALL_KE_DONE, opClassName, ex.getMessage(), ex);
+                LOG.error("Failed to fire {} event for op {}: {}", CIC_CALL_KE_DONE, opClassName, ex.getMessage(), ex);
             }
         };
 
