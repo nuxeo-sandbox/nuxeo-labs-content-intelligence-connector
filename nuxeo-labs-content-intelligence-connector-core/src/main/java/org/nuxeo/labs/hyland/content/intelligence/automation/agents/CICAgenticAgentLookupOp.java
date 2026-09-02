@@ -43,7 +43,8 @@ import org.nuxeo.runtime.api.Framework;
 @Operation(id = CICAgenticAgentLookupOp.ID, category = "CIC", label = "CIC: Agentic Agent Lookup", description = ""
         + "Input is a CICAgenticAgentAndConfig document. Calls HylandAgents.LookupAgent using the document's"
         + " cicagenticagentandconfig:agentId and cicagentandconfig:configName, then saves the resulting input schema"
-        + " and tools (as JSON strings) on the document. If saveDocument is true (default false), the document is saved.")
+        + " and tools (as JSON strings) on the document. If saveDocument is true (default false), the document is"
+        + " saved.")
 public class CICAgenticAgentLookupOp {
 
     public static final String ID = "CIC.AgenticAgentLookup";

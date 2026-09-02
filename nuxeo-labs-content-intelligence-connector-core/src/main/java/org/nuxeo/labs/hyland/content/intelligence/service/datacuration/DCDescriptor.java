@@ -40,12 +40,12 @@ public class DCDescriptor extends AbstractServiceDescriptor {
     protected String serviceLabel() {
         return HylandDCService.SERVICE_LABEL;
     }
-    
+
     @Override
     protected boolean requiresEnvironment() {
         return false;
     }
-    
+
     @Override
     public String getEnvironment() {
         return null;

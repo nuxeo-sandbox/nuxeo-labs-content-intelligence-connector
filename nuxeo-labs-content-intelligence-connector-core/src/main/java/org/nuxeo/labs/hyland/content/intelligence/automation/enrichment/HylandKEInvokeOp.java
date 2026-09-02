@@ -29,10 +29,12 @@ import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 
-@Operation(id = HylandKEInvokeOp.ID, category = "Hyland Knowledge Enrichment", label = "Call Hyland Knowledge Enrichment Service", description = ""
+@Operation(id = HylandKEInvokeOp.ID, category = "Hyland Knowledge Enrichment",
+        label = "Call Hyland Knowledge Enrichment Service", description = ""
         + "Invoke the Hyland Content Intelligence/Knowledge Enrichment API."
         + " Used for the low-level calls. (See Knowledge Enrichment API documentation for details)"
-        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using"
+        + " 'default')")
 public class HylandKEInvokeOp {
 
     public static final String ID = "HylandKnowledgeEnrichment.Invoke";
@@ -42,7 +44,7 @@ public class HylandKEInvokeOp {
 
     @Param(name = "httpMethod", required = true)
     protected String httpMethod;
-    
+
     @Param(name = "endpoint", required = true)
     protected String endpoint;
 
@@ -58,7 +60,7 @@ public class HylandKEInvokeOp {
         ServicesUtils.logCICCall(getClass(), CICServiceConstants.SERVICE_CODE_KE, null,
                 httpMethod + " " + endpoint);
         ServiceCallResult result = keService.invokeEnrichment(configName, httpMethod, endpoint, jsonPayload);
-        
+
         return Blobs.createJSONBlob(result.toJsonString());
     }
 

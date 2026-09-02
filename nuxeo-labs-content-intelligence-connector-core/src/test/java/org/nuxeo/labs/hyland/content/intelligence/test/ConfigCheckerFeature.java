@@ -82,7 +82,7 @@ import org.nuxeo.runtime.test.runner.RunnerFeature;
  * CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID
  * CIC_CONTENTLAKE_SOURCE_ID
  * CIC_INGEST_UNIT_TEST_REPO_SOURCE
- * 
+ *
  * @since 2023
  */
 public class ConfigCheckerFeature implements RunnerFeature {
@@ -187,7 +187,7 @@ public class ConfigCheckerFeature implements RunnerFeature {
     public static boolean hasIngestClientInfo() {
         return hasIngestClientInfo;
     }
-    
+
     public static boolean hasContentLakeClientInfo() {
         return hasContentLakeClientInfo;
     }
@@ -282,16 +282,19 @@ public class ConfigCheckerFeature implements RunnerFeature {
         }
 
         // ==================================================
-        boolean hasContentLakeBaseUrl = hasProperty(ContentLakeServiceImpl.CONTENTLAKE_BASE_URL_PARAM, ENV_CIC_CONTENTLAKE_BASE_URL);
+        boolean hasContentLakeBaseUrl = hasProperty(ContentLakeServiceImpl.CONTENTLAKE_BASE_URL_PARAM,
+                ENV_CIC_CONTENTLAKE_BASE_URL);
         if (!hasContentLakeBaseUrl) {
             log.info("Missing CIC Content Lake Base URL => no Content Lake tests");
         }
-        boolean hasContentLakeClientId = hasProperty(ContentLakeServiceImpl.CONTENTLAKE_CLIENT_ID_PARAM, ENV_CIC_CONTENTLAKE_CLIENT_ID);
+        boolean hasContentLakeClientId = hasProperty(ContentLakeServiceImpl.CONTENTLAKE_CLIENT_ID_PARAM,
+                ENV_CIC_CONTENTLAKE_CLIENT_ID);
         boolean hasContentLakeClientSecret = hasProperty(ContentLakeServiceImpl.CONTENTLAKE_CLIENT_SECRET_PARAM,
                 ENV_CIC_CONTENTLAKE_CLIENT_SECRET);
         boolean hasContentLakeEnvironment = hasProperty(ContentLakeServiceImpl.CONTENTLAKE_ENVIRONMENT_PARAM,
                 ENV_CIC_CONTENTLAKE_ENVIRONMENT);
-        hasContentLakeClientInfo = hasEndpointAuth && hasContentLakeClientId && hasContentLakeClientSecret && hasContentLakeEnvironment;
+        hasContentLakeClientInfo = hasEndpointAuth && hasContentLakeClientId && hasContentLakeClientSecret
+                && hasContentLakeEnvironment;
         if (!hasContentLakeClientInfo) {
             log.info("Missing CIC Content Lake Client info => no tests of Content Lake");
         }

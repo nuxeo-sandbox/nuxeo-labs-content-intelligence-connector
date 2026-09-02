@@ -130,10 +130,11 @@ public class TestHylandKDOperations {
 
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasDiscoveryClientInfo());
-        
+
         String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID);
         if(StringUtils.isBlank(agentId)) {
-            log.info("Missing the {} env. variable => ignoring the test.", ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID);
+            log.info("Missing the {} env. variable => ignoring the test.",
+                    ConfigCheckerFeature.ENV_CIC_DISCOVERY_UNIT_TEST_AGENT_ID);
             return;
         }
 
@@ -146,9 +147,9 @@ public class TestHylandKDOperations {
 
         Blob result = (Blob) automationService.run(ctx, HylandKDAskQuestionAndGetAnswerOp.ID, params);
         Assert.assertNotNull(result);
-        
+
         JSONObject resultJson = new JSONObject(result.getString());
-        
+
         int responseCode = resultJson.getInt("responseCode");
         // We can't consider a 404 as an error here, it's the service not responding in time.
         if (responseCode == 200) {

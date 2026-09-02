@@ -41,7 +41,7 @@ import org.nuxeo.runtime.model.ComponentContext;
 
 /**
  * This class handles calls to Content Intelligence Knowledge Discovery service
- * 
+ *
  * @since 2023
  */
 public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescriptor> implements HylandKDService {
@@ -64,7 +64,8 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
 
     public static final int PULL_RESULTS_MAX_TRIES_DEFAULT = 25;
 
-    public static final String PULL_RESULTS_SLEEP_INTERVAL_PARAM = "nuxeo.hyland.cic.discovery.pullResultsSleepInterval";
+    public static final String PULL_RESULTS_SLEEP_INTERVAL_PARAM =
+            "nuxeo.hyland.cic.discovery.pullResultsSleepInterval";
 
     public static final int PULL_RESULTS_SLEEP_INTERVAL_DEFAULT = 5000;
 
@@ -262,7 +263,8 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
             count += 1;
 
             if (count == pullResultsMaxTries) {
-                log.warn("getAnswer() for question {} is taking time. This is the last try, {}/{} (Last responseCode {}).",
+                log.warn("getAnswer() for question {} is taking time. This is the last try, {}/{} (Last responseCode"
+                        + " {}).",
                         questionId, count, pullResultsMaxTries, lastResponseCode);
             } else if (count == 5 || (count > 5 && (count - 5) % 2 == 0)) {
                 log.warn("getAnswer() for question {}, call {}/{} (Last responseCode {}).",
@@ -453,7 +455,6 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
      * Stop the component.
      *
      * @param context the component context. Use it to get the current bundle context
-     * @throws InterruptedException
      */
     @Override
     public void stop(ComponentContext context) throws InterruptedException {

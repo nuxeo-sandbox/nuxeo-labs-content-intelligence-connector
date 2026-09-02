@@ -36,17 +36,20 @@ import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDServ
  *
  * @since 2025
  */
-@Operation(id = HylandKDContinueConversationOp.ID, category = "Hyland Knowledge Discovery", label = "Continue Conversation", description = ""
+@Operation(id = HylandKDContinueConversationOp.ID, category = "Hyland Knowledge Discovery",
+        label = "Continue Conversation", description = ""
         + "Continues an existing conversation with a Knowledge Discovery agent by sending a follow-up question."
         + " The agent retains context from previous messages in the conversation."
         + " Returns a JSON blob with the new message (question + answer)."
         + " The result will have a 'responseCode' property that you should check (must be 200),"
         + " and the returned result is in the 'response' property."
         + " agentId => If empty, it is read from nuxeo.hyland.cic.discovery.default.agentId."
-        + " conversationId is required and must be obtained from a previous call to HylandKnowledgeDiscovery.startConversation."
+        + " conversationId is required and must be obtained from a previous call to"
+        + " HylandKnowledgeDiscovery.startConversation."
         + " dynamicFilterJsonStr is an optional stringified JSON object to narrow the search scope."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified JSON object."
-        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using"
+        + " 'default')")
 public class HylandKDContinueConversationOp {
 
     public static final String ID = "HylandKnowledgeDiscovery.continueConversation";

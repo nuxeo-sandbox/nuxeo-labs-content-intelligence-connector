@@ -200,12 +200,14 @@ public abstract class AbstractServiceDescriptor {
                     name, serviceLabel);
         }
         if (StringUtils.isBlank(baseUrl)) {
-            log().warn("No CIC {} endpoint provided for configuration '{}', calls to the service will fail.", serviceLabel,
+            log().warn("No CIC {} endpoint provided for configuration '{}', calls to the service will fail.",
+                    serviceLabel,
                     name);
         }
         if (StringUtils.isBlank(tokenGrantType)) {
             log().warn(
-                    "No CIC {} tokenGrantType provided for configuration '{}', authentication to the service will fail.",
+                    "No CIC {} tokenGrantType provided for configuration '{}', authentication to the service will"
+                            + " fail.",
                     serviceLabel, name);
         }
         if (StringUtils.isBlank(tokenScope)) {
@@ -222,7 +224,8 @@ public abstract class AbstractServiceDescriptor {
                     serviceLabel, name);
         }
         if (requiresEnvironment() && StringUtils.isBlank(getEnvironment())) {
-            log().warn("No CIC {} environment provided for configuration '{}', calls to the service will fail.", serviceLabel,
+            log().warn("No CIC {} environment provided for configuration '{}', calls to the service will fail.",
+                    serviceLabel,
                     name);
         }
     }

@@ -208,7 +208,6 @@ public class IngestServiceImpl extends AbstractCICServiceComponent<IngestDescrip
      * Stop the component.
      *
      * @param context the component context. Use it to get the current bundle context
-     * @throws InterruptedException
      */
     @Override
     public void stop(ComponentContext context) throws InterruptedException {

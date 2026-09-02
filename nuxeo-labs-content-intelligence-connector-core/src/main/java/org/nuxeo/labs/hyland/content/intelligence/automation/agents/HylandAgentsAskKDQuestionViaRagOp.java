@@ -35,18 +35,24 @@ import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsSer
 /**
  * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
-@Operation(id = HylandAgentsAskKDQuestionViaRagOp.ID, category = "Hyland Agent Builder", label = "Ask question to KD via RAG Agent", description = ""
+@Operation(id = HylandAgentsAskKDQuestionViaRagOp.ID, category = "Hyland Agent Builder",
+        label = "Ask question to KD via RAG Agent", description = ""
         + "Ask a question to KD using a RAG agent."
         + " Returns a JSON blob holding the result of the call. Call its getString() method then JSON.parse()."
-        + " If resturnSimplifiedJson is passed and true, the returned JSON is simpler than the original: See plugin documentation."
-        + " See CIC documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
+        + " If resturnSimplifiedJson is passed and true, the returned JSON is simpler than the original: See plugin"
+        + " documentation."
+        + " See CIC documentation for values. The result will have a 'responseCode' property that you should check"
+        + " (must be 200),"
         + " and the response of the agent in the 'response' object."
         + " agentVersion is optional. If not used, latest version is invoked."
-        + " contextObjectIdsJsonArrayStr is a stringified JSON array of object Ids (doc UUIDs in Nuxeo) to be used for the context."
+        + " contextObjectIdsJsonArrayStr is a stringified JSON array of object Ids (doc UUIDs in Nuxeo) to be used for"
+        + " the context."
         + " guardrailsJsonArrayStr is optional. A JSON array of guardrails to apply."
-        + " extraPayloadJsonStr is a stringified JSON Object, to be merged to the payload built by the service (if you need extra parameters)."
+        + " extraPayloadJsonStr is a stringified JSON Object, to be merged to the payload built by the service (if you"
+        + " need extra parameters)."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
-        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using"
+        + " 'default')")
 public class HylandAgentsAskKDQuestionViaRagOp {
 
     public static final String ID = "HylandAgents.AskKDQuestionViaRAGAgent";

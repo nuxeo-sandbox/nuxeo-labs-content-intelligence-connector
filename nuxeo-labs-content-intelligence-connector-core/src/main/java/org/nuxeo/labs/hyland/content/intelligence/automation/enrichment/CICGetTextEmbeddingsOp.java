@@ -141,7 +141,8 @@ public class CICGetTextEmbeddingsOp extends AbstractCICTextEnrichmentOp {
         String xpath = ke.getEmbeddingsTextXpath(configName);
         if (StringUtils.isBlank(facet) || StringUtils.isBlank(xpath)) {
             LOG.warn(
-                    "CIC.GetTextEmbeddings skipped: KE descriptor '{}' has no embeddingsFacet/embeddingsTextXpath configured. {} returned unchanged (no CIC call).",
+                    "CIC.GetTextEmbeddings skipped: KE descriptor '{}' has no embeddingsFacet/embeddingsTextXpath"
+                            + " configured. {} returned unchanged (no CIC call).",
                     configName == null ? "default" : configName, contextLabel);
             return true;
         }

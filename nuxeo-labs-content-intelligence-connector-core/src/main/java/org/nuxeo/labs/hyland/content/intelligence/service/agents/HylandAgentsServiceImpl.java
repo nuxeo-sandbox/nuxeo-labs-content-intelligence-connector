@@ -32,7 +32,8 @@ import org.nuxeo.labs.hyland.content.intelligence.service.AbstractCICServiceComp
 import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
 import org.nuxeo.runtime.model.ComponentContext;
 
-public class HylandAgentsServiceImpl extends AbstractCICServiceComponent<AgentDescriptor> implements HylandAgentsService {
+public class HylandAgentsServiceImpl extends AbstractCICServiceComponent<AgentDescriptor>
+        implements HylandAgentsService {
 
     public static final String AGENTS_CLIENT_ID_PARAM = "nuxeo.hyland.cic.agents.clientId";
 
@@ -209,7 +210,7 @@ public class HylandAgentsServiceImpl extends AbstractCICServiceComponent<AgentDe
      */
     @Override
     public void start(ComponentContext context) {
-        
+
         agentsAuthTokens = initAuthTokens(
                 desc -> new AuthenticationTokenAgents(
                         desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
@@ -220,7 +221,6 @@ public class HylandAgentsServiceImpl extends AbstractCICServiceComponent<AgentDe
      * Stop the component.
      *
      * @param context the component context. Use it to get the current bundle context
-     * @throws InterruptedException
      */
     @Override
     public void stop(ComponentContext context) throws InterruptedException {

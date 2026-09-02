@@ -161,7 +161,8 @@ public class TestHylandKEEnrichOp {
         instructions.put("imageDescription", descriptionInstructions);
         JSONObject classificationInstructions = new JSONObject();
         classificationInstructions.put("requirement",
-                "Carefully examine the colors in the image. If you find at least one Disney character, then set the class to 'Special'");
+                "Carefully examine the colors in the image. If you find at least one Disney character, then set the"
+                        + " class to 'Special'");
         instructions.put("imageClassification", classificationInstructions);
         params.put("instructionsV2JsonStr", instructions.toString());
 
@@ -226,7 +227,8 @@ public class TestHylandKEEnrichOp {
         JSONObject instructions = new JSONObject();
         JSONObject descriptionInstructions = new JSONObject();
         descriptionInstructions.put("requirement",
-                "Carefully examine the colors in the image. If you find any amount of black color, then add to the description the exact words '(Black in there)'");
+                "Carefully examine the colors in the image. If you find any amount of black color, then add to the"
+                        + " description the exact words '(Black in there)'");
         instructions.put("imageDescription", descriptionInstructions);
         params.put("instructionsV2JsonStr", instructions.toString());
 
@@ -258,7 +260,7 @@ public class TestHylandKEEnrichOp {
             // We should have at least "Mickey"
             assertTrue(description.toLowerCase().indexOf("mickey") > -1);
             assertTrue(description.indexOf("(Black in there)") > -1);
-            
+
             // Apache split words.
             // Assume a 30% margin in number of words
             assertTrue(StringUtils.split(description).length < 130);

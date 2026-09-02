@@ -31,12 +31,14 @@ import org.nuxeo.labs.hyland.content.intelligence.service.ingest.IngestService;
 /**
  * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
-@Operation(id = IngestCheckDigestOp.ID, category = "Hyland CIC Ingest", label = "Check Document was Ingested", description = ""
+@Operation(id = IngestCheckDigestOp.ID, category = "Hyland CIC Ingest", label = "Check Document was Ingested",
+        description = ""
         + "input is a document. xpath is the xpath of the blob (file:content by default)."
         + " Returns a JSON blob holding the result of the call. Call its getString() method then JSON.parse()."
         + " See plugin documentation for possible values of the returned blob."
         + " sourceId is optional. If not passed, we use nuxeo.hyland.cic.ingest.default.sourceId."
-        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using"
+        + " 'default')")
 public class IngestCheckDigestOp {
 
     public static final String ID = "HylandIngest.CheckDigest";

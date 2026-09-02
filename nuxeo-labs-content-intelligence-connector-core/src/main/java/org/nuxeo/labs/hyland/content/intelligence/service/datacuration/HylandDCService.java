@@ -26,11 +26,11 @@ import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 
 /**
- * 
+ *
  * @since 2025.15/2023.18
  */
 public interface HylandDCService {
-    
+
     public static final String SERVICE_LABEL = "Data Curation";
 
     /**
@@ -48,12 +48,8 @@ public interface HylandDCService {
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
-     * 
-     * @param configName
-     * @param blob
-     * @param jsonOptions
+     *
      * @return a ServiceCallResult
-     * @throws IOException
      * @since 2023
      */
     public ServiceCallResult curate(String configName, Blob blob, String jsonOptions) throws IOException;
@@ -63,12 +59,7 @@ public interface HylandDCService {
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
-     * 
-     * @param configName
-     * @param file
-     * @param jsonOptions
-     * @return
-     * @throws IOException
+     *
      * @since 2023
      */
     public ServiceCallResult curate(String configName, File file, String jsonOptions) throws IOException;
@@ -83,9 +74,7 @@ public interface HylandDCService {
      * <li>0: Revert to configuration parameter values. If not set, revert to default value.</li>
      * <li>-1: Do not change the value</li>
      * </ul>
-     * 
-     * @param maxTries
-     * @param sleepIntervalMS
+     *
      * @since 2023
      */
     public void setPullResultsSettings(int maxTries, int sleepIntervalMS);

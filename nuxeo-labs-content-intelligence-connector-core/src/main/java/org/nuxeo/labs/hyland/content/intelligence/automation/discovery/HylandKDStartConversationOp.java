@@ -37,15 +37,18 @@ import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDServ
  *
  * @since 2025
  */
-@Operation(id = HylandKDStartConversationOp.ID, category = "Hyland Knowledge Discovery", label = "Start Conversation", description = ""
+@Operation(id = HylandKDStartConversationOp.ID, category = "Hyland Knowledge Discovery", label = "Start Conversation",
+        description = ""
         + "Starts a new conversation with a Knowledge Discovery agent."
-        + " Returns a JSON blob with the conversation metadata (conversationId) and the first message (question + answer)."
+        + " Returns a JSON blob with the conversation metadata (conversationId) and the first message (question +"
+        + " answer)."
         + " The result will have a 'responseCode' property that you should check (must be 200),"
         + " and the returned result is in the 'response' property."
         + " agentId => If empty, it is read from nuxeo.hyland.cic.discovery.default.agentId."
         + " dynamicFilterJsonStr is an optional stringified JSON object to narrow the search scope."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified JSON object."
-        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using"
+        + " 'default')")
 public class HylandKDStartConversationOp {
 
     public static final String ID = "HylandKnowledgeDiscovery.startConversation";

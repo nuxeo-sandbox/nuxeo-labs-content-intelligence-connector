@@ -35,14 +35,16 @@ import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 
-@Operation(id = HylandKEEnrichOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Knowledge Enrichement on Blob", description = ""
+@Operation(id = HylandKEEnrichOp.ID, category = "Hyland Knowledge Enrichment",
+        label = "CIC Knowledge Enrichement on Blob", description = ""
         + "Invoke the Hyland Knowledge Enrichment (KE) API to enrich the blob. actions is a list of actions to process"
         + " (image-Description, imageEmbeddings, …), classes a list of values to be used for classification,"
         + " and similarValues is used for metadata endpoint. It must be passed as a JSON string."
         + " (See KE documentation for details, limitation, etc.)"
         + " Since KE V2, you can pass instructions as an object of objects, one per action "
         + " (see plugin doc for details.)"
-        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using"
+        + " 'default')")
 public class HylandKEEnrichOp {
 
     public static final String ID = "HylandKnowledgeEnrichment.Enrich";
@@ -61,7 +63,7 @@ public class HylandKEEnrichOp {
 
     @Param(name = "extraJsonPayloadStr", required = false)
     protected String extraJsonPayloadStr = null;
-    
+
     @Param(name = "instructionsV2JsonStr", required = false)
     protected String instructionsV2JsonStr = null;
 
@@ -77,14 +79,15 @@ public class HylandKEEnrichOp {
         if (StringUtils.isNotBlank(classes)) {
             theClasses = Arrays.stream(classes.split(",")).map(String::trim).toList();
         }
-        
+
         extraJsonPayloadStr = ServicesUtils.addInstructionsToExtraPayload(instructionsV2JsonStr, extraJsonPayloadStr);
 
         ServiceCallResult result;
         try {
             ServicesUtils.logCICCall(getClass(), CICServiceConstants.SERVICE_CODE_KE, String.join(",", theActions),
                     ServicesUtils.targetBlobs(1));
-            result = keService.enrich(configName, blob, theActions, theClasses, similarMetadataJsonArrayStr, extraJsonPayloadStr);
+            result = keService.enrich(configName, blob, theActions, theClasses, similarMetadataJsonArrayStr,
+                    extraJsonPayloadStr);
         } catch (IOException e) {
             throw new NuxeoException(e);
         }

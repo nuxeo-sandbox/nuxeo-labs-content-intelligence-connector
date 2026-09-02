@@ -48,22 +48,22 @@ import jakarta.inject.Inject;
 @Features({ PlatformFeature.class, ConfigCheckerFeature.class })
 @Deploy("nuxeo-hyland-content-intelligence-connector-core")
 public class TestXMLContributions {
-    
+
     @Inject
     protected HylandKEService keService;
-    
+
     @Inject
     protected HylandDCService dcService;
-    
+
     @Inject
     protected HylandKDService kdService;
-    
+
     @Inject
     protected HylandAgentsService agentsService;
-    
+
     @Inject
     protected IngestService ingestService;
-    
+
     @Inject
     protected ContentLakeService clService;
 
@@ -76,7 +76,7 @@ public class TestXMLContributions {
         assertNotNull(ingestService);
         assertNotNull(clService);
     }
-    
+
     protected void checkHasDefaultContrib(List<String> contribs) {
         assertNotNull(contribs);
         assertEquals(1, contribs.size());
@@ -85,45 +85,45 @@ public class TestXMLContributions {
 
     @Test
     public void shouldHaveDefaultConfigs() {
-        
+
         checkHasDefaultContrib(keService.getContribNames());
         checkHasDefaultContrib(dcService.getContribNames());
         checkHasDefaultContrib(kdService.getContribNames());
         checkHasDefaultContrib(agentsService.getContribNames());
         checkHasDefaultContrib(ingestService.getContribNames());
         checkHasDefaultContrib(clService.getContribNames());
-        
+
     }
-    
+
     @Test
     public void defaultKDContribLooksOK() {
-        
+
         KDDescriptor desc = kdService.getKDDescriptor("default");
         assertNotNull(desc);
-        
+
         assertTrue(desc.hasAllValues());
-        
+
     }
-    
+
     @Test
     @Deploy("nuxeo-hyland-content-intelligence-connector-core:more-mock-configs.xml")
     public void shouldDeployExtraContribs() {
         // Contribs contain random string => do not test connection to services, just existence.
-        
+
         List<String> contribs = kdService.getContribNames();
         assertEquals(2, contribs.size());
         KDDescriptor kdDesc = kdService.getKDDescriptor("more-kd-1");
         assertNotNull(kdDesc);
         assertTrue(kdDesc.hasAllValues());
 
-        
+
         contribs = keService.getContribNames();
         // default + more-ke-1 + more-ke-with-embeddings
         assertEquals(3, contribs.size());
         KEDescriptor keDesc = keService.getKEDescriptor("more-ke-1");
         assertNotNull(keDesc);
         assertTrue(keDesc.hasAllValues());
-        
+
 
         contribs = dcService.getContribNames();
         assertEquals(2, contribs.size());
@@ -160,5 +160,5 @@ public class TestXMLContributions {
         assertEquals("embeddings:image", keService.getEmbeddingsImageXpath("more-ke-with-embeddings"));
         assertEquals("embeddings:text", keService.getEmbeddingsTextXpath("more-ke-with-embeddings"));
     }
-    
+
 }

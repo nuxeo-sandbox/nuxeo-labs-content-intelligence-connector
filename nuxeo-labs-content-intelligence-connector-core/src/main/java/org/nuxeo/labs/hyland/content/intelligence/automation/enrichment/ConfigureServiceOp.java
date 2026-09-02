@@ -32,7 +32,8 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
  * @since 2025.16 the {@code useKEV2} parameter is ignored: the plugin always uses Knowledge Enrichment v2
  *        because v1 is deprecated and will be removed. Passing {@code useKEV2=false} logs a WARN.
  */
-@Operation(id = ConfigureServiceOp.ID, category = "Hyland Knowledge Enrichment", label = "Configure Calls to Service", description = ""
+@Operation(id = ConfigureServiceOp.ID, category = "Hyland Knowledge Enrichment", label = "Configure Calls to Service",
+        description = ""
         + "Allows for dynamically changing some settings when calling the service."
         + " maxTries and sleepIntervalMS: if a value is 0 => reset to configuration or default value."
         + " If -1 (or not passed) => do not change."
@@ -60,7 +61,8 @@ public class ConfigureServiceOp {
     @OperationMethod
     public void run() {
 
-        keService.setPullResultsSettings(maxTries == null ? 1 : maxTries, sleepIntervalMS == null ? -1 : sleepIntervalMS);
+        keService.setPullResultsSettings(maxTries == null ? 1 : maxTries,
+                sleepIntervalMS == null ? -1 : sleepIntervalMS);
 
         // Since plugin version 2025.16, the plugin always uses KE v2 because v1 is deprecated
         // and will be removed. The useKEV2 parameter is kept for backward compatibility but is ignored.

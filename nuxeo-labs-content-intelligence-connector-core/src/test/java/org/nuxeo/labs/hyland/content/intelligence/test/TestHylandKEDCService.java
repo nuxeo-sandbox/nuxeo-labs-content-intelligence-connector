@@ -271,7 +271,8 @@ public class TestHylandKEDCService {
         JSONObject instructions = new JSONObject();
         JSONObject imageDescInstructions = new JSONObject();
         imageDescInstructions.put("focus",
-                "Check only for Mickey cartoon character. Answer either \"Mickey is in the image\" or \"Mickey is not in the image\".");
+                "Check only for Mickey cartoon character. Answer either \"Mickey is in the image\" or \"Mickey is not"
+                        + " in the image\".");
         instructions.put("imageDescription", imageDescInstructions);
         extraPayload.put("instructions", instructions);
 
@@ -462,11 +463,7 @@ public class TestHylandKEDCService {
 
     /**
      * Shared utility.
-     * 
-     * @param array
-     * @param key
-     * @param searchStr
-     * @return
+     *
      * @since 2023
      */
     public static boolean hasValueInJSONArray(JSONArray array, String key, String searchStr) {
@@ -540,7 +537,8 @@ public class TestHylandKEDCService {
         // No embeddings
         // schema MDATS - FULL - PIPELINE. See
         // https://hyland.github.io/DocumentFilters-Docs/latest/getting_started_with_document_filters/about_json_output.html#json_output_schema
-        String options = "{\"normalization\": {\"quotations\": true},\"chunking\": true,\"embedding\": false, \"json_schema\": \"MDAST\"}";
+        String options = "{\"normalization\": {\"quotations\": true},\"chunking\": true,\"embedding\": false,"
+                + " \"json_schema\": \"MDAST\"}";
         ServiceCallResult result = hylandDCService.curate(null, f, options);
         assertNotNull(result);
 

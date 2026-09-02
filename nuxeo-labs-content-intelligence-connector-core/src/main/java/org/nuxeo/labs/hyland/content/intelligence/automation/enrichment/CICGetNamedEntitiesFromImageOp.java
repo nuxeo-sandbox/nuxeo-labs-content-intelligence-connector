@@ -34,7 +34,8 @@ import org.nuxeo.runtime.api.Framework;
  *
  * @since 2025.18
  */
-@Operation(id = CICGetNamedEntitiesFromImageOp.ID, category = "CIC", label = "CIC: Get Named Entities From Image", description = ""
+@Operation(id = CICGetNamedEntitiesFromImageOp.ID, category = "CIC", label = "CIC: Get Named Entities From Image",
+        description = ""
         + "Calls Hyland Knowledge Enrichment namedEntityRecognitionImage and writes the parsed entities into"
         + " cic_named_entities:entities (CICNamedEntities facet added when needed).")
 public class CICGetNamedEntitiesFromImageOp extends AbstractCICImageEnrichmentOp {

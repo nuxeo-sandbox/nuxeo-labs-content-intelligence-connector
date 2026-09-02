@@ -67,12 +67,14 @@ import org.nuxeo.runtime.api.Framework;
  *
  * @since 2025.16
  */
-@Operation(id = CICKDAskQuestionForUIOp.ID, category = "Hyland Content Intelligence", label = "CIC: KD Ask Question (for UI)", description = ""
+@Operation(id = CICKDAskQuestionForUIOp.ID, category = "Hyland Content Intelligence",
+        label = "CIC: KD Ask Question (for UI)", description = ""
         + "Asks a question to Knowledge Discovery and resolves objectReferences to Nuxeo documents."
         + " Input is an optional document list used as KD context (kdinfo:objectId is preferred over uuid)."
         + " agentId is optional; if not passed it is read from nuxeo.hyland.cic.discovery.default.agentId."
         + " configName is the name of the XML configuration to use (default: 'default')."
-        + " Returns a JSON blob with {responseCode, responseMessage, response:{question, answer, references, noReferencesMessage}}."
+        + " Returns a JSON blob with {responseCode, responseMessage, response:{question, answer, references,"
+        + " noReferencesMessage}}."
         + " On error the upstream envelope is returned unchanged.")
 public class CICKDAskQuestionForUIOp {
 
@@ -122,7 +124,8 @@ public class CICKDAskQuestionForUIOp {
             }
         }
 
-        ServiceCallResult result = kdService.askQuestionAndGetAnswer(configName, agentId, question, objKeys, null, null);
+        ServiceCallResult result = kdService.askQuestionAndGetAnswer(configName, agentId, question, objKeys, null,
+                null);
 
         int responseCode = result.getResponseCode();
         // On error, return the upstream envelope unchanged
@@ -183,10 +186,12 @@ public class CICKDAskQuestionForUIOp {
 
             if (docs.isEmpty()) {
                 if (ids.size() == 1) {
-                    noReferencesMessage = "The document used for reference in the Knowledge Discovery repository is not in this Nuxeo repository.";
+                    noReferencesMessage = "The document used for reference in the Knowledge Discovery repository is not"
+                            + " in this Nuxeo repository.";
                 } else {
                     noReferencesMessage = "The " + ids.size()
-                            + " documents used for reference in the Knowledge Discovery repository are not in this Nuxeo repository.";
+                            + " documents used for reference in the Knowledge Discovery repository are not in this"
+                            + " Nuxeo repository.";
                 }
             }
         }

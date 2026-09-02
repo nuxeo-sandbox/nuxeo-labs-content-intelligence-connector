@@ -38,7 +38,7 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
  * <li>It is an object of objects, one per action
  * </ul>
  * For example, when requesting textClassification and textSummarization, extraJsonPayloadStr could be:
- * 
+ *
  * <pre>
  * {
  *   "instructions": {
@@ -53,10 +53,10 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
  *   }
  * }
  * </pre>
- * 
+ *
  * Also, actions that accept a maxWordCount => must be passed in extraJsonPayloadStr too. As this property is used only
  * for textSummarization and imageDescription, and a blob can't be both, it can be passed as a single value:
- * 
+ *
  * <pre>
  * {
  *   "instructions": {
@@ -66,12 +66,12 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
  *   . . .
  * }
  * </pre>
- * 
+ *
  * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
 @SuppressWarnings("rawtypes")
 public interface HylandKEService {
-    
+
     public static final String SERVICE_LABEL = "Knowledge Enrichment";
 
     /**
@@ -103,8 +103,7 @@ public interface HylandKEService {
     /**
      * Using KE v2 is global to every call. It is not possible to use v2 for a call, then v1 for another, etc.
      * It can be set at startup with the HylandKEServiceImpl#KE_USE_V2_PARAM configuration parameter
-     * 
-     * @param value
+     *
      * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public void setUseKEV2(boolean value);
@@ -127,16 +126,7 @@ public interface HylandKEService {
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
-     * 
-     * @param configName
-     * @param blob
-     * @param sourceId
-     * @param actions
-     * @param classes
-     * @param similarMetadataJsonArrayStr
-     * @param extraJsonPayloadStr
-     * @return
-     * @throws IOException
+     *
      * @since 2023
      */
     public ServiceCallResult sendForEnrichment(String configName, Blob blob, String sourceId, List<String> actions,
@@ -154,17 +144,8 @@ public interface HylandKEService {
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
-     * 
-     * @param configName
-     * @param file
-     * @param sourceId
+     *
      * @param mimeType. If null or "", it will be calculated (can take time)
-     * @param actions
-     * @param classes
-     * @param similarMetadataJsonArrayStr
-     * @param extraJsonPayloadStr
-     * @return
-     * @throws IOException
      * @since 2023
      */
     public ServiceCallResult sendForEnrichment(String configName, File file, String sourceId, String mimeType,
@@ -177,15 +158,7 @@ public interface HylandKEService {
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
-     * 
-     * @param configName
-     * @param contentObjects
-     * @param actions
-     * @param classes
-     * @param similarMetadataJsonArrayStr
-     * @param extraJsonPayloadStr
-     * @return
-     * @throws IOException
+     *
      * @since 2023
      */
     public ServiceCallResult sendForEnrichment(String configName, List<ContentToProcess> contentObjects,
@@ -198,11 +171,7 @@ public interface HylandKEService {
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
-     * 
-     * @param configName
-     * @param jobId
-     * @return
-     * @throws IOException
+     *
      * @since 2023
      */
     public ServiceCallResult getJobIdResult(String configName, String jobId) throws IOException;
@@ -217,14 +186,8 @@ public interface HylandKEService {
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
-     * 
-     * @param configName
-     * @param blob
-     * @param actions
-     * @param classes
-     * @param similarMetadata
+     *
      * @return a ServiceCallResult
-     * @throws IOException
      * @since 2023
      */
     public ServiceCallResult enrich(String configName, Blob blob, List<String> actions, List<String> classes,
@@ -236,15 +199,9 @@ public interface HylandKEService {
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
-     * 
-     * @param configName
-     * @param file
+     *
      * @param mimeType. If null or "", it will be calculated (can take time)
-     * @param actions
-     * @param classes
-     * @param similarMetadata
      * @return a ServiceCallResult
-     * @throws IOException
      * @since 2023
      */
     public ServiceCallResult enrich(String configName, File file, String mimeType, List<String> actions,
@@ -255,22 +212,15 @@ public interface HylandKEService {
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
-     * 
-     * @param configName
-     * @param blobs
-     * @param actions
-     * @param classes
-     * @param similarMetadataJsonArrayStr
-     * @return
-     * @throws IOException
+     *
      * @since 2023
      */
     public ServiceCallResult enrich(String configName, List<ContentToProcess> contentObjects, List<String> actions,
             List<String> classes, String similarMetadataJsonArrayStr, String extraJsonPayloadStr) throws IOException;
 
     /**
-     * Call the KE service, using the configuration parameters (clientId, clientSecret, endpoints, …). This is a kind of
-     * "low-level" call to the service.
+     * Call the KE service, using the configuration parameters (clientId, clientSecret, endpoints, …). This is a kind
+     * of "low-level" call to the service.
      * <br>
      * The method handles the authentication token and its expiration time.
      * <br>
@@ -281,11 +231,7 @@ public interface HylandKEService {
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
-     * 
-     * @param configName
-     * @param httpMethod
-     * @param endpoint
-     * @param jsonPayload
+     *
      * @return a ServiceCallResult
      * @since 2023
      */
@@ -302,9 +248,7 @@ public interface HylandKEService {
      * <li>0: Revert to configuration parameter values. If not set, revert to default value.</li>
      * <li>-1: Do not change the value</li>
      * </ul>
-     * 
-     * @param maxTries
-     * @param sleepIntervalMS
+     *
      * @since 2023
      */
     public void setPullResultsSettings(int maxTries, int sleepIntervalMS);

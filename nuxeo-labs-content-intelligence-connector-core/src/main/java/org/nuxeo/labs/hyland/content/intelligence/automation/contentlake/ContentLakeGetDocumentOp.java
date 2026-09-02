@@ -31,12 +31,14 @@ import org.nuxeo.labs.hyland.content.intelligence.service.contentlake.ContentLak
 /**
  * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
-@Operation(id = ContentLakeGetDocumentOp.ID, category = "Hyland Content Lake", label = "Get a document in the Content Lake", description = ""
+@Operation(id = ContentLakeGetDocumentOp.ID, category = "Hyland Content Lake",
+        label = "Get a document in the Content Lake", description = ""
         + "input is a document, used to check its counterpart in Content Lake."
         + " Returns a JSON blob holding the result of the call. Call its getString() method then JSON.parse()."
         + " See plugin documentation for possible values of the returned blob."
         + " sourceId is optional. If not passed, we use nuxeo.hyland.cic.contentlake.default.sourceId."
-        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using"
+        + " 'default')")
 public class ContentLakeGetDocumentOp {
 
     public static final String ID = "HylandIngest.CheckDigest";

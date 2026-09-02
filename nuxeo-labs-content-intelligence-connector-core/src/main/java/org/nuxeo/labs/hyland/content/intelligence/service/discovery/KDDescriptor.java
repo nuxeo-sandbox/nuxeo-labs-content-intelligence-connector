@@ -60,7 +60,7 @@ public class KDDescriptor extends AbstractServiceDescriptor {
     protected String serviceLabel() {
         return HylandKDService.SERVICE_LABEL;
     }
-    
+
     @Override
     protected boolean requiresEnvironment() {
         return false;

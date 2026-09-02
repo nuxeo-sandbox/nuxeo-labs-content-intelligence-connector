@@ -24,12 +24,12 @@ import org.nuxeo.common.xmap.annotation.XObject;
 import org.nuxeo.labs.hyland.content.intelligence.service.AbstractServiceDescriptor;
 
 /**
- * 
+ *
  * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
 @XObject("agent")
 public class AgentDescriptor extends AbstractServiceDescriptor {
-    
+
     private static final Logger LOG = LogManager.getLogger(AgentDescriptor.class);
 
     @Override
@@ -41,12 +41,12 @@ public class AgentDescriptor extends AbstractServiceDescriptor {
     protected String serviceLabel() {
         return HylandAgentsService.SERVICE_LABEL;
     }
-    
+
     @Override
     protected boolean requiresEnvironment() {
         return false;
     }
-    
+
     @Override
     public String getEnvironment() {
         return null;

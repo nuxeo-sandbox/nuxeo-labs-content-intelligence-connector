@@ -26,12 +26,12 @@ import org.nuxeo.common.xmap.annotation.XObject;
 import org.nuxeo.labs.hyland.content.intelligence.service.AbstractServiceDescriptor;
 
 /**
- * 
+ *
  * @since 2025.15/2023.18
  */
 @XObject("contentLake")
 public class ContentLakeDescriptor extends AbstractServiceDescriptor {
-    
+
     private static final Logger LOG = LogManager.getLogger(ContentLakeDescriptor.class);
 
     @XNode("environment")
@@ -61,12 +61,12 @@ public class ContentLakeDescriptor extends AbstractServiceDescriptor {
     protected String serviceLabel() {
         return ContentLakeService.SERVICE_LABEL;
     }
-    
+
     @Override
     protected boolean requiresEnvironment() {
         return true;
     }
-    
+
     @Override
     public String getEnvironment() {
         return environment;

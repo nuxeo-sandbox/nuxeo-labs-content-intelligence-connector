@@ -31,25 +31,27 @@ import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService;
 
 /**
- * 
+ *
  * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
-@Operation(id = HylandKDInvokeOp.ID, category = "Hyland Knowledge Discovery", label = "Call Hyland Knowledge Discovery Service", description = ""
+@Operation(id = HylandKDInvokeOp.ID, category = "Hyland Knowledge Discovery",
+        label = "Call Hyland Knowledge Discovery Service", description = ""
         + "Invoke the Hyland Content Intelligence/Discovery API."
         + " Used for the low-level calls. (See Discovery API documentation for details)."
         + " The result will have a 'responseCode' property that you should check,"
         + " and the returned result is in the 'response' property."
-        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using"
+        + " 'default')")
 public class HylandKDInvokeOp {
-    
+
     public static final String ID = "HylandKnowledgeDiscovery.Invoke";
-    
+
     @Context
     protected HylandKDService kdService;
 
     @Param(name = "httpMethod", required = true)
     protected String httpMethod;
-    
+
     @Param(name = "endpoint", required = true)
     protected String endpoint;
 
@@ -61,14 +63,15 @@ public class HylandKDInvokeOp {
 
     @Param(name = "configName", required = false)
     protected String configName;
-    
+
     @OperationMethod
     public Blob run() {
-        
+
         Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
-        
-        ServiceCallResult result = kdService.invokeDiscovery(configName, httpMethod, endpoint, jsonPayloadStr, extraHeaders);
-        
+
+        ServiceCallResult result = kdService.invokeDiscovery(configName, httpMethod, endpoint, jsonPayloadStr,
+                extraHeaders);
+
         return Blobs.createJSONBlob(result.toJsonString());
     }
 

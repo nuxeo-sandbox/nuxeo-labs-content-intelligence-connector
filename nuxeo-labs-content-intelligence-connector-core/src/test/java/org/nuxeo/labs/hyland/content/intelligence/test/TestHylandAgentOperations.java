@@ -97,22 +97,22 @@ public class TestHylandAgentOperations {
 
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasDiscoveryClientInfo());
-        
+
         String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_AGENT_FOR_UNIT_TEST);
         Assume.assumeTrue("No agentId set in env. variables => ignoring the test", StringUtils.isNotBlank(agentId));
 
         OperationContext ctx = new OperationContext(session);
 
-        Map<String, Object> params = new HashMap<>();        
+        Map<String, Object> params = new HashMap<>();
         params.put("agentId", agentId);
-        
+
         String jsonPayloadStr = """
                 {
                   "inputs": {
                     "text": "Dummyt text. The agent is supposed to always return 'DONE'"
                   }
                 }
-                """;     
+                """;
         params.put("jsonPayloadStr", jsonPayloadStr);
 
         Blob result = (Blob) automationService.run(ctx, HylandAgentsInvokeTaskOp.ID, params);
@@ -128,34 +128,36 @@ public class TestHylandAgentOperations {
         assertTrue(responseJson.has("output"));
         JSONArray output = responseJson.getJSONArray("output");
         assertTrue(output.length() > 0);
-        
+
         // Let's get all in one call, will fail if values are not there
         String agentFinalResult = output.getJSONObject(0).getJSONArray("content").getJSONObject(0).getString("text");
         JSONObject theRealResultAtLast = new JSONObject(agentFinalResult);
-        
+
         assertEquals("DONE", theRealResultAtLast.getString("result"));
 
     }
-    
+
     @Test
     public void shouldInvoqueKDViaRAG() throws Exception {
 
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasDiscoveryClientInfo());
-        
+
         String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
         if(StringUtils.isBlank(agentId)) {
-            log.info("Missing the {} env. variable => ignoring the test.", ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
+            log.info("Missing the {} env. variable => ignoring the test.",
+                    ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
             return;
         }
 
         OperationContext ctx = new OperationContext(session);
 
-        Map<String, Object> params = new HashMap<>();        
+        Map<String, Object> params = new HashMap<>();
         params.put("agentId", agentId);
-        params.put("question", "How many documents do we have in this repository? If your are not totally sure of the response, then return \"I don't know.\".");
+        params.put("question", "How many documents do we have in this repository? If your are not totally sure of"
+                + " the response, then return \"I don't know.\".");
         // No context object IDs
-        
+
         Blob result = (Blob) automationService.run(ctx, HylandAgentsAskKDQuestionViaRagOp.ID, params);
         Assert.assertNotNull(result);
 
@@ -169,36 +171,39 @@ public class TestHylandAgentOperations {
         assertTrue(responseJson.has("output"));
         JSONArray output = responseJson.getJSONArray("output");
         assertTrue(output.length() > 0);
-        
+
         String agentFinalResult = output.getJSONObject(0).getJSONArray("content").getJSONObject(0).getString("text");
         assertNotNull(agentFinalResult);
-        
+
         // Should we assert? This is not a plugin error, it is smeting that changes in the service.
         if(agentFinalResult.toLowerCase().indexOf("i don't know") < 0) {
-            log.info("Service abnswered, but not what we expected.\nAnswered...\n{}\n...we expected \"I don't know\".", agentFinalResult);
+            log.info("Service abnswered, but not what we expected.\nAnswered...\n{}\n...we expected \"I don't know\".",
+                    agentFinalResult);
         }
     }
-    
+
     @Test
     public void shouldInvoqueKDViaRAGWithContext() throws Exception {
 
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasDiscoveryClientInfo());
-        
+
         String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
         if(StringUtils.isBlank(agentId)) {
-            log.info("Missing the {} env. variable => ignoring the test.", ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
+            log.info("Missing the {} env. variable => ignoring the test.",
+                    ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
             return;
         }
 
         OperationContext ctx = new OperationContext(session);
 
-        Map<String, Object> params = new HashMap<>();        
+        Map<String, Object> params = new HashMap<>();
         params.put("agentId", agentId);
-        params.put("question", "How many documents do we have in this repository? If your are not totally sure of the response, then return \"I don't know.\".");
+        params.put("question", "How many documents do we have in this repository? If your are not totally sure of"
+                + " the response, then return \"I don't know.\".");
         // Pass non existant objectIDs
         params.put("contextObjectIdsJsonArrayStr", "['123', 'aze', '987']");
-        
+
         Blob result = (Blob) automationService.run(ctx, HylandAgentsAskKDQuestionViaRagOp.ID, params);
         Assert.assertNotNull(result);
 
@@ -212,36 +217,39 @@ public class TestHylandAgentOperations {
         assertTrue(responseJson.has("output"));
         JSONArray output = responseJson.getJSONArray("output");
         assertTrue(output.length() > 0);
-        
+
         String agentFinalResult = output.getJSONObject(0).getJSONArray("content").getJSONObject(0).getString("text");
         assertNotNull(agentFinalResult);
-        
+
         // Should we assert? This is not a plugin error, it is smeting that changes in the service.
         if(agentFinalResult.toLowerCase().indexOf("empty response") < 0) {
-            log.info("Service answered, but not what we expected.\nAnswered...\n{}\n...we expected \"Empty Response\".", agentFinalResult);
+            log.info("Service answered, but not what we expected.\nAnswered...\n{}\n...we expected \"Empty Response\".",
+                    agentFinalResult);
         }
     }
-    
+
     @Test
     public void shouldInvoqueKDViaRAGSimplifiedResponse() throws Exception {
 
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasDiscoveryClientInfo());
-        
+
         String agentId = System.getenv(ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
         if(StringUtils.isBlank(agentId)) {
-            log.info("Missing the {} env. variable => ignoring the test.", ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
+            log.info("Missing the {} env. variable => ignoring the test.",
+                    ConfigCheckerFeature.ENV_CIC_AGENT_KD_RAG_UNIT_TEST_AGENT_ID);
             return;
         }
 
         OperationContext ctx = new OperationContext(session);
 
-        Map<String, Object> params = new HashMap<>();        
+        Map<String, Object> params = new HashMap<>();
         params.put("agentId", agentId);
-        params.put("question", "How many documents do we have in this repository? If your are not totally sure of the response, then return \"I don't know.\".");
+        params.put("question", "How many documents do we have in this repository? If your are not totally sure of"
+                + " the response, then return \"I don't know.\".");
         // No context object IDs
         params.put("returnSimplifiedJson", true);
-        
+
         Blob result = (Blob) automationService.run(ctx, HylandAgentsAskKDQuestionViaRagOp.ID, params);
         Assert.assertNotNull(result);
 
@@ -254,10 +262,10 @@ public class TestHylandAgentOperations {
         JSONObject responseJson = resultJson.getJSONObject("response");
         assertTrue(responseJson.has("simplifiedProcessingSuccess"));
         assertTrue(responseJson.getBoolean("simplifiedProcessingSuccess"));
-        
+
         assertTrue(responseJson.has("text"));
         String answer = responseJson.getString("text");
-        
+
         assertTrue(responseJson.has("sources"));
         JSONArray sources = responseJson.getJSONArray("sources");
         if(sources.length() > 0) {
@@ -265,10 +273,11 @@ public class TestHylandAgentOperations {
             assertTrue(oneSource.has("objectId"));
             assertTrue(oneSource.has("score"));
         }
-        
+
         // Should we assert? This is not a plugin error, it is smeting that changes in the service.
         if(answer.toLowerCase().indexOf("i don't know") < 0) {
-            log.info("Service abnswered, but not what we expected.\nAnswered...\n{}\n...we expected \"I don't know\".", answer);
+            log.info("Service abnswered, but not what we expected.\nAnswered...\n{}\n...we expected \"I don't know\".",
+                    answer);
         }
 
     }

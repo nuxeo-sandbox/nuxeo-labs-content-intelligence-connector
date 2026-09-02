@@ -25,7 +25,7 @@ import org.nuxeo.ecm.core.api.NuxeoException;
 
 /**
  * Class handling the result of a HTTP call to the service.
- * 
+ *
  * @since 2023
  */
 public class ServiceCallResult {
@@ -109,7 +109,7 @@ public class ServiceCallResult {
     /**
      * Some APIs don't return a JSON object (nor array).
      * And it even may be quoted/double quoted in the response.
-     * 
+     *
      * @return the response. If it started and ended with ", these are removed.
      * @since 2023
      */
@@ -133,11 +133,10 @@ public class ServiceCallResult {
          * return result;
          */
     }
-    
+
     /**
      * Set the response. SHould eb JSON string.
-     * 
-     * @param response
+     *
      * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public void setResponse(String response) {
@@ -146,7 +145,7 @@ public class ServiceCallResult {
 
     /**
      * Return the response from the service as JSONObject. Throws an exception if the response cannot be parsed as JSON
-     * 
+     *
      * @return the response from the service as JSONObject
      * @since 2023
      */
@@ -161,8 +160,7 @@ public class ServiceCallResult {
     /**
      * Always return a JSON Object with a single field, "result", holding the raw response (that can be a simple String,
      * or JSON
-     * 
-     * @return
+     *
      * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public JSONObject forceResponseAsJSONObject() {
@@ -208,7 +206,7 @@ public class ServiceCallResult {
 
     /**
      * Return the response from the service as JSONArray. Throws an exception if the response cannot be parsed as JSON
-     * 
+     *
      * @return the response from the service as JSONArray
      * @since 2023
      */

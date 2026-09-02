@@ -90,7 +90,7 @@ public class TestContentLakeService {
             log.info("TestContentLakeService#shouldFindDocument => FAILURE\n{}", result.toJsonString(2));
         }
     }
-    
+
     @Test
     public void shouldFailOnWrongSourceId() {
 
@@ -105,7 +105,7 @@ public class TestContentLakeService {
             log.info("TestContentLakeService#shouldFailOnWrongSourceId => FAILURE\n{}", result.toJsonString(2));
         }
     }
-    
+
     @Test
     public void shouldFailOnWrongDocId() {
 

@@ -20,7 +20,7 @@ package org.nuxeo.labs.hyland.content.intelligence.authentication;
 
 /**
  * Convenience class for clearer names
- * 
+ *
  * @since 2025.15/2023.18
  */
 public class AuthenticationTokenIngest extends AuthenticationToken {

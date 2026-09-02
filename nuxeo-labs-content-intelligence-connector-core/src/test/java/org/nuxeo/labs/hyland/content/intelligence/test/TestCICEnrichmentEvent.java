@@ -47,7 +47,8 @@ import org.nuxeo.runtime.test.runner.FeaturesRunner;
  * by {@code CICEnrichmentWork} (see {@code CICEnrichmentEvents}).
  * <p>
  * These tests bypass the {@code WorkManager} and call
- * {@link AbstractCICEnrichmentOp#runForDocument(CoreSession, DocumentModel, String, String, boolean, java.util.function.Consumer)}
+ * {@link AbstractCICEnrichmentOp#runForDocument(CoreSession, DocumentModel, String, String, boolean,
+ * java.util.function.Consumer)}
  * directly with a capturing consumer. This isolates the per-batch outcome construction (single
  * return point, statuses {@code SUCCESS} / {@code FAILURE} / {@code NO_CALL}, doc UID list,
  * synthetic envelope JSON for the no-call paths) from the event-firing wiring in

@@ -133,7 +133,8 @@ public class CICGetImageEmbeddingsOp extends AbstractCICImageEnrichmentOp {
         String xpath = ke.getEmbeddingsImageXpath(configNameParam);
         if (StringUtils.isBlank(facet) || StringUtils.isBlank(xpath)) {
             LOG.warn(
-                    "CIC.GetImageEmbeddings skipped: KE descriptor '{}' has no embeddingsFacet/embeddingsImageXpath configured. {} returned unchanged (no CIC call).",
+                    "CIC.GetImageEmbeddings skipped: KE descriptor '{}' has no embeddingsFacet/embeddingsImageXpath"
+                            + " configured. {} returned unchanged (no CIC call).",
                     configNameParam == null ? "default" : configNameParam, contextLabel);
             return true;
         }

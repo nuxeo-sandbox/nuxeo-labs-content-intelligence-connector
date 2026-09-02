@@ -52,12 +52,14 @@ import org.nuxeo.ecm.core.api.DocumentModel;
  *
  * @since 2025.16 (extended in 2025.19 to also expose {@code configName} and {@code docId})
  */
-@Operation(id = HylandKDAvailableAgentsOp.ID, category = "Hyland Content Intelligence", label = "Get Available KD Agents (Local)", description = ""
+@Operation(id = HylandKDAvailableAgentsOp.ID, category = "Hyland Content Intelligence",
+        label = "Get Available KD Agents (Local)", description = ""
         + "Returns a JSON Blob holding a plain array of the locally registered CICAgentAndConfig"
         + " documents the current user has READ access to. Each entry is {title, agentId, configName, docId}."
         + " Intended for Web UI elements (e.g. the shared cic-agent-and-config-picker used by cic-kd-conversation"
         + " and the KD ask-question dialog) that need to populate an agent picker."
-        + " This is NOT the full list of agents declared on the CIC platform; use HylandKnowledgeDiscovery.getAllAgents for that.")
+        + " This is NOT the full list of agents declared on the CIC platform; use HylandKnowledgeDiscovery.getAllAgents"
+        + " for that.")
 public class HylandKDAvailableAgentsOp {
 
     public static final String ID = "HylandKD.AvailableAgents";

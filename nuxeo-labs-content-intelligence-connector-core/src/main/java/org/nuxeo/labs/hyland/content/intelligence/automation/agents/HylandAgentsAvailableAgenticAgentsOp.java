@@ -55,7 +55,8 @@ import org.nuxeo.ecm.core.api.DocumentModel;
  *
  * @since 2025.18
  */
-@Operation(id = HylandAgentsAvailableAgenticAgentsOp.ID, category = "Hyland Content Intelligence", label = "Get Available Agentic Agents (Local)", description = ""
+@Operation(id = HylandAgentsAvailableAgenticAgentsOp.ID, category = "Hyland Content Intelligence",
+        label = "Get Available Agentic Agents (Local)", description = ""
         + "Returns a JSON Blob holding a plain array of the locally registered CICAgenticAgentAndConfig"
         + " documents the current user has READ access to. Each entry is"
         + " {agent, agentId, configName, description, inputs, outputs}, where inputs is the parsed"

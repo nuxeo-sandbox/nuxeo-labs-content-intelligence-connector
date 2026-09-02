@@ -53,7 +53,7 @@ public class ContentLakeServiceImpl extends AbstractCICServiceComponent<ContentL
     public static final String CONTENTLAKE_ENVIRONMENT_PARAM = "nuxeo.hyland.cic.contentlake.environment";
 
     public static final String CONTENTLAKE_DEFAULT_SOURCEID_PARAM = "nuxeo.hyland.cic.contentlake.default.sourceId";
-    
+
     public static final String CIN_DOC_ID_SEPARATOR = "__";
 
     protected static Map<String, AuthenticationToken> clAuthTokens = null;
@@ -187,7 +187,6 @@ public class ContentLakeServiceImpl extends AbstractCICServiceComponent<ContentL
      * Stop the component.
      *
      * @param context the component context. Use it to get the current bundle context
-     * @throws InterruptedException
      */
     @Override
     public void stop(ComponentContext context) throws InterruptedException {

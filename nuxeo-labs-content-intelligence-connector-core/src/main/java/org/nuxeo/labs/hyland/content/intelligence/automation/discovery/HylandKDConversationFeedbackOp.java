@@ -35,7 +35,8 @@ import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDServ
  *
  * @since 2025
  */
-@Operation(id = HylandKDConversationFeedbackOp.ID, category = "Hyland Knowledge Discovery", label = "Submit Conversation Feedback", description = ""
+@Operation(id = HylandKDConversationFeedbackOp.ID, category = "Hyland Knowledge Discovery",
+        label = "Submit Conversation Feedback", description = ""
         + "Submits feedback for a specific message in a Knowledge Discovery conversation."
         + " The result will have a 'responseCode' property that you should check (must be 200),"
         + " and the returned result is in the 'response' property."
@@ -43,7 +44,8 @@ import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDServ
         + " conversationId and messageId are required."
         + " feedback must be one of: 'Good', 'Bad', or 'Retry'."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified JSON object."
-        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using"
+        + " 'default')")
 public class HylandKDConversationFeedbackOp {
 
     public static final String ID = "HylandKnowledgeDiscovery.conversationFeedback";

@@ -33,7 +33,7 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
  * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
 public interface HylandAgentsService {
-    
+
     public static final String SERVICE_LABEL = "Agent Builder";
 
     public enum AgentType {
@@ -44,10 +44,8 @@ public interface HylandAgentsService {
      * Get all agents in the account/app. referenced by configName.
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
-     * 
-     * @param configName
+     *
      * @param extraHeaders, optional
-     * @return
      * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public ServiceCallResult getAllAgents(String configName, Map<String, String> extraHeaders);
@@ -57,12 +55,7 @@ public interface HylandAgentsService {
      * If versionId is null or empty, the latest version is returned.
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
-     * 
-     * @param configName
-     * @param agentId
-     * @param versionId
-     * @param extraHeaders
-     * @return
+     *
      * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public ServiceCallResult lookupAgent(String configName, String agentId, String versionId,
@@ -72,14 +65,13 @@ public interface HylandAgentsService {
      * Invoke the the agent agentId, using the endpoint available for the type of agent.
      * Pass in payloadJsonStr the expected input for the agent.
      * If versionId is null or empty, the latest version is invoked.
-     * 
+     *
      * @param agentType, required
      * @param configName, optional
      * @param agentId, required
      * @param versionId, optional
      * @param payloadJsonStr, required
      * @param extraHeaders, optional
-     * @return
      * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public ServiceCallResult invokeAgent(AgentType agentType, String configName, String agentId, String versionId,
@@ -102,7 +94,7 @@ public interface HylandAgentsService {
      * AT the time this is writte, format is:
      * (see
      * https://hyland.github.io/ContentIntelligence-Docs/AgentBuilderPlatform/AgentBuilderAPI/invoke-agent-v-1-agents-agent-id-versions-version-id-invoke-post)
-     * 
+     *
      * <pre>{@code
      * {
      *   "messages": [ {"role": "user", "content": "the question"} ],
@@ -111,8 +103,7 @@ public interface HylandAgentsService {
      *   "hybridSearch": Not used in this context of KD question/answer  - OPTIONAL
      * }
      * }</pre>
-     * 
-     * @param question
+     *
      * @param contextObjectIdsJsonArrayStr. optional
      * @return a JSON paylod ready to be sent to Agent Builder for this KD purpose
      * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
@@ -170,7 +161,7 @@ public interface HylandAgentsService {
      * "originalResponse" is, well, the original response, unchanged.
      * <br>
      * Example #1:
-     * 
+     *
      * <pre>{@code
      * {
      *   "simplifiedProcessingSuccess": true,
@@ -189,9 +180,9 @@ public interface HylandAgentsService {
      *   "moreResult": false
      * }
      * }</pre>
-     * 
+     *
      * Example #2, more resilts available.
-     * 
+     *
      * <pre>{@code
      * {
      *   "simplifiedProcessingSuccess": true,
@@ -211,9 +202,9 @@ public interface HylandAgentsService {
      *   "originalResponse": the original response
      * }
      * }</pre>
-     * 
+     *
      * As of FEB 2026, result from the service is:
-     * 
+     *
      * <pre>{@code
      * {
      *   "createdAt": 1770917608,
@@ -246,11 +237,9 @@ public interface HylandAgentsService {
      *    }
      * }
      * }</pre>
-     * 
+     *
      * objectId is the 2 part of the "docId" (and usually is the Nuxeo doc UUID)
-     * 
-     * @param response
-     * @return
+     *
      * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     static JSONObject simplifyResponse(JSONObject response) {

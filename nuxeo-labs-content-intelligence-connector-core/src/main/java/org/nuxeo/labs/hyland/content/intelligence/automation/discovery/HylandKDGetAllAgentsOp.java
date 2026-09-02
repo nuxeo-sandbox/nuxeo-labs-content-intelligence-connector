@@ -31,19 +31,22 @@ import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.discovery.HylandKDService;
 
 /**
- * 
+ *
  * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
-@Operation(id = HylandKDGetAllAgentsOp.ID, category = "Hyland Knowledge Discovery", label = "Get All KD Agents", description = ""
+@Operation(id = HylandKDGetAllAgentsOp.ID, category = "Hyland Knowledge Discovery", label = "Get All KD Agents",
+        description = ""
         + "Returns a JSON blob holding  the result of the call. Call its getString() method then JSON.parse()."
-        + " See documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
+        + " See documentation for values. The result will have a 'responseCode' property that you should check (must be"
+        + " 200),"
         + " and the array of KD agents is in the 'response' property."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
-        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using"
+        + " 'default')")
 public class HylandKDGetAllAgentsOp {
-    
+
     public static final String ID = "HylandKnowledgeDiscovery.getAllAgents";
-    
+
     @Context
     protected HylandKDService kdService;
 
@@ -52,14 +55,14 @@ public class HylandKDGetAllAgentsOp {
 
     @Param(name = "configName", required = false)
     protected String configName;
-    
+
     @OperationMethod
     public Blob run() {
-        
+
         Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
-        
+
         ServiceCallResult result = kdService.getAllAgents(configName, extraHeaders);
-        
+
         return Blobs.createJSONBlob(result.toJsonString());
     }
 

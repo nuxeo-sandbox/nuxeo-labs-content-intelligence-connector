@@ -38,7 +38,7 @@ import org.nuxeo.runtime.api.Framework;
  * CloseableFile to make sure there is a file ((File on S3 not yet cached for example)
  * <br>
  * This why <b>caller must call the close() method</b> once done with the ContentToProcess.
- * 
+ *
  * @since 2023
  */
 public class ContentToProcess<T> implements Closeable {
@@ -49,7 +49,7 @@ public class ContentToProcess<T> implements Closeable {
 
     protected Blob blob;
 
-    protected File file;                                                                
+    protected File file;
 
     protected CloseableFile closeableFile;
 
@@ -80,10 +80,7 @@ public class ContentToProcess<T> implements Closeable {
     /**
      * This Constructor aims to speed up getting the mimetype, which can be
      * sometime costly when it is not already known.
-     * 
-     * @param sourceId
-     * @param content
-     * @param mimeType
+     *
      */
     public ContentToProcess(String sourceId, T content, String mimeType) {
         super();

@@ -35,7 +35,8 @@ import org.nuxeo.runtime.api.Framework;
  * @since 2025.18
  */
 @Operation(id = CICSummarizeTextOp.ID, category = "CIC", label = "CIC: Summarize Text", description = ""
-        + "Calls Hyland Knowledge Enrichment textSummarization on the document's text blob (default xpath: file:content)"
+        + "Calls Hyland Knowledge Enrichment textSummarization on the document's text blob (default xpath:"
+        + " file:content)"
         + " and writes the result in the cic_summary:summary field (CICSummary facet is added when needed)."
         + " On error, populates the cic_error schema (CICError facet)."
         + " saveDocument controls whether the document is saved.")

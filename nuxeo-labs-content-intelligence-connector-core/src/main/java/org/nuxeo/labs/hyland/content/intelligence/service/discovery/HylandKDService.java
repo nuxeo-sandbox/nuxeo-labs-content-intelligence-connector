@@ -24,7 +24,7 @@ import java.util.Map;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 
 public interface HylandKDService {
-    
+
     public static final String SERVICE_LABEL = "Knowledge Discovery";
 
     /*
@@ -40,12 +40,7 @@ public interface HylandKDService {
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
-     * 
-     * @param configName
-     * @param httpMethod
-     * @param endpoint
-     * @param jsonPayload
-     * @param extraHeaders
+     *
      * @return the result of the call
      * @since 2023
      */
@@ -54,16 +49,12 @@ public interface HylandKDService {
 
     /**
      * Convenience method when no extra header is required. See
-     * <code>ServiceCallResult invokeDiscovery(String httpMethod, String endpoint, String jsonPayload, Map<String, String> extraHeaders)</code>
+     * <code>ServiceCallResult invokeDiscovery(String httpMethod, String endpoint, String jsonPayload,
+     * Map&lt;String, String&gt; extraHeaders)</code>
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
-     * 
-     * @param configName
-     * @param httpMethod
-     * @param endpoint
-     * @param jsonPayload
-     * @return
+     *
      * @since 2023
      */
     public ServiceCallResult invokeDiscovery(String configName, String httpMethod, String endpoint, String jsonPayload);
@@ -79,10 +70,7 @@ public interface HylandKDService {
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
-     * 
-     * @param configName
-     * @param extraHeaders
-     * @return
+     *
      * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public ServiceCallResult getAllAgents(String configName, Map<String, String> extraHeaders);
@@ -97,14 +85,8 @@ public interface HylandKDService {
      * Returns the JSON result from the service. If succesfull (response code 202, "Accepted"), the result will have the
      * questionId and the answer cna then be pulled.
      * configName is the contribution to read for authentication and misc. If null or "", we use "default"
-     * 
-     * @param configName
-     * @param agentId
-     * @param question
-     * @param contextObjectIds
+     *
      * @paral extraJsonPayload
-     * @param extraHeaders
-     * @return
      * @since 2023
      */
     public ServiceCallResult askQuestion(String configName, String agentId, String question,
@@ -115,11 +97,7 @@ public interface HylandKDService {
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
-     * 
-     * @param configName
-     * @param questionId
-     * @param extraHeaders
-     * @return
+     *
      * @since 2023
      */
     public ServiceCallResult getAnswer(String configName, String questionId, Map<String, String> extraHeaders);
@@ -132,25 +110,20 @@ public interface HylandKDService {
      * <br>
      * configName is the contribution to read for authentication and misc. If null or "", we use "default" (contributed
      * by the plugin and using config. parameters)
-     * 
-     * @param configName
-     * @param agentId
-     * @param question
-     * @param contextObjectIds
-     * @param extraHeaders
+     *
      * @return the response from the service
      * @since 2023
      */
     public ServiceCallResult askQuestionAndGetAnswer(String configName, String agentId, String question,
             List<String> contextObjectIds, String extraPayloadJsonStr, Map<String, String> extraHeaders);
-    
+
     /**
-     * 
+     *
      * @return the list of contributions
      * @since 2023
      */
     public List<String> getContribNames();
-    
+
     /**
      * Introspection
      */

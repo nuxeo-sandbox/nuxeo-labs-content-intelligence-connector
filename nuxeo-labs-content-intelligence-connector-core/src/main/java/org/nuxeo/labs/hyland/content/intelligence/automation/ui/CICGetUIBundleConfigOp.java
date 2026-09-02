@@ -42,7 +42,7 @@ import org.nuxeo.ecm.core.api.NuxeoException;
 
 /**
  * Returns the list of CIC slot-content buttons declared in this plugin's Web UI bundle file
- * ({@code nuxeo.war/ui/nuxeo-labs-content-intelligence-connector/nuxeo-labs-content-intelligence-connector-bundle.html}),
+ * {@code nuxeo.war/ui/nuxeo-labs-content-intelligence-connector/nuxeo-labs-content-intelligence-connector-bundle.html}
  * with their state and order as shipped by the plugin.
  * <p>
  * This is a presales/admin helper used by the {@code <cic-ui-config-page>} drawer page.
@@ -51,7 +51,7 @@ import org.nuxeo.ecm.core.api.NuxeoException;
  * a warning banner explaining that the runtime UI may differ from what is shown.
  * <p>
  * Output is a JSON {@link Blob} with the canonical envelope:
- * 
+ *
  * <pre>
  * {
  *   "responseCode": 200,
@@ -67,9 +67,11 @@ import org.nuxeo.ecm.core.api.NuxeoException;
  *
  * @since 2025.16
  */
-@Operation(id = CICGetUIBundleConfigOp.ID, category = "Hyland Content Intelligence", label = "CIC: Get UI Bundle Config", description = ""
+@Operation(id = CICGetUIBundleConfigOp.ID, category = "Hyland Content Intelligence",
+        label = "CIC: Get UI Bundle Config", description = ""
         + "Reads the plugin's own Web UI bundle file and returns the list of CIC slot-content buttons it declares,"
-        + " with their state (slot, order, disabled) and metadata (icon, label key, operation, filter expression, full template body)."
+        + " with their state (slot, order, disabled) and metadata (icon, label key, operation, filter expression, full"
+        + " template body)."
         + " Used by the cic-ui-config-page admin drawer page. Does NOT merge with Studio or third-party overrides.")
 public class CICGetUIBundleConfigOp {
 

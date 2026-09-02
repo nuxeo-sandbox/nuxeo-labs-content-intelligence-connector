@@ -20,13 +20,13 @@ package org.nuxeo.labs.hyland.content.intelligence.authentication;
 
 /**
  * Convenience class for clearer names.
- * 
+ *
  * Goes for botk KE and DC
- * 
+ *
  * @since 2023
  */
 public class AuthenticationTokenEnrichment extends AuthenticationToken {
-    
+
     public AuthenticationTokenEnrichment(String authFullUrl, AuthenticationTokenParams params) {
         super(ServiceType.ENRICHMENT, authFullUrl, params);
     }

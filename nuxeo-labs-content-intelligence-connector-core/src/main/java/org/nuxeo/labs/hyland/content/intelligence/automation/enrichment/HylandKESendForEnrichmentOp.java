@@ -35,15 +35,22 @@ import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 
-@Operation(id = HylandKESendForEnrichmentOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Knowledge Enrichement Send Blob", description = ""
-        + "Invoke the Hyland Knowledge Enrichment (KE) API to send the blob for enrichment. actions is a list of actions to process"
-        + " (image-description, image-embeddings, …, or imageDescription, imageEmbeddings, … for KE v2), classes a list of values to be used for classification,"
-        + " and similarValues is used for metadata endpoint. It must be passed as a. (See KE documentation for details, limitation, etc.)"
+@Operation(id = HylandKESendForEnrichmentOp.ID, category = "Hyland Knowledge Enrichment",
+        label = "CIC Knowledge Enrichement Send Blob", description = ""
+        + "Invoke the Hyland Knowledge Enrichment (KE) API to send the blob for enrichment. actions is a list of"
+        + " actions to process"
+        + " (image-description, image-embeddings, …, or imageDescription, imageEmbeddings, … for KE v2),"
+        + " classes a list of values to be used for classification,"
+        + " and similarValues is used for metadata endpoint. It must be passed as a. (See KE documentation for details,"
+        + " limitation, etc.)"
         + " The result is a JSON as string. If succesful, its response object will have a processingId property,"
-        + " it is the value to pass to the HylandKnowledgeEnrichment.GetEnrichmentResults operation to actually get the results."
-        + " sourceId is optional, it makes it possible to bind the result jobId to a document, for example, so you can get the"
+        + " it is the value to pass to the HylandKnowledgeEnrichment.GetEnrichmentResults operation to actually get the"
+        + " results."
+        + " sourceId is optional, it makes it possible to bind the result jobId to a document, for example, so you can"
+        + " get the"
         + " document when calling HylandKnowledgeEnrichment.GetEnrichmentResults."
-        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')"
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using"
+        + " 'default')"
         + " Since KE V2, you can pass instructions as an object of objects, one per action "
         + " (see plugin doc for details.)")
 public class HylandKESendForEnrichmentOp {

@@ -33,7 +33,8 @@ import org.nuxeo.runtime.api.Framework;
  *
  * @since 2025.18
  */
-@Operation(id = CICGetNamedEntitiesFromTextOp.ID, category = "CIC", label = "CIC: Get Named Entities From Text", description = ""
+@Operation(id = CICGetNamedEntitiesFromTextOp.ID, category = "CIC", label = "CIC: Get Named Entities From Text",
+        description = ""
         + "Calls Hyland Knowledge Enrichment namedEntityRecognitionText and writes the parsed entities into"
         + " cic_named_entities:entities (CICNamedEntities facet added when needed).")
 public class CICGetNamedEntitiesFromTextOp extends AbstractCICTextEnrichmentOp {

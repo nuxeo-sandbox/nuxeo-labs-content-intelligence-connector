@@ -27,7 +27,7 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
  * @since 2025.15/2023.18
  */
 public interface IngestService {
-    
+
     public static final String SERVICE_LABEL = "Ingest";
 
     /**
@@ -36,7 +36,7 @@ public interface IngestService {
      * - Failure: check response code (403, forbidden, 404, not found, etc.)
      * <br>
      * Check if the digest exists in the ContentLake, using the default sourceId repository
-     * 
+     *
      * @param configName, optional. Null or "" => "default"
      * @param doc, required
      * @param xpath, optional. "file:content" by default
@@ -46,7 +46,7 @@ public interface IngestService {
 
     /**
      * Check if the digest exists in the ContentLake, in the sourceId repository
-     * 
+     *
      * @param configName, optional. Null or "" => "default"
      * @param doc, required
      * @param xpath, optional. "file:content" by default
@@ -58,11 +58,7 @@ public interface IngestService {
 
     /**
      * Check if the digest exists in the ContentLake, in the sourceId repository
-     * 
-     * @param configName
-     * @param docId
-     * @param blobDigest
-     * @param sourceId
+     *
      * @return the result from the service
      */
     public ServiceCallResult checkDigest(String configName, String docId, String blobDigest, String sourceId);

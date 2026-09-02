@@ -35,8 +35,10 @@ import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
 import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.runtime.api.Framework;
 
-@Operation(id = HylandKEUploadFileOp.ID, category = "Hyland Knowledge Enrichment", label = "CIC Knowledge Enrichement Upload File", description = ""
-        + "Granular operation, to be used in conjonction with HylandKnowledgeEnrichment.Invoke, once you got a presigned URL for the file."
+@Operation(id = HylandKEUploadFileOp.ID, category = "Hyland Knowledge Enrichment",
+        label = "CIC Knowledge Enrichement Upload File", description = ""
+        + "Granular operation, to be used in conjonction with HylandKnowledgeEnrichment.Invoke, once you got a"
+        + " presigned URL for the file."
         + " The result JSON will only have a responseCode (should be 200) and responseMessage properties.")
 public class HylandKEUploadFileOp {
 

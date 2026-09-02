@@ -139,7 +139,8 @@ public class TestHylandAgentsService {
                 }
                 """;
 
-        ServiceCallResult result = hylandAgentsService.invokeAgent(AgentType.TASK, null, agentId, null, jsonPayloadStr, null);
+        ServiceCallResult result = hylandAgentsService.invokeAgent(AgentType.TASK, null, agentId, null, jsonPayloadStr,
+                null);
         assertNotNull(result);
 
         if (!result.callResponseOK()) {

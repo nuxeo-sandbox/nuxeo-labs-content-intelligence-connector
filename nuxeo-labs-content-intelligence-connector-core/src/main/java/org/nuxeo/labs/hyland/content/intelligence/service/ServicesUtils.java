@@ -33,7 +33,7 @@ import org.nuxeo.runtime.osgi.OSGiRuntimeService;
 
 /**
  * Shared utilities. Just DRY pattern.
- * 
+ *
  * @since 2023
  */
 public class ServicesUtils {
@@ -42,7 +42,7 @@ public class ServicesUtils {
 
     /**
      * If jsonObjectStr is null or empty, returns null
-     * 
+     *
      * @since 2023
      */
     public static Map<String, String> jsonObjectStrToMap(String jsonObjectStr) {
@@ -66,10 +66,7 @@ public class ServicesUtils {
 
     /**
      * Converter handling errors.
-     * 
-     * @param param
-     * @param defaultValue
-     * @return
+     *
      * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public static int configParamToInt(String param, int defaultValue) {
@@ -89,10 +86,7 @@ public class ServicesUtils {
 
     /**
      * Converter handling errors.
-     * 
-     * @param param
-     * @param defaultValue
-     * @return
+     *
      * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public static boolean configParamToBoolean(String param, boolean defaultValue) {
@@ -115,10 +109,7 @@ public class ServicesUtils {
      * basically, add them to the extraJsonPayload. See "About KE v1->v2 compatibility and format" in
      * {@link HylandKEServiceImpl}.
      * If instructionsV2JsonStr is empty => returns extraPayloadJsonStr unchanged (may be null)
-     * 
-     * @param instructionsV2JsonStr
-     * @param extraPayloadJsonStr
-     * @return
+     *
      * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public static String addInstructionsToExtraPayload(String instructionsV2JsonStr, String extraPayloadJsonStr) {
@@ -146,16 +137,14 @@ public class ServicesUtils {
         return extraPayload.toString();
 
     }
-    
+
     /**
      * We don't want to log WARN for info, and we don't want to contribute a logger.
      * So we use one that is able to display INFO.
-     * @param clazz
-     * @param message
      * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public static void forceLogInfo(Class<?> clazz, String message) {
-        
+
         Logger tempLogger = LogManager.getLogger(OSGiRuntimeService.class);
         String msg = "[On behalf " + clazz.getName() + "] " + message;
         tempLogger.info(msg);

@@ -173,7 +173,8 @@ public class CICEnrichmentWork extends AbstractWork {
                  */
                 if (TransactionHelper.isTransactionMarkedRollback()) {
                     LOG.warn(
-                            "Transaction already marked rollback-only before firing {} for op {}: the enrichment results of this batch are lost.",
+                            "Transaction already marked rollback-only before firing {} for op {}: the enrichment"
+                                    + " results of this batch are lost.",
                             CIC_CALL_KE_DONE, opClassName);
                     TransactionHelper.commitOrRollbackTransaction();
                     TransactionHelper.startTransaction();

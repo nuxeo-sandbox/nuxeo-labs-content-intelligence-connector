@@ -35,8 +35,9 @@ import org.nuxeo.runtime.api.Framework;
 
 /**
  * Returns a simplified list of agents for a given type ("KD" or "Agentic", case insensitive) and configuration. The
- * returned JSON blob has the canonical envelope {@code {responseCode, responseMessage, response: [{id,name,description},...]}}.
- * On any non-200 upstream response, the raw upstream blob is returned untouched.
+ * returned JSON blob has the canonical envelope
+ * {@code {responseCode, responseMessage, response: [{id,name,description},...]}}. On any non-200 upstream response,
+ * the raw upstream blob is returned untouched.
  *
  * @since 2025.16
  */

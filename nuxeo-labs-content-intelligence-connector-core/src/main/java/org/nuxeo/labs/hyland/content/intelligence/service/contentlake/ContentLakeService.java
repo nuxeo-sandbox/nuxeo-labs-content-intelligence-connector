@@ -27,13 +27,13 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
  * @since 2025.15/2023.18
  */
 public interface ContentLakeService {
-    
+
     public static final String SERVICE_LABEL = "Content Lake";
 
     /**
      * Return the document JSON from the ContentLake
      * A warning that it can be relatively big since it also returns the embeddings.
-     * 
+     *
      * @param configName, optional. Null or "" => "default"
      * @param doc, required
      * @param sourceId, optional, the repository ID in ContentLkae.
@@ -41,7 +41,7 @@ public interface ContentLakeService {
      * @return the result from the service
      */
     public ServiceCallResult getDocument(String configName, DocumentModel doc, String sourceId);
-    
+
     public ServiceCallResult getDocument(String configName, String docId, String sourceId);
 
     /**

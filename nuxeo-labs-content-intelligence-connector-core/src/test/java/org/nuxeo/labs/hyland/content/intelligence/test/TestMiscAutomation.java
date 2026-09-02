@@ -57,14 +57,14 @@ public class TestMiscAutomation {
 
     @Inject
     protected HylandKEService hylandKEService;
-    
+
     @Test
     public void shouldChangeConfig() throws Exception {
-        
+
         HylandKEServiceImpl impl = (HylandKEServiceImpl) hylandKEService;
 
         OperationContext ctx = new OperationContext(session);
-        
+
         Map<String, Object> params = new HashMap<>();
         params.put("maxTries", 20);
         params.put("sleepIntervalMS", 5000);
@@ -73,50 +73,50 @@ public class TestMiscAutomation {
         automationService.run(ctx, ConfigureServiceOp.ID, params);
         assertEquals(20, impl.getPullResultsMaxTries());
         assertEquals(5000, impl.getPullResultsSleepIntervalMS());
-        
+
 
         params.put("maxTries", -1);
         params.put("sleepIntervalMS", -1);
         automationService.run(ctx, ConfigureServiceOp.ID, params);
         assertEquals(20, impl.getPullResultsMaxTries());
         assertEquals(5000, impl.getPullResultsSleepIntervalMS());
-        
+
 
         params.put("maxTries", 0);
         params.put("sleepIntervalMS", 0);
         automationService.run(ctx, ConfigureServiceOp.ID, params);
         assertEquals(HylandKEServiceImpl.PULL_RESULTS_MAX_TRIES_DEFAULT, impl.getPullResultsMaxTries());
         assertEquals(HylandKEServiceImpl.PULL_RESULTS_SLEEP_INTERVAL_DEFAULT, impl.getPullResultsSleepIntervalMS());
-        
+
     }
-    
+
     @Test
     @Deploy("nuxeo-hyland-content-intelligence-connector-core:more-mock-configs.xml")
     public void shouldGetConfigNames() throws Exception {
-        
+
         OperationContext ctx = new OperationContext(session);;
-        
+
         Blob resultBlob = (Blob) automationService.run(ctx, HylandCIGetContributionNamesOp.ID);
         assertNotNull(resultBlob);
-        
+
         String resultJsonStr = resultBlob.getString();
         JSONObject resultJson = new JSONObject(resultJsonStr);
-        
+
         JSONArray contribs = resultJson.getJSONArray("knowledgeEnrichment");
         assertEquals(3, contribs.length());
         contribs.toList().contains("default");
         contribs.toList().contains("more-ke-1");
         contribs.toList().contains("more-ke-with-embeddings");
-        
+
         contribs = resultJson.getJSONArray("dataCuration");
         assertEquals(2, contribs.length());
         contribs.toList().contains("default");
         contribs.toList().contains("more-dc-1");
-        
+
         contribs = resultJson.getJSONArray("knowledgeDiscovery");
         assertEquals(2, contribs.length());
         contribs.toList().contains("default");
         contribs.toList().contains("more-kd-1");
-        
+
     }
 }

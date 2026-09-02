@@ -34,14 +34,17 @@ import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsSer
 /**
  * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
-@Operation(id = HylandAgentsInvokeToolOp.ID, category = "Hyland Agent Builder", label = "Invoke Tool Agent", description = ""
+@Operation(id = HylandAgentsInvokeToolOp.ID, category = "Hyland Agent Builder", label = "Invoke Tool Agent",
+        description = ""
         + "Returns a JSON blob holding the result of the call. Call its getString() method then JSON.parse()."
-        + " See CIC documentation for values. The result will have a 'responseCode' property that you should check (must be 200),"
+        + " See CIC documentation for values. The result will have a 'responseCode' property that you should check"
+        + " (must be 200),"
         + " and the response of the agent in the 'response' object."
         + " agentVersion is optional. If not used, latest version is invoked."
         + " jsonPayloadStr is required: the expected JSON input (as string) for the agent."
         + " You can also pass extra headers in extraHeadersJsonStr as a stringified Json object"
-        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using 'default')")
+        + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using"
+        + " 'default')")
 public class HylandAgentsInvokeToolOp {
 
     public static final String ID = "HylandAgents.InvokeToolAgent";
@@ -69,7 +72,8 @@ public class HylandAgentsInvokeToolOp {
 
         Map<String, String> extraHeaders = ServicesUtils.jsonObjectStrToMap(extraHeadersJsonStr);
 
-        ServiceCallResult result = agentsService.invokeAgent(AgentType.TOOL, configName, agentId, agentVersion, jsonPayloadStr,
+        ServiceCallResult result = agentsService.invokeAgent(AgentType.TOOL, configName, agentId, agentVersion,
+                jsonPayloadStr,
                 extraHeaders);
 
         return Blobs.createJSONBlob(result.toJsonString());

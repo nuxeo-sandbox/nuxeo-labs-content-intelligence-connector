@@ -763,7 +763,8 @@ public abstract class AbstractCICEnrichmentOp {
     protected void warnIfSaveDocumentFalse(JSONObject paramsJson) {
         if (paramsJson.has("saveDocument") && !paramsJson.optBoolean("saveDocument", false)) {
             LOG.warn(
-                    "{} called with runAsynchronously=true and saveDocument=false. saveDocument is forced to true inside the background Work (async callers cannot read the result).",
+                    "{} called with runAsynchronously=true and saveDocument=false. saveDocument is forced to true"
+                            + " inside the background Work (async callers cannot read the result).",
                     getClass().getSimpleName());
         }
     }

@@ -36,7 +36,7 @@ import org.nuxeo.runtime.model.Extension;
  * Adding more and more services (KE, then KE/DC, then KD, then Agents, then...)
  * => a good part of the code starting a component or giving access to its configurations etc. was very the same.
  * => The code is shared here, with a couple utilities to get info from children (like the extension point).
- * 
+ *
  * @param <D> the Descriptor class (KDDescriptor, KEDescriptor, ...)
  * @since 2025.15/2023.18
  */
@@ -135,7 +135,7 @@ public abstract class AbstractCICServiceComponent<D extends AbstractServiceDescr
         if (!extensionPoint.equals(extension.getExtensionPoint())) {
             return;
         }
-        
+
         if(contribs == null) {
             contribs = new HashMap<>();
         }
@@ -166,7 +166,7 @@ public abstract class AbstractCICServiceComponent<D extends AbstractServiceDescr
         if (!extensionPoint.equals(extension.getExtensionPoint())) {
             return;
         }
-        
+
         if(contribs == null) {
             return;
         }
