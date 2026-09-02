@@ -7,6 +7,7 @@ Since its **2025.16** version this plugin **ships a full Web UI on top of the ex
 - **Document action buttons** for the common Knowledge Enrichment calls (summarize, classify, extract entities, get metadata, image description, embeddings) — results stored in dedicated schemas/doctypes shipped with the plugin. Calls are asynchronous. An event is fired after succesful asynchronous calls.
 - **Knowledge Discovery dialogs**: an "Ask a Question" popup (single doc and multi-select) and a `cic-kd-conversation` chat panel with citations linked back to Nuxeo documents.
 - **Multi-document `CIC.*` ops** with batching, per-doc error markers, and inter-batch commits — safe for listeners, BAF, and bulk actions.
+- **Event fired** once an asynchronous call is done (single doc or list of documents)
 - **Easy to override** for you nown usage. There even is an **Admin "CIC UI Config" page** that lists every `cic-*` slot-content and generates ready-to-paste Studio override snippets (demo build/tests utility).
 - **Connection to CIC** stays simple: Add nuxeo.conf parameters (URLs, secrets, ...)
 
@@ -655,6 +656,8 @@ CIC.SummarizeText(input, {
 ```
 
 ### Listening for completion: the `cicCallKEDone` event
+
+*(Since version 2025.21)*
 
 Async callers do not see the result of the CIC call. To react when an asynchronous KE call finishes, register a listener on the `cicCallKEDone` event. **The event is fired ONLY when the operation runs asynchronously** — synchronous callers already get the response back from the operation itself and no event is fired for them.
 
