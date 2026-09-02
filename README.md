@@ -14,6 +14,7 @@ Since its **2025.16** version this plugin **ships a full Web UI on top of the ex
 > [!IMPORTANT]
 > * Low-Level operations are available at [docs/low-level/README.md](docs/low-level/README.md) and fully functional.
 > * KE v1 is gone (v2-only)
+> * ⚠️ in dev. mode, if you need to override a `"default"` XML contribution, redeclare **all and every field** of the original for Hot Reload to work. See [Overriding an existing contribution](#overriding-an-existing-contribution).
 
 ## The Nuxeo Labs Content Intelligence Connector
 
@@ -124,50 +125,23 @@ To declare an additional account, add an XML contribution from your Studio proje
     <baseUrl>...</baseUrl>
     <clientId>...</clientId>
     <clientSecret>...</clientSecret>
+    ...
   </knowledgeEnrichment>
 </extension>
 ```
 
 Then call any operation with `configName: "tenantA"`. The list of registered names per service is exposed by `HylandContentIntelligence.GetContributionNames`.
 
-### Overriding an existing configuration (partial override)
-
-Contributing a configuration whose `name` **already exists** merges into it: only the fields you declare are overridden, the others are kept. This is the standard Nuxeo behaviour, and it is what you want when you only need to adjust one or two settings of the `default` configuration without repeating the credentials:
-
-```xml
-<extension target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
-           point="knowledgeEnrichment">
-  <knowledgeEnrichment>
-    <!-- Same name as the contribution shipped by the plugin -->
-    <name>default</name>
-    <!-- Only add the embeddings storage. Credentials, URLs and scopes are kept. -->
-    <embeddingsFacet>Embeddings</embeddingsFacet>
-    <embeddingsImageXpath>embeddings:image</embeddingsImageXpath>
-    <embeddingsTextXpath>embeddings:text</embeddingsTextXpath>
-  </knowledgeEnrichment>
-</extension>
-```
-
-A field is overridden only when the value you contribute is **non-blank**. Both an absent element and an empty one are ignored, which matters because an undefined configuration parameter written as `${my.undefined.param:=}` resolves to an empty string. Consequently, a partial override cannot be used to deliberately *clear* a value.
-
-> [!IMPORTANT]
-> Before version 2025.20 this was a plain replacement: a partial override silently wiped every field it did not redeclare, including `clientId` and `clientSecret`, and enrichment then failed with a `NullPointerException`. If you worked around this by duplicating the full `default` configuration in your Studio project, you can now reduce it to the fields you actually change. Doing so is recommended: a full copy freezes the defaults and would not pick up new fields added by future versions of the plugin.
-
-When a configuration ends up incomplete, the server log now names the culprit at startup instead of failing later:
-
-```
-ERROR Configuration 'default' of Knowledge Enrichment is incomplete, missing value(s): clientId, clientSecret. ...
-```
-
-
 ### Optional: where to persist embeddings (KE only)
 
 The plugin **does not** ship an embeddings facet/schema, so the embeddings operations (`CIC.GetTextEmbeddings`, `CIC.GetImageEmbeddings`) only persist the vector when you tell them where. Uncomment and set on the KE descriptor:
 
 ```xml
-<embeddingsFacet>Embeddings</embeddingsFacet>
-<embeddingsImageXpath>embeddings:image</embeddingsImageXpath>
-<embeddingsTextXpath>embeddings:text</embeddingsTextXpath>
+. . .
+    <embeddingsFacet>Embeddings</embeddingsFacet>
+    <embeddingsImageXpath>embeddings:image</embeddingsImageXpath>
+    <embeddingsTextXpath>embeddings:text</embeddingsTextXpath>
+. . .
 ```
 
 If `embeddingsFacet` is missing, **or** the matching `embeddingsImageXpath` / `embeddingsTextXpath` is missing, the corresponding `CIC.GetImageEmbeddings` / `CIC.GetTextEmbeddings` operation **skips the remote CIC call entirely**, logs a WARN, and returns the document unchanged. This keeps cross-plugin compatibility (e.g. `nuxeo-hxai-connector` keeps owning the storage) and avoids paying for a call whose result has nowhere to land.
@@ -175,6 +149,48 @@ If `embeddingsFacet` is missing, **or** the matching `embeddingsImageXpath` / `e
 > [!TIP]
 > Storing embeddings is typically used together with the [Nuxeo Custom Page Providers](https://github.com/nuxeo-sandbox/nuxeo-custom-page-providers) plugin, which enables Vector Search with OpenSearch (so, based on embeddings, you can set up similarity search or semantic search, for example).
 > Nuxeo Custom Page Providers ships several Configuration Templates that use these names.
+
+### Overriding an *existing* contribution
+
+When overriding an *existing* contribution - typically, the `default` one - you must **redeclare every field of the original contribution**. A partial override is safe **at server startup only**, it is destroyed by the first Hot Reload.
+
+So, copy the whole `<extension-point>` (`knowmedgeEnrichment`, `knowledgeDiscovery`, ...) block from the plugin's own contribution — the matching `service-<family>-contrib.xml` — and paste it into your Studio project, then add or change what you need.
+
+For example, to add embeddings value to the `default` Knowledge Enrichment contribution:
+
+1. Copy the whole `<knowledgeEnrichment>` block from the plugin's own contribution — `OSGI-INF/service-enrichment-contrib.xml`, paste it into your Studio project
+    * **Keep the `${...}` configuration parameters exactly as they are.** They are resolved at startup from `nuxeo.conf`, so your Studio project stays free of URLs and secrets, and every environment keeps its own values
+
+2. Change the values you need (here, the `embeddings...`properties):
+
+```xml
+<extension target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
+           point="knowledgeEnrichment">
+  <knowledgeEnrichment>
+    <name>default</name>
+
+    <!-- Copied as-is from the plugin: resolved from nuxeo.conf -->
+    <authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
+    <baseUrl>${nuxeo.hyland.cic.contextEnrichment.baseUrl:=}</baseUrl>
+    <tokenGrantType>${nuxeo.hyland.cic.enrichment.auth.grantType:=client_credentials}</tokenGrantType>
+    <tokenScope>${nuxeo.hyland.cic.enrichment.auth.scope:=environment_authorization}</tokenScope>
+    <clientId>${nuxeo.hyland.cic.enrichment.clientId:=}</clientId>
+    <clientSecret>${nuxeo.hyland.cic.enrichment.clientSecret:=}</clientSecret>
+
+    <!-- What you actually want to add -->
+    <embeddingsFacet>Embeddings</embeddingsFacet>
+    <embeddingsImageXpath>embeddings:image</embeddingsImageXpath>
+    <embeddingsTextXpath>embeddings:text</embeddingsTextXpath>
+  </knowledgeEnrichment>
+</extension>
+```
+
+> [!IMPORTANT]
+> Never replace a `${...}` parameter with a literal value: it would store your client secret in the Studio project, and the same value would then be used on every environment.
+
+> [!NOTE]
+> * Contributions using a new name are not concerned: This only applies when you reuse an **existing** name. A contribution introducing a **new** name (`tenantA`, `kd_emea_1`, ...) is self-contained: Hot Reload removes it and puts it back unchanged, with no side effect.
+> * Keeping your copy up to date: If a later version of the plugin adds a field to its own `default` contribution, your copy will not have it, and the behaviour will differ between a Hot Reload and a server restart. Compare your Studio contribution with the plugin's `service-<family>-contrib.xml` when you upgrade.
 
 <br>
 
