@@ -46,7 +46,6 @@ import org.nuxeo.ecm.core.event.EventProducer;
 import org.nuxeo.ecm.core.event.impl.DocumentEventContext;
 import org.nuxeo.ecm.core.work.AbstractWork;
 import org.nuxeo.labs.hyland.content.intelligence.automation.enrichment.AbstractCICEnrichmentOp.BatchOutcome;
-import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.transaction.TransactionHelper;
 
@@ -66,9 +65,12 @@ import org.nuxeo.runtime.transaction.TransactionHelper;
  * the caller's {@code saveDocument} value is intentionally overridden because the Work owns
  * persistence (the caller has no other way to see the resulting documents).</li>
  * <li>Fires one {@link CICEnrichmentEvents#CIC_CALL_KE_DONE} event per batch (one per actual
- * KE call). Single-doc Work = 1 event; multi-doc Work with N batches = N events. A listener
- * throwing does not fail the Work (logged at WARN). See {@link CICEnrichmentEvents} for the
- * full event-context contract.</li>
+ * KE call). Single-doc Work = 1 event; multi-doc Work with N batches = N events. The current
+ * transaction is committed just before each firing, so the enriched values are already durable
+ * whatever the listener declaration (inline, post-commit, synchronous or asynchronous) — a
+ * listener that throws or marks its transaction rollback-only cannot discard them, and it does
+ * not fail the Work either (logged at WARN). See {@link CICEnrichmentEvents} for the full
+ * event-context contract.</li>
  * </ul>
  * <p>
  * Errors are recorded on each document via the existing {@code CICError} facet by the same
@@ -162,20 +164,32 @@ public class CICEnrichmentWork extends AbstractWork {
                 if (outcome == null || outcome.docIds == null || outcome.docIds.isEmpty()) {
                     return;
                 }
+                /*
+                 * Commit BEFORE firing so the enriched values are durable whatever the listener
+                 * declaration (inline, post-commit, synchronous or asynchronous): a listener that
+                 * throws or marks its transaction rollback-only can no longer discard the CIC
+                 * results. Note that isTransactionActive() is false when the transaction is already
+                 * marked rollback-only, hence the explicit second test.
+                 */
+                if (TransactionHelper.isTransactionMarkedRollback()) {
+                    LOG.warn(
+                            "Transaction already marked rollback-only before firing {} for op {}: the enrichment results of this batch are lost.",
+                            CIC_CALL_KE_DONE, opClassName);
+                    TransactionHelper.commitOrRollbackTransaction();
+                    TransactionHelper.startTransaction();
+                } else if (TransactionHelper.isTransactionActive()) {
+                    session.save();
+                    TransactionHelper.commitOrRollbackTransaction();
+                    TransactionHelper.startTransaction();
+                }
+
                 DocumentRef principalRef = new IdRef(outcome.docIds.get(0));
                 if (!session.exists(principalRef)) {
                     LOG.debug("CICEnrichmentWork: principal doc {} no longer exists, event skipped",
                             outcome.docIds.get(0));
                     return;
                 }
-                
-                // ake sure we don't loose all the values if a listener is not declared
-                // post commit and fails.
-                if(TransactionHelper.isTransactionActive()) {
-                    TransactionHelper.commitOrRollbackTransaction();
-                    TransactionHelper.startTransaction();
-                }
-                
+
                 DocumentModel principal = session.getDocument(principalRef);
                 DocumentEventContext ctx = new DocumentEventContext(session, session.getPrincipal(), principal);
                 ctx.setProperty(CTX_ACTION_NAME, op.getActionName());

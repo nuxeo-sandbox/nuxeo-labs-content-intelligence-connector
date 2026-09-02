@@ -42,15 +42,19 @@ import org.nuxeo.runtime.test.runner.TransactionalFeature;
 
 /**
  * Proves the {@code cicCallKEDone} rollback-isolation contract end to end: a deliberately hostile
- * <b>synchronous post-commit</b> listener (see {@link RollbackThrowingKEDoneListener}, deployed via
+ * listener (see {@link RollbackThrowingKEDoneListener}, deployed via
  * {@code test-ke-done-throwing-listener-contrib.xml}) marks its transaction rollback-only and throws,
  * yet the document enriched by the background {@code cicEnrichment} Work still keeps its changes.
  * <p>
  * Runs fully offline (no CIC credentials): the target document is a blob-less {@code File}, so the
  * image-description op takes the {@code NO_CALL} path — it records a {@code CICError} facet and saves
  * the document without ever calling the CIC platform. The event is still fired (async mode), the
- * listener still runs (and fails), and the {@code CICError} facet must survive because post-commit
- * listeners run AFTER the enrichment transaction has committed, each in its own separate transaction.
+ * listener still runs (and fails), and the {@code CICError} facet must survive.
+ * <p>
+ * Since 2025.21 what this really validates is the <i>commit-before-fire</i> guarantee implemented in
+ * {@code CICEnrichmentWork.work()} (the transaction is saved and committed just before the
+ * {@code DocumentEventContext} is built), NOT Nuxeo's post-commit listener registration semantics.
+ * The listener declaration is therefore irrelevant to the outcome — which is exactly the point.
  */
 @RunWith(FeaturesRunner.class)
 @Features(PlatformFeature.class)
@@ -65,7 +69,7 @@ public class TestCICEnrichmentEventIsolation {
     protected TransactionalFeature txFeature;
 
     @Test
-    public void postCommitListenerFailureShouldNotRollBackEnrichment() throws InterruptedException {
+    public void listenerFailureShouldNotRollBackEnrichment() throws InterruptedException {
         RollbackThrowingKEDoneListener.reset();
 
         // Blob-less File => the image op takes the NO_CALL path (records a CICError facet, saves,
@@ -87,13 +91,13 @@ public class TestCICEnrichmentEventIsolation {
         boolean completed = wm.awaitCompletion(60, TimeUnit.SECONDS);
         assertTrue("cicEnrichment Work did not complete in time", completed);
 
-        // The hostile post-commit listener must have fired (and failed internally).
+        // The hostile listener must have fired (and failed internally).
         assertTrue("The cicCallKEDone listener never fired", RollbackThrowingKEDoneListener.FIRED_COUNT.get() > 0);
 
         // Despite the listener throwing + marking rollback-only, the enrichment must have survived.
         txFeature.nextTransaction();
         DocumentModel reloaded = session.getDocument(new IdRef(docId));
-        assertTrue("Enrichment was rolled back by the failing post-commit listener — isolation broken",
+        assertTrue("Enrichment was rolled back by the failing listener — isolation broken",
                 reloaded.hasFacet("CICError"));
     }
 }

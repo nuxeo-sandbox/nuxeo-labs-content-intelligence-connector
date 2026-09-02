@@ -28,16 +28,16 @@ import org.nuxeo.ecm.core.event.PostCommitEventListener;
 import org.nuxeo.runtime.transaction.TransactionHelper;
 
 /**
- * Deliberately hostile <b>synchronous post-commit</b> listener on {@code cicCallKEDone}, used by
+ * Deliberately hostile listener on {@code cicCallKEDone}, used by
  * {@link TestCICEnrichmentEventIsolation} to prove rollback isolation.
  * <p>
- * It implements {@link PostCommitEventListener} (NOT {@code EventListener}) so the runtime registers
- * it as a post-commit listener — the interface, not the {@code postCommit="true"} attribute, is what
- * makes a class-based listener post-commit. For every {@code cicCallKEDone} event it increments a
- * static counter, marks the current (post-commit) transaction rollback-only, then throws.
+ * For every {@code cicCallKEDone} event it increments a static counter, marks the current
+ * transaction rollback-only, then throws.
  * <p>
- * Because post-commit listeners run AFTER the enrichment transaction has committed and in their own
- * separate transaction, none of this can roll back the already-enriched documents.
+ * Since 2025.21 the firing side commits the enrichment transaction just BEFORE building the event
+ * context, so none of this can roll back the already-enriched documents — whatever the listener
+ * declaration. It happens to implement {@link PostCommitEventListener} here, but the test outcome no
+ * longer depends on that: an inline {@code EventListener} would be just as harmless.
  */
 public class RollbackThrowingKEDoneListener implements PostCommitEventListener {
 
