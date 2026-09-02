@@ -18,8 +18,8 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.authentication;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +37,7 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 /**
  * This class handles authentication tokens and their lifespan. If a token was requested before expiration, it is
  * returned as is. Else, a new token is fetched.
- * 
+ *
  * @since 2023
  */
 public class AuthenticationToken {
@@ -131,10 +131,8 @@ public class AuthenticationToken {
 
     /**
      * Will fetch a new token only if the current token is null or expired.
-     * 
+     *
      * @param url, the full authentication URL
-     * @param clientId
-     * @param clientSecret
      * @return the authentication token
      * @since 2023
      */
@@ -156,16 +154,10 @@ public class AuthenticationToken {
         headers.put("Content-Type", "application/x-www-form-urlencoded");
 
         // Request body
-        String postData;
-        try {
-            postData = "client_id=" + URLEncoder.encode(tokenParams.getClientId(), "UTF-8");
-            postData += "&client_secret=" + URLEncoder.encode(tokenParams.getClientSecret(), "UTF-8");
-            postData += "&grant_type=" + URLEncoder.encode(tokenParams.getGrantType(), "UTF-8");
-            postData += "&scope=" + URLEncoder.encode(tokenParams.grantScope, "UTF-8");
-
-        } catch (UnsupportedEncodingException e) {
-            throw new NuxeoException("Failed to encode the request", e);
-        }
+        String postData = "client_id=" + URLEncoder.encode(tokenParams.getClientId(), StandardCharsets.UTF_8);
+        postData += "&client_secret=" + URLEncoder.encode(tokenParams.getClientSecret(), StandardCharsets.UTF_8);
+        postData += "&grant_type=" + URLEncoder.encode(tokenParams.getGrantType(), StandardCharsets.UTF_8);
+        postData += "&scope=" + URLEncoder.encode(tokenParams.grantScope, StandardCharsets.UTF_8);
 
         ServiceCallResult result = serviceCall.post(authFullUrl, headers, postData);
 

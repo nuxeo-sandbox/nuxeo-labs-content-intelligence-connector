@@ -24,6 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.nuxeo.ecm.automation.AutomationService;
 import org.nuxeo.ecm.automation.OperationContext;
+import org.nuxeo.ecm.automation.OperationException;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.event.Event;
@@ -82,11 +83,8 @@ public class CICAgenticAgentLookupListener implements PostCommitEventListener {
         try (OperationContext octx = new OperationContext(docCtx.getCoreSession())) {
             octx.setInput(doc);
             automation.run(octx, CICAgenticAgentLookupOp.ID, Map.of("saveDocument", true));
-        } catch (NuxeoException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new NuxeoException(
-                    "Failed to run " + CICAgenticAgentLookupOp.ID + " on doc id=" + doc.getId(), e);
+        } catch (OperationException e) {
+            throw new NuxeoException("Failed to run " + CICAgenticAgentLookupOp.ID + " on doc id=" + doc.getId(), e);
         }
         log.debug("CIC.AgenticAgentLookup ran on doc id={}", doc.getId());
     }

@@ -20,16 +20,13 @@ package org.nuxeo.labs.hyland.content.intelligence.http;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -37,7 +34,7 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * Utility class, centralizing the HTTP calls and returning a <code>ServiceCallResult</code>
- * 
+ *
  * @since 2023
  */
 public class ServiceCall {
@@ -45,21 +42,23 @@ public class ServiceCall {
     private static final Logger log = LogManager.getLogger(ServiceCall.class);
 
     /**
-     * Query params, if any, must be handled but the caller (and appended to the url, with the correct encoding)
-     * 
-     * @param url
-     * @param headers. Can be null.
-     * @return a ServiceCallResult
+     * Perform a GET call.
+     * <p>
+     * Query params, if any, must be handled by the caller (and appended to the url, with the correct encoding)
+     *
+     * @param url the full URL to call, query params included
+     * @param headers the request headers. Can be null.
+     * @return a ServiceCallResult, never null. On failure, its response code is -1.
      * @since 2023
      */
     public ServiceCallResult get(String url, Map<String, String> headers) {
 
-        ServiceCallResult result = null;
+        ServiceCallResult result;
 
         HttpURLConnection connection = null;
         try {
             // Create the URL object
-            URL theUrl = new URI(url).toURL();
+            var theUrl = new URI(url).toURL();
             connection = (HttpURLConnection) theUrl.openConnection();
             connection.setRequestMethod("GET");
 
@@ -70,12 +69,11 @@ public class ServiceCall {
             result = readResponse(connection);
 
         } catch (IOException | URISyntaxException e) {
-            log.error("Error: {}", e.getMessage());
+            log.error("Error calling GET {}", url, e);
             result = new ServiceCallResult("{}", -1, e.getClass().getSimpleName() + ": " + e.getMessage());
         } finally {
             if (connection != null) {
                 connection.disconnect();
-                connection = null;
             }
         }
 
@@ -88,12 +86,12 @@ public class ServiceCall {
      */
     protected ServiceCallResult postOrPut(String httpMethod, String url, Map<String, String> headers, String body) {
 
-        ServiceCallResult result = null;
+        ServiceCallResult result;
 
         HttpURLConnection connection = null;
         try {
             // Create the URL object
-            URL theUrl = new URI(url).toURL();
+            var theUrl = new URI(url).toURL();
             connection = (HttpURLConnection) theUrl.openConnection();
             // POST or PUT
             connection.setRequestMethod(httpMethod);
@@ -104,8 +102,8 @@ public class ServiceCall {
 
             connection.setDoOutput(true);
             if (body != null) {
-                try (OutputStream os = connection.getOutputStream()) {
-                    byte[] input = body.getBytes(StandardCharsets.UTF_8);
+                try (var os = connection.getOutputStream()) {
+                    var input = body.getBytes(StandardCharsets.UTF_8);
                     os.write(input, 0, input.length);
                 }
             }
@@ -113,12 +111,11 @@ public class ServiceCall {
             result = readResponse(connection);
 
         } catch (IOException | URISyntaxException e) {
-            log.error("Error: {}", e.getMessage());
+            log.error("Error calling {} {}", httpMethod, url, e);
             result = new ServiceCallResult("{}", -1, e.getClass().getSimpleName() + ": " + e.getMessage());
         } finally {
             if (connection != null) {
                 connection.disconnect();
-                connection = null;
             }
         }
 
@@ -127,26 +124,23 @@ public class ServiceCall {
 
     public ServiceCallResult post(String url, Map<String, String> headers, String body) {
 
-        ServiceCallResult result = postOrPut("POST", url, headers, body);
-
-        return result;
+        return postOrPut("POST", url, headers, body);
     }
 
     public ServiceCallResult put(String url, Map<String, String> headers, String body) {
 
-        ServiceCallResult result = postOrPut("PUT", url, headers, body);
-
-        return result;
+        return postOrPut("PUT", url, headers, body);
     }
 
     /**
-     * The "response" field of <code>ServiceCallResult</code> is always an empty JSON object, "{}".
-     * 
-     * @param file
-     * @param targetUrl
-     * @param contentType
-     * @return a Response
-     * @throws IOException
+     * Upload a file with a PUT call.
+     * <p>
+     * The "response" field of the returned <code>ServiceCallResult</code> is always an empty JSON object, "{}".
+     *
+     * @param file the file to upload. Must exist and be a regular file.
+     * @param targetUrl the URL to PUT the file to
+     * @param contentType the value of the Content-Type request header
+     * @return a ServiceCallResult, never null. On failure, its response code is -1.
      * @since 2023
      */
     public ServiceCallResult uploadFileWithPut(File file, String targetUrl, String contentType) {
@@ -157,16 +151,17 @@ public class ServiceCall {
 
         ServiceCallResult result;
 
+        HttpURLConnection connection = null;
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URI(targetUrl).toURL().openConnection();
+            connection = (HttpURLConnection) new URI(targetUrl).toURL().openConnection();
             connection.setDoOutput(true);
             connection.setRequestMethod("PUT");
             connection.setRequestProperty("Content-Type", contentType);
             connection.setFixedLengthStreamingMode(file.length());
 
-            try (OutputStream out = connection.getOutputStream(); InputStream in = new FileInputStream(file)) {
+            try (var out = connection.getOutputStream(); var in = Files.newInputStream(file.toPath())) {
 
-                byte[] buffer = new byte[8192];
+                var buffer = new byte[8192];
                 int bytesRead;
                 while ((bytesRead = in.read(buffer)) != -1) {
                     out.write(buffer, 0, bytesRead);
@@ -174,41 +169,40 @@ public class ServiceCall {
                 out.flush();
 
                 result = new ServiceCallResult("{}", connection.getResponseCode(), connection.getResponseMessage());
-
-            } catch (IOException e) {
-                log.error("Error uploading file with PUT", e);
-                result = new ServiceCallResult("{}", -1, e.getMessage());
             }
 
-            return result;
-
-        } catch (IOException  | URISyntaxException e) {
-            log.error("Error uploading file with PUT {}: {}", e.getClass().getSimpleName(), e);
+        } catch (IOException | URISyntaxException e) {
+            log.error("Error uploading file with PUT to {}", targetUrl, e);
             result = new ServiceCallResult("{}", -1, e.getClass().getSimpleName() + ": " + e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
         }
 
         return result;
-
     }
 
     /**
-     * Utility, used by other methods (get, post, put), cone the call returns a status >= 200 < 300.
-     * The "response" field of <code>Response</code> is always an empty JSON object, "{}".
-     * 
-     * @param connection
-     * @return
-     * @throws IOException
+     * Utility, used by other methods (get, post, put), once the call returns a status >= 200 < 300.
+     * <p>
+     * When the call was not successful, the "response" field of the returned <code>ServiceCallResult</code> is an empty
+     * JSON object, "{}".
+     *
+     * @param connection the connection to read the response from
+     * @return a ServiceCallResult holding the response body, code and message
+     * @throws IOException if reading the response fails
      * @since 2023
      */
     public ServiceCallResult readResponse(HttpURLConnection connection) throws IOException {
 
-        ServiceCallResult result = null;
+        ServiceCallResult result;
 
         int responseCode = connection.getResponseCode();
         if (ServiceCallResult.isHttpSuccess(responseCode)) {
-            try (BufferedReader br = new BufferedReader(
+            try (var br = new BufferedReader(
                     new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
-                StringBuilder responseStr = new StringBuilder();
+                var responseStr = new StringBuilder();
                 String line;
                 while ((line = br.readLine()) != null) {
                     responseStr.append(line.trim());

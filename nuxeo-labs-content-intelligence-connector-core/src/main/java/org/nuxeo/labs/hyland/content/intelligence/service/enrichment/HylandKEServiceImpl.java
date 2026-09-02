@@ -155,7 +155,8 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
 
         if (!value) {
             throw new NuxeoException(
-                    "Since verison 2025.16 of the plugin, it is not possible to use KE API in its version 1, that is deprecated.");
+                    "Since verison 2025.16 of the plugin, it is not possible to use KE API in its version 1, that is"
+                            + " deprecated.");
         }
         useKEV2 = value;
 
@@ -510,6 +511,21 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         return result;
     }
 
+    /**
+     * Sleep between Enrichment polling attempts. If the thread is interrupted, the interrupt status is restored and the
+     * polling loop is aborted by wrapping the cause in a {@link NuxeoException}.
+     *
+     * @since 2025.21
+     */
+    protected void sleepBetweenPullAttempts() {
+        try {
+            Thread.sleep(pullResultsSleepIntervalMS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new NuxeoException("Interrupted while polling Enrichment results", e);
+        }
+    }
+
     protected ServiceCallResult pullEnrichmentResults(String configName, String resultId) {
 
         ServiceCallResult result;
@@ -519,12 +535,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
 
         do {
             if (count > 1) {
-                try {
-                    Thread.sleep(pullResultsSleepIntervalMS);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new NuxeoException("Interrupted while polling Enrichment results", e);
-                }
+                sleepBetweenPullAttempts();
             }
 
             if (count == pullResultsMaxTries) {
@@ -736,7 +747,6 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
      * Stop the component.
      *
      * @param context the component context. Use it to get the current bundle context
-     * @throws InterruptedException
      */
     @Override
     public void stop(ComponentContext context) throws InterruptedException {

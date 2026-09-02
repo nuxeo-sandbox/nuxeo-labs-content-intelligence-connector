@@ -41,7 +41,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.runtime.model.ComponentContext;
 
 /**
- * 
+ *
  * @since 2025.15/2023.18
  */
 public class HylandDCServiceImpl extends AbstractCICServiceComponent<DCDescriptor> implements HylandDCService {
@@ -58,11 +58,13 @@ public class HylandDCServiceImpl extends AbstractCICServiceComponent<DCDescripto
 
     public static final int PULL_RESULTS_MAX_TRIES_DEFAULT = 25;
 
-    public static final String PULL_RESULTS_SLEEP_INTERVAL_PARAM = "nuxeo.hyland.cic.datacuration.pullResultsSleepInterval";
+    public static final String PULL_RESULTS_SLEEP_INTERVAL_PARAM =
+            "nuxeo.hyland.cic.datacuration.pullResultsSleepInterval";
 
     public static final int PULL_RESULTS_SLEEP_INTERVAL_DEFAULT = 5000;
 
-    public static final String DATA_CURATION_PRESIGN_DEFAULT_OPTIONS = "{\"normalization\": {\"quotations\": true},\"chunking\": true,\"embedding\": true,\"json_schema\": \"PIPELINE\"}";
+    public static final String DATA_CURATION_PRESIGN_DEFAULT_OPTIONS = "{\"normalization\": {\"quotations\":"
+            + " true},\"chunking\": true,\"embedding\": true,\"json_schema\": \"PIPELINE\"}";
 
     protected static Map<String, AuthenticationToken> dataCurationAuthTokens = null;
 
@@ -233,6 +235,21 @@ public class HylandDCServiceImpl extends AbstractCICServiceComponent<DCDescripto
      * Pull to dataCurationEndPoint/status/job_id until getting it "Done"
      * Once "Done", just GET at the getUrl (presigned)
      */
+    /**
+     * Sleep between Data Curation polling attempts. If the thread is interrupted, the interrupt status is restored and
+     * the polling loop is aborted by wrapping the cause in a {@link NuxeoException}.
+     *
+     * @since 2025.21
+     */
+    protected void sleepBetweenPullAttempts() {
+        try {
+            Thread.sleep(pullResultsSleepIntervalMS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new NuxeoException("Interrupted while polling Data Curation results", e);
+        }
+    }
+
     protected ServiceCallResult pullDataCurationResults(String configName, String jobId, String getUrl) {
 
         ServiceCallResult result = null;
@@ -247,12 +264,7 @@ public class HylandDCServiceImpl extends AbstractCICServiceComponent<DCDescripto
         boolean gotIt = false;
         do {
             if (count > 1) {
-                try {
-                    Thread.sleep(pullResultsSleepIntervalMS);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new NuxeoException("Interrupted while polling Data Curation results", e);
-                }
+                sleepBetweenPullAttempts();
             }
             if (count > (pullResultsMaxTries / 2)) {
                 log.warn("Pulling Data Curation results is taking time. This is the call #{} (max calls: {})", count,
@@ -325,7 +337,7 @@ public class HylandDCServiceImpl extends AbstractCICServiceComponent<DCDescripto
      */
     @Override
     public void start(ComponentContext context) {
-        
+
         dataCurationAuthTokens = initAuthTokens(
                 desc -> new AuthenticationTokenEnrichment(
                         desc.getAuthenticationBaseUrl() + CICServiceConstants.AUTH_ENDPOINT,
@@ -336,7 +348,6 @@ public class HylandDCServiceImpl extends AbstractCICServiceComponent<DCDescripto
      * Stop the component.
      *
      * @param context the component context. Use it to get the current bundle context
-     * @throws InterruptedException
      */
     @Override
     public void stop(ComponentContext context) throws InterruptedException {
