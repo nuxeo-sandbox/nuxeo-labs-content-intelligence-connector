@@ -171,7 +171,6 @@ public class CICEnrichmentWork extends AbstractWork {
                 
                 // ake sure we don't loose all the values if a listener is not declared
                 // post commit and fails.
-                ServicesUtils.forceLogInfo(this.getClass(), "TransactionHelper.isTransactionActive() => " + TransactionHelper.isTransactionActive());
                 if(TransactionHelper.isTransactionActive()) {
                     TransactionHelper.commitOrRollbackTransaction();
                     TransactionHelper.startTransaction();
