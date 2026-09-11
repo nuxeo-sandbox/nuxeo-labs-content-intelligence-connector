@@ -6,6 +6,8 @@
 Ask a question to Knowledge Discovery, sending a list of contextObjectIds, to be used
 to answer the question.
 -->
+<link rel="import" href="cic-agent-and-config-picker.html">
+
 <dom-module id="cic-kd-ask-question-shared">
   <template>
     <style include="nuxeo-action-button-styles nuxeo-styles">
@@ -179,6 +181,7 @@ to answer the question.
     <nuxeo-dialog id="dialog" on-iron-overlay-closed="_dialogClosed" with-backdrop>
       <div class="content">
         <cic-agent-and-config-picker id="agentPicker"
+                                     auto-load="false"
                                      label="label.ui.cic.kd-ask.agent"
                                      selected-agent-id="{{agentId}}"
                                      selected-config-name="{{configName}}">
@@ -270,31 +273,18 @@ to answer the question.
 
         icon: {
           type: String,
-          value: 'icons:question-answer',
-          reflectToAttribute: true
-        },
-
-        questionLabel: {
-          type: String,
-          value: 'label.ui.cic.kd-ask.askKD'
-        },
-
-        showLabel: {
-          type: Boolean,
-          value: false,
-        },
-
-        icon: {
-          type: String,
           value: 'icons:speaker-notes',
           reflectToAttribute: true
         },
 
+        /*
+         * A plain i18n key, resolved in the template with [[i18n(questionLabel)]]. Never pre-translate here:
+         * a property default is evaluated once, at element definition time, which freezes the value on whatever
+         * locale happened to be active, and it breaks any consumer passing a key of its own.
+         */
         questionLabel: {
           type: String,
-          value: function() {
-            return this.i18n ? this.i18n('label.ui.cic.kd-ask.askKD') : 'label.ui.cic.kd-ask.askKD';
-          }
+          value: 'label.ui.cic.kd-ask.askKD'
         },
 
         selectedItems: {
@@ -360,8 +350,8 @@ to answer the question.
          * Both loads are best effort: _markdownToHtml falls back to escaped plain text when either library is
          * missing, so a blocked CDN degrades the rendering but never loses the answer nor renders unsafe HTML.
          */
-        this._loadScript('https://cdn.jsdelivr.net/npm/marked/marked.min.js', 'marked');
-        this._loadScript('https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js', 'DOMPurify');
+        this._loadScript('https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js', 'marked');
+        this._loadScript('https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js', 'DOMPurify');
       },
 
       _loadScript: function(url, globalName) {
@@ -500,8 +490,11 @@ to answer the question.
 
       _onClearButtonTap: function(event) {
         let preserveAgent = false;
-        if (event.altKey || (event.detail && event.detail.sourceEvent && event.detail.sourceEvent.altKey)) {
-          preserveAgent = event.detail.sourceEvent.altKey;
+        // Read each source independently: with the previous "a || b" test, a truthy event.altKey combined
+        // with a null event.detail (keyboard activation) made the next line dereference null.
+        var detailAlt = !!(event.detail && event.detail.sourceEvent && event.detail.sourceEvent.altKey);
+        if (event.altKey || detailAlt) {
+          preserveAgent = !!event.altKey || detailAlt;
         }
         this._cleanupStuff(preserveAgent);
       },
@@ -524,7 +517,16 @@ to answer the question.
       },
 
       // ====================> Handle Dialog
+      /*
+       * The picker is in the static template of this element, and the slot-content carries no <nuxeo-filter>,
+       * so it is instantiated on every document view. Loading on attach meant one HylandKD.AvailableAgents
+       * call — an NXQL query — per document navigation, even when the dialog was never opened. It is loaded
+       * when the dialog actually opens instead.
+       */
       _toggleDialog: function() {
+        if (this.$.agentPicker) {
+          this.$.agentPicker.load();
+        }
         this._cleanupStuff(false);
         this.$.dialog.toggle();
       },

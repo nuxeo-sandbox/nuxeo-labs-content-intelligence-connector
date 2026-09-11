@@ -29,6 +29,11 @@
     document.head.appendChild(script);
   }
 
-  loadScript('https://cdn.jsdelivr.net/npm/marked/marked.min.js', 'marked');
-  loadScript('https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js', 'DOMPurify');
+  /*
+   * Versions are pinned on purpose. Without a version jsDelivr resolves to "latest", so a major release of
+   * either library could break the UI without any change on our side. Keep these URLs in sync with the ones
+   * in cic-kd-ask-question-shared.html: loading two different builds of marked would race on window.marked.
+   */
+  loadScript('https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js', 'marked');
+  loadScript('https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js', 'DOMPurify');
 })();

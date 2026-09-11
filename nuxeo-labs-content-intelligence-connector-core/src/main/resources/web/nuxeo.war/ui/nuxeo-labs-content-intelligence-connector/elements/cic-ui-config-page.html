@@ -434,7 +434,8 @@ this explicit: the runtime UI may differ from what is shown here.
 
           </div>
         </nuxeo-card>
-      </div> 
+      </div>
+    </nuxeo-page>
 
   </template>
 
@@ -479,13 +480,13 @@ this explicit: the runtime UI may differ from what is shown here.
           type: Array,
           value: function() {
             return [
-              { selected: false, file: 'cic-summary-view.html',             tag: 'cic-summary-view',             mode: 'view', binding: 'cic_summary:summary' },
-              { selected: false, file: 'cic-image-description-view.html',   tag: 'cic-image-description-view',   mode: 'view', binding: 'cic_image_description:description' },
-              { selected: false, file: 'cic-classification-view.html',      tag: 'cic-classification-view',      mode: 'view', binding: 'cic_classification:imageClass / :textClass' },
-              { selected: false, file: 'cic-classification-edit.html',      tag: 'cic-classification-edit',      mode: 'edit', binding: 'cic_classification:imageClass / :textClass' },
-              { selected: false, file: 'cic-named-entities-view.html',      tag: 'cic-named-entities-view',      mode: 'view', binding: 'cic_named_entities:entities' },
-              { selected: false, file: 'cic-metadata-detection-view.html',  tag: 'cic-metadata-detection-view',  mode: 'view', binding: 'cic_metadata_detection:metadata' },
-              { selected: false, file: 'cic-metadata-detection-edit.html',  tag: 'cic-metadata-detection-edit',  mode: 'edit', binding: 'cic_metadata_detection:metadata' }
+              { selected: false, file: 'cic-summary-view.html',             tag: 'cic-summary-view',             mode: 'view', binding: 'cicsummary:summary' },
+              { selected: false, file: 'cic-image-description-view.html',   tag: 'cic-image-description-view',   mode: 'view', binding: 'cicimagedescription:description' },
+              { selected: false, file: 'cic-classification-view.html',      tag: 'cic-classification-view',      mode: 'view', binding: 'cicclassification:imageClass / :textClass' },
+              { selected: false, file: 'cic-classification-edit.html',      tag: 'cic-classification-edit',      mode: 'edit', binding: 'cicclassification:imageClass / :textClass' },
+              { selected: false, file: 'cic-named-entities-view.html',      tag: 'cic-named-entities-view',      mode: 'view', binding: 'cicnamedentities:entities' },
+              { selected: false, file: 'cic-metadata-detection-view.html',  tag: 'cic-metadata-detection-view',  mode: 'view', binding: 'cicmetadatadetection:metadata' },
+              { selected: false, file: 'cic-metadata-detection-edit.html',  tag: 'cic-metadata-detection-edit',  mode: 'edit', binding: 'cicmetadatadetection:metadata' }
             ];
           }
         },

@@ -41,6 +41,8 @@ INFO/WARNING/TODO
   "label.ui.cic.kd-ask.close": "Close"
 }
 -->
+<link rel="import" href="cic-agent-and-config-picker.html">
+
 <dom-module id="cic-kd-conversation">
   <template>
     <style include="nuxeo-action-button-styles nuxeo-styles">
@@ -344,6 +346,7 @@ INFO/WARNING/TODO
       <!-- Agent picker (shared element used by both cic-kd-conversation and cic-kd-ask-question-shared). -->
       <div class="agent-selector">
         <cic-agent-and-config-picker id="agentPicker"
+                                     auto-load="false"
                                      label="label.ui.cic.kd-conversation.agent"
                                      disabled="[[_conversationStarted]]"
                                      selected-agent-id="{{_selectedAgentId}}"
@@ -545,9 +548,11 @@ INFO/WARNING/TODO
         var max = Math.min(documentReferences.length, 5);
         for (var i = 0; i < max; i++) {
           var docId = documentReferences[i].documentId || '';
+          // Take the LAST segment, like CICKDAskQuestionForUIOp.extractNuxeoDocID: a source id containing
+          // "__" would otherwise make the reference silently disappear.
           var parts = docId.split('__');
-          if (parts.length === 2 && parts[1]) {
-            uids.push(parts[1]);
+          if (parts.length >= 2 && parts[parts.length - 1]) {
+            uids.push(parts[parts.length - 1]);
           }
         }
         return uids;
@@ -558,7 +563,23 @@ INFO/WARNING/TODO
       _fetchDocumentTitles: function(uids, messageIndex) {
         if (!uids || !uids.length) return;
 
-        var quoted = uids.map(function(uid) { return "'" + uid + "'"; });
+        /*
+         * The uids come straight from the Knowledge Discovery response, so they are untrusted input that is
+         * about to be concatenated into an NXQL query. Validate them as UUIDs first, exactly like the Java
+         * counterpart CICKDAskQuestionForUIOp does: a single quote in a KD objectId would otherwise break the
+         * query, or worse.
+         */
+        var UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+        var validUids = uids.filter(function(uid) {
+          if (UUID_RE.test(uid)) {
+            return true;
+          }
+          console.warn('cic-kd-conversation: skipping non-UUID objectId from KD response:', uid);
+          return false;
+        });
+        if (!validUids.length) return;
+
+        var quoted = validUids.map(function(uid) { return "'" + uid + "'"; });
         let quotedJoin = quoted.join(',');
         // TODO: re-introduce kdinfo:objectId support cleanly. Background: when a Nuxeo doc
         // is sent to KD its UUID becomes the KD objectId; in some demos we persist that
@@ -567,10 +588,13 @@ INFO/WARNING/TODO
         // (it is presales-demo material), so the clause is disabled by default to avoid
         // NXQL errors. When the schema IS registered, the original query was:
         //   SELECT * FROM Document WHERE ecm:uuid IN (...) OR kdinfo:objectId IN (...)
-        var query = 'SELECT * FROM Document WHERE ecm:uuid IN (' + quotedJoin + ')';
+        var query = 'SELECT * FROM Document WHERE ecm:isProxy = 0 AND ecm:isVersion = 0'
+          + ' AND ecm:isTrashed = 0 AND ecm:uuid IN (' + quotedJoin + ')';
 
         var op = this.$.queryDocumentsOp;
-        op.params = { query: query, pageSIze: 5 };
+        // Ask for exactly what we need. The parameter was misspelled "pageSIze" and therefore ignored, so
+        // fixing the typo with the original value of 5 would have started truncating the references.
+        op.params = { query: query, pageSize: validUids.length };
         op.execute().then(function(response) {
           var docs = (response && response.entries) ? response.entries : [];
           // Build the references array with resolved titles
@@ -628,7 +652,11 @@ INFO/WARNING/TODO
       },
 
       // ====================> Handle Dialog
+      // See the note in cic-kd-ask-question-shared: the picker loads when the dialog opens, not on attach.
       _toggleDialog: function() {
+        if (this.$.agentPicker) {
+          this.$.agentPicker.load();
+        }
         this.$.conversationDialog.toggle();
       },
 
