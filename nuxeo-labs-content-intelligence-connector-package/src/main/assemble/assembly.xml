@@ -21,7 +21,6 @@
         <filter token="VERSION" value="${maven.project.version}" />
         <filter token="DISTRIB_VERSION" value="${nuxeo.platform.version}" />
         <filter token="NUXEO_TARGET_VERSION" value="${nuxeo.target.version}" />
-        <filter token="STUDIO_PROJECT_VERSION" value="${studio.project.version}" />
       </filterset>
     </copy>
 
@@ -139,7 +138,10 @@
     <!-- cleanups -->
     <delete dir="${outdir}/marketplace" failonerror="false" />
     <delete dir="${outdir}/nxr" failonerror="false" />
-    <delete file="${outdir}/nuxeo-nxr-server-${maven.project.version}.zip" failonerror="false" />
+    <!-- The NXR copied at the top of this file is named after the PLATFORM version, not the project
+         version, so the previous pattern deleted nothing and left a ~159 MB zip in target/ at every
+         build. -->
+    <delete file="${outdir}/nuxeo-nxr-server-${nuxeo.platform.version}.zip" failonerror="false" />
     <delete file="${outdir}/nxr-${maven.project.version}.zip" failonerror="false" />
   </target>
 

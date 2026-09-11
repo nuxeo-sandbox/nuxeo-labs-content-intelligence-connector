@@ -9,7 +9,7 @@
     </parent>
     <artifactId>nuxeo-labs-content-intelligence-connector-core</artifactId>
     <name>Nuxeo Labs Content Intelligence Connector core</name>
-    <description/>
+    <description>Core bundle: services, automation operations, document model and Web UI resources.</description>
 
     <properties>
         
@@ -37,6 +37,18 @@
         <dependency>
             <groupId>org.nuxeo.ecm.platform</groupId>
             <artifactId>nuxeo-platform-imaging-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!--
+            Used by ~20 classes of this module. It reaches the classpath only through a four-level transitive
+            chain (nuxeo-runtime -> nuxeo-runtime-stream -> nuxeo-launcher-commons -> nuxeo-connect-client),
+            so any Nuxeo-side change to that chain would break compilation with no warning. Version is managed
+            by the Nuxeo parent.
+        -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
             <scope>provided</scope>
         </dependency>
 

@@ -4,7 +4,7 @@
   <description>
     <p>A connector for Hyland Content Intelligence</p>
   </description>
-  <home-page>https://github.com/nuxeo-sandbox/nuxeo-hyland-content-intelligence-connector</home-page>
+  <home-page>https://github.com/nuxeo-sandbox/nuxeo-labs-content-intelligence-connector</home-page>
   <vendor>Hyland</vendor>
   <installer restart="true" />
   <uninstaller restart="true" />
@@ -18,14 +18,16 @@
   <platforms>
     <platform>lts-@NUXEO_TARGET_VERSION@</platform>
   </platforms>
-  <!-- Dependencies on other packages -->
-  <!-- <dependencies> -->
-  <!-- <package>another-package:1.0.0:1.0.0</package> -->
-  <!-- If you require JSF UI package:  -->
-  <!-- <package>nuxeo-jsf-ui</package> -->
-  <!-- If you require WEB UI package:  -->
-  <!-- <package>nuxeo-web-ui</package> -->
-  <!-- </dependencies> -->
+  <!--
+    Web UI is a hard requirement: this package ships web/nuxeo.war resources, Web UI layouts, a Web Resources
+    bundle and a deployment-fragment that requires org.nuxeo.web.ui. Without it the fragment is skipped
+    entirely and none of the web resources nor the i18n keys are installed, the only trace being an
+    "Unknown bundle: org.nuxeo.web.ui" line at startup. Declaring it turns that silent half-install into a
+    clean install-time error.
+  -->
+  <dependencies>
+    <package>nuxeo-web-ui</package>
+  </dependencies>
   <!-- Conflicts with other packages -->
   <!-- <conflicts> -->
   <!-- <package>a-conflicting-package:1.0.0:1.0.0</package> -->
@@ -37,5 +39,5 @@
   <license>Apache License, Version 2.0</license>
   <license-url>https://www.apache.org/licenses/LICENSE-2.0</license-url>
   <!-- Visibility: PRIVATE | MARKETPLACE | DEV | PUBLIC -->
-  <visibility>PUBLIC</visibility>>
+  <visibility>PUBLIC</visibility>
 </package>

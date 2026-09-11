@@ -9,7 +9,7 @@
   <artifactId>nuxeo-labs-content-intelligence-connector-parent</artifactId>
   <version>2025.22.0-SNAPSHOT</version>
   <name>Nuxeo Labs Content Intelligence Connector parent</name>
-  <description/>
+  <description>Connects the Nuxeo Platform to the Hyland Content Intelligence cloud APIs: Knowledge Enrichment, Data Curation, Knowledge Discovery, Agents, Ingest and Content Lake.</description>
   <packaging>pom</packaging>
   <properties>
     <!-- Skip Nuxeo enforcer rules by default -->
