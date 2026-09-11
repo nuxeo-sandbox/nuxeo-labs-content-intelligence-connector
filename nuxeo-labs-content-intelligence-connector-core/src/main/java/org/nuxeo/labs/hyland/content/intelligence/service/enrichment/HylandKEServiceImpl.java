@@ -270,8 +270,14 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         String errMsg;
         for (ContentToProcess content : contentObjects) {
 
+            /*
+             * The mime type is a query parameter value and must be fully encoded, not just its slash: a type such
+             * as "image/svg+xml" would otherwise reach the service as "image/svg xml", the raw "+" being decoded
+             * as a space.
+             */
             result = invokeEnrichment(configName, "GET",
-                    "/files/upload/presigned-url?contentType=" + content.getMimeType().replace("/", "%2F"), null);
+                    "/files/upload/presigned-url?contentType=" + ServicesUtils.encodeQueryParam(content.getMimeType()),
+                    null);
             if (result.callFailed()) {
                 // return result;
 

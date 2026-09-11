@@ -143,7 +143,10 @@ public class ContentLakeServiceImpl extends AbstractCICServiceComponent<ContentL
             return new ServiceCallResult("{}", -1, "No authentication info for calling the Content Lake service.");
         }
 
-        String targetUrl = buildBaseUrl(configName) + CL_DOCUMENTS_ENDPOINT + "/" + buildCLDocId(sourceId, docId);
+        // buildCLDocId returns the raw domain id; it is a single path segment, so it is encoded here.
+        // The "__" separator survives encoding untouched, "_" being an unreserved character.
+        String targetUrl = buildBaseUrl(configName) + CL_DOCUMENTS_ENDPOINT + "/"
+                + ServicesUtils.encodePathSegment(buildCLDocId(sourceId, docId));
         // Headers
         Map<String, String> headers = new HashMap<>();
         headers.put("Accept", "application/json");

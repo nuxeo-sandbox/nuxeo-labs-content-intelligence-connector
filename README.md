@@ -645,6 +645,16 @@ Key points:
 - The embeddings operations (`CIC.GetImageEmbeddings`, `CIC.GetTextEmbeddings`) still short-circuit *before* scheduling when the descriptor has no `embeddingsFacet` / `embeddings{Image,Text}Xpath` configured.
 - All Works run under the `cicEnrichment` category. Cap concurrency in `nuxeo.conf` via `nuxeo.works.queue.cicEnrichment.maxThreads` (Nuxeo's default is `1`).
 
+> [!IMPORTANT]
+> **Since 2025.22 the background Work runs as the user who scheduled it**, not as a system session. The
+> asynchronous path therefore enforces exactly the same permissions as the synchronous one.
+>
+> Previously the Work opened a system session, so a user holding only `Read` on a document could have it
+> modified just by passing `runAsynchronously=true`. If some of your chains relied on that — for example a
+> button offered to readers that writes a summary on a document they cannot edit — they will now fail, and the
+> failure is recorded on the document as a `CICError` facet. Grant the required write permission, or wrap the
+> call in a chain that runs with elevated privileges.
+
 Example (JS Automation):
 
 ```javascript

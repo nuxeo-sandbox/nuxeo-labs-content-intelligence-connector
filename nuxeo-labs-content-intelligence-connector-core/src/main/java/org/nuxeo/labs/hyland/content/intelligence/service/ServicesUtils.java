@@ -18,6 +18,8 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.service;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -237,5 +239,45 @@ public class ServicesUtils {
     public static String targetBlobs(int count) {
 
         return count + (count == 1 ? " blob" : " blobs");
+    }
+
+    /**
+     * Encodes a value that is about to be concatenated into the <b>path</b> of a service URL.
+     * <p>
+     * Agent ids, conversation ids, message ids, source ids and document ids all reach the services as operation
+     * parameters, so they are caller-controlled. Concatenating them raw lets a value containing {@code /},
+     * {@code ?} or {@code #} change the structure of the URL that is actually called.
+     * <p>
+     * {@link URLEncoder} implements {@code application/x-www-form-urlencoded}, which encodes a space as {@code +}.
+     * That is correct in a query string but not in a path segment, hence the extra replacement.
+     *
+     * @param value the raw value; {@code null} and blank values are returned unchanged
+     * @return the value, safe to concatenate as a single path segment
+     * @since 2025.22
+     */
+    public static String encodePathSegment(String value) {
+
+        if (StringUtils.isBlank(value)) {
+            return value;
+        }
+        return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20");
+    }
+
+    /**
+     * Encodes a value that is about to be concatenated into the <b>query string</b> of a service URL.
+     * <p>
+     * Without it, a value containing {@code &} injects an extra query parameter, and a value containing {@code +}
+     * (for instance the {@code image/svg+xml} mime type) is silently decoded as a space by the remote service.
+     *
+     * @param value the raw value; {@code null} and blank values are returned unchanged
+     * @return the value, safe to concatenate as a query parameter value
+     * @since 2025.22
+     */
+    public static String encodeQueryParam(String value) {
+
+        if (StringUtils.isBlank(value)) {
+            return value;
+        }
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 }

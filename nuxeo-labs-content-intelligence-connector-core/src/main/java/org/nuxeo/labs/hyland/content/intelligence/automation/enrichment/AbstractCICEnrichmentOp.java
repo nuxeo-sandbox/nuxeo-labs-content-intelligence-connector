@@ -36,6 +36,7 @@ import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentModelList;
 import org.nuxeo.ecm.core.api.NuxeoException;
+import org.nuxeo.ecm.core.api.NuxeoPrincipal;
 import org.nuxeo.ecm.directory.Session;
 import org.nuxeo.ecm.directory.api.DirectoryService;
 import org.nuxeo.labs.hyland.content.intelligence.ContentToProcess;
@@ -46,6 +47,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.CICEnrichme
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 import org.nuxeo.ecm.core.work.api.WorkManager;
 import org.nuxeo.runtime.api.Framework;
+import org.nuxeo.runtime.api.login.LoginComponent;
 import org.nuxeo.runtime.transaction.TransactionHelper;
 
 /**
@@ -723,6 +725,7 @@ public abstract class AbstractCICEnrichmentOp {
         WorkManager wm = Framework.getService(WorkManager.class);
         CICEnrichmentWork work = new CICEnrichmentWork(session.getRepositoryName(), List.of(doc.getId()),
                 getClass().getName(), paramsJson.toString(), false);
+        work.setOriginatingUsername(originatingUsername(session));
         wm.schedule(work, true);
         LOG.info("Scheduled CICEnrichmentWork (single doc {}) for op {}", doc.getId(), getClass().getName());
     }
@@ -751,8 +754,36 @@ public abstract class AbstractCICEnrichmentOp {
         WorkManager wm = Framework.getService(WorkManager.class);
         CICEnrichmentWork work = new CICEnrichmentWork(session.getRepositoryName(), ids, getClass().getName(),
                 paramsJson.toString(), true);
+        work.setOriginatingUsername(originatingUsername(session));
         wm.schedule(work, true);
         LOG.info("Scheduled CICEnrichmentWork ({} docs) for op {}", ids.size(), getClass().getName());
+    }
+
+    /**
+     * Returns the name of the user the asynchronous Work must run as, or {@code null} when the call already
+     * happens in a system context.
+     * <p>
+     * This is what allows {@link CICEnrichmentWork} to open a <b>user</b> session instead of a system one. Running
+     * the Work as {@code system} would let anyone holding only READ on a document trigger a write on it simply by
+     * passing {@code runAsynchronously=true}, whereas the synchronous code path correctly enforces the ACLs. It
+     * also kept {@code dc:lastContributor} and the {@code cicCallKEDone} event principal set to {@code system}
+     * instead of the real user.
+     *
+     * @param session the session the operation runs in
+     * @return the user name, or {@code null} for a system context
+     * @since 2025.22
+     */
+    protected static String originatingUsername(CoreSession session) {
+
+        NuxeoPrincipal principal = session == null ? null : session.getPrincipal();
+        if (principal == null || LoginComponent.isSystemLogin(principal)) {
+            return null;
+        }
+        String name = principal.getName();
+        if (StringUtils.isBlank(name) || LoginComponent.SYSTEM_USERNAME.equals(name)) {
+            return null;
+        }
+        return name;
     }
 
     /**

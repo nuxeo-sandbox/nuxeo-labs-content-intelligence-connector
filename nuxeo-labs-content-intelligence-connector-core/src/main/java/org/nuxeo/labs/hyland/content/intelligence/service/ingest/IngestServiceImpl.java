@@ -158,8 +158,9 @@ public class IngestServiceImpl extends AbstractCICServiceComponent<IngestDescrip
             targetUrl = targetUrl.substring(0, targetUrl.length() - 1);
         }
         targetUrl += ENDPOINT_CHECK_DIGEST;
-        // Add parameters
-        targetUrl += "/" + sourceId + "/" + docId + "?digest=" + blobDigest + "&useContentLake=true";
+        // Add parameters. sourceId/docId are path segments, blobDigest is a query parameter value.
+        targetUrl += "/" + ServicesUtils.encodePathSegment(sourceId) + "/" + ServicesUtils.encodePathSegment(docId)
+                + "?digest=" + ServicesUtils.encodeQueryParam(blobDigest) + "&useContentLake=true";
 
         // Headers
         Map<String, String> headers = new HashMap<>();

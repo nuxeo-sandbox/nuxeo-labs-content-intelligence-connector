@@ -30,6 +30,7 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 import org.nuxeo.labs.hyland.content.intelligence.service.AbstractCICServiceComponent;
 import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
+import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 import org.nuxeo.runtime.model.ComponentContext;
 
 public class HylandAgentsServiceImpl extends AbstractCICServiceComponent<AgentDescriptor>
@@ -121,7 +122,8 @@ public class HylandAgentsServiceImpl extends AbstractCICServiceComponent<AgentDe
 
         AgentDescriptor config = getDescriptor(configName);
         String targetUrl = config.getBaseUrl();
-        targetUrl += "/v1/agents/" + agentId + "/versions/" + versionId;
+        targetUrl += "/v1/agents/" + ServicesUtils.encodePathSegment(agentId) + "/versions/"
+                + ServicesUtils.encodePathSegment(versionId);
 
         // Headers
         Map<String, String> headers = new HashMap<>();
@@ -160,17 +162,16 @@ public class HylandAgentsServiceImpl extends AbstractCICServiceComponent<AgentDe
 
         AgentDescriptor config = getDescriptor(configName);
         String targetUrl = config.getBaseUrl();
+        String agentPath = "/v1/agents/" + ServicesUtils.encodePathSegment(agentId) + "/versions/"
+                + ServicesUtils.encodePathSegment(versionId);
         switch (agentType) {
         case RAG:
-            targetUrl += "/v1/agents/" + agentId + "/versions/" + versionId + "/invoke";
+        case TOOL:
+            targetUrl += agentPath + "/invoke";
             break;
 
         case TASK:
-            targetUrl += "/v1/agents/" + agentId + "/versions/" + versionId + "/invoke-task";
-            break;
-
-        case TOOL:
-            targetUrl += "/v1/agents/" + agentId + "/versions/" + versionId + "/invoke";
+            targetUrl += agentPath + "/invoke-task";
             break;
         }
 

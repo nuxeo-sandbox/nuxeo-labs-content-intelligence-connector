@@ -353,18 +353,54 @@ to answer the question.
       },
 
       _loadMarkedJs: function() {
-        // Check if marked is already loaded
-        if (window.marked) {
+        /*
+         * Dynamically load marked.js (Markdown rendering) and DOMPurify (XSS sanitization) to avoid CORS issues
+         * in Studio Designer. The URLs MUST stay identical to the ones used by cic-kd-conversation-libs.js,
+         * otherwise two different builds of marked would end up being fetched and would race on window.marked.
+         * Both loads are best effort: _markdownToHtml falls back to escaped plain text when either library is
+         * missing, so a blocked CDN degrades the rendering but never loses the answer nor renders unsafe HTML.
+         */
+        this._loadScript('https://cdn.jsdelivr.net/npm/marked/marked.min.js', 'marked');
+        this._loadScript('https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js', 'DOMPurify');
+      },
+
+      _loadScript: function(url, globalName) {
+        if (window[globalName]) {
           return;
         }
-
-        // Dynamically load marked.js to avoid CORS issues in Studio Designer
         var script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js';
+        script.src = url;
         script.onerror = function() {
-          console.warn('Failed to load marked.js from CDN, markdown parsing disabled');
+          console.warn('cic-kd-ask-question: could not load ' + globalName + ' from ' + url);
         };
         document.head.appendChild(script);
+      },
+
+      /*
+       * Converts the Markdown answer to HTML, then sanitizes it.
+       * The answer comes from an LLM through Knowledge Discovery and is injected with inner-h-t-m-l, so it is
+       * untrusted input: marked does NOT sanitize (the sanitize option was removed in marked 5), which means an
+       * <img onerror=...> or an <a href="javascript:..."> in the answer would execute in the Web UI origin.
+       * When either library is unavailable we render escaped plain text rather than raw HTML.
+       * Mirrors _markdownToHtml in cic-kd-conversation.html; keep both in sync.
+       */
+      _markdownToHtml: function(text) {
+        if (!text) {
+          return '';
+        }
+        if (window.marked) {
+          try {
+            var html = window.marked.parse(text);
+            if (window.DOMPurify) {
+              return window.DOMPurify.sanitize(html);
+            }
+            console.warn('cic-kd-ask-question: DOMPurify not loaded, falling back to plain text for safety.');
+          } catch (e) {
+            console.warn('cic-kd-ask-question: marked.parse() failed, using plain text.', e);
+          }
+        }
+        var escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return escaped.replace(/\n/g, '<br>');
       },
 
       _getDocumentsPrompt: function(selectedItems) {
@@ -397,7 +433,7 @@ to answer the question.
             let answer;
             if (result && result.response && result.response.answer) {
               answer = result.response.answer;
-              this.htmlAnswer = marked.parse(answer); // convert Markdown to HTML
+              this.htmlAnswer = this._markdownToHtml(answer); // Markdown -> sanitized HTML
             } else {
               answer = this.i18n("label.ui.cic.kd-ask.noanswer");
             }

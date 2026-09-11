@@ -228,7 +228,7 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
         }
 
         // 2. Call service with this agent
-        String endPoint = "/agent/agents/" + agentId + "/questions";
+        String endPoint = "/agent/agents/" + ServicesUtils.encodePathSegment(agentId) + "/questions";
         JSONObject payload = new JSONObject();
         payload.put("question", question);
         JSONArray contextObjectIdsArray = new JSONArray(contextObjectIds);
@@ -254,7 +254,7 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
         ServiceCallResult result = null;
 
         // Get the answer. This is a loop-pull. For now, we hard code the tries
-        String endPoint = "/qna/questions/" + questionId + "/answer";
+        String endPoint = "/qna/questions/" + ServicesUtils.encodePathSegment(questionId) + "/answer";
         int count = 0;
         JSONObject response;
         boolean gotIt = false;
@@ -368,7 +368,7 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
             throw new NuxeoException("No agentId");
         }
 
-        String endPoint = "/qna/agents/" + agentId + "/conversations";
+        String endPoint = "/qna/agents/" + ServicesUtils.encodePathSegment(agentId) + "/conversations";
 
         JSONObject payload = new JSONObject();
         payload.put("question", question);
@@ -395,7 +395,8 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
             throw new NuxeoException("No conversationId");
         }
 
-        String endPoint = "/qna/agents/" + agentId + "/conversations/" + conversationId + "/messages";
+        String endPoint = "/qna/agents/" + ServicesUtils.encodePathSegment(agentId) + "/conversations/"
+                + ServicesUtils.encodePathSegment(conversationId) + "/messages";
 
         JSONObject payload = new JSONObject();
         payload.put("question", question);
@@ -428,8 +429,9 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
             throw new NuxeoException("No feedback value");
         }
 
-        String endPoint = "/qna/agents/" + agentId + "/conversations/" + conversationId + "/messages/" + messageId
-                + "/feedback";
+        String endPoint = "/qna/agents/" + ServicesUtils.encodePathSegment(agentId) + "/conversations/"
+                + ServicesUtils.encodePathSegment(conversationId) + "/messages/"
+                + ServicesUtils.encodePathSegment(messageId) + "/feedback";
 
         JSONObject payload = new JSONObject();
         payload.put("feedback", feedback);

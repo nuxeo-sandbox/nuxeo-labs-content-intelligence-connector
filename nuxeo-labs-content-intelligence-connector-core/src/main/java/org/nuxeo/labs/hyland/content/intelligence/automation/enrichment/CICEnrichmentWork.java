@@ -77,6 +77,11 @@ import org.nuxeo.runtime.transaction.TransactionHelper;
  * code path that runs synchronously. The Work itself only fails when it cannot even load the
  * documents or instantiate the op class.
  * <p>
+ * Since 2025.22 the Work runs in a <b>user</b> session, opened for the user who scheduled it (see
+ * {@link #openEnrichmentSession()}). It therefore enforces the same permissions as the synchronous code path: a
+ * user who may read but not write a document no longer causes it to be modified. A permission failure surfaces as
+ * a {@code CICError} facet on the document, like any other per-document error.
+ * <p>
  * All instances run under the {@code cicEnrichment} category. Tune the queue size via
  * {@code nuxeo.works.queue.cicEnrichment.maxThreads} in {@code nuxeo.conf}.
  *
@@ -155,7 +160,7 @@ public class CICEnrichmentWork extends AbstractWork {
         String instructionsV2 = params.optString("instructionsV2JsonStr", null);
         int batchSize = params.optInt("batchSize", 0);
 
-        openSystemSession();
+        openEnrichmentSession();
 
         // Per-batch event firer. Builds a DocumentEventContext (principal = first batch doc) and
         // fires cicCallKEDone via the EventProducer. A listener throwing must NOT fail the Work.
@@ -236,6 +241,30 @@ public class CICEnrichmentWork extends AbstractWork {
             DocumentModel doc = session.getDocument(ref);
             op.runForDocument(session, doc, configName, instructionsV2, true, fireEvent);
         }
+    }
+
+    /**
+     * Opens the session the enrichment runs in.
+     * <p>
+     * A <b>user</b> session is opened whenever the scheduling code captured an originating user name, so the
+     * asynchronous path enforces exactly the same ACLs as the synchronous one. Running as {@code system} used to
+     * let a user holding only READ on a document trigger a write on it just by passing
+     * {@code runAsynchronously=true}, and attributed the modification to {@code system} in
+     * {@code dc:lastContributor} and in the {@code cicCallKEDone} event principal.
+     * <p>
+     * The system session is kept as a fallback for two cases: an operation legitimately called from a system
+     * context (another Work, a system Automation chain), and a Work deserialized from a queue that was persisted
+     * by a version of the plugin older than 2025.22, which carries no originating user name.
+     *
+     * @since 2025.22
+     */
+    protected void openEnrichmentSession() {
+        if (getOriginatingUsername() == null) {
+            LOG.debug("No originating user name for op {}, running as system", opClassName);
+            openSystemSession();
+            return;
+        }
+        openUserSession();
     }
 
     /** Reflective instantiation of the {@code CIC.*} op subclass. */
