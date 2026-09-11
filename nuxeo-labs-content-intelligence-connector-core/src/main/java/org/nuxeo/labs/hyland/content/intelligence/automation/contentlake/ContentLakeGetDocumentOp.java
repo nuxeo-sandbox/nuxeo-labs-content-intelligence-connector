@@ -41,7 +41,15 @@ import org.nuxeo.labs.hyland.content.intelligence.service.contentlake.ContentLak
         + " 'default')")
 public class ContentLakeGetDocumentOp {
 
-    public static final String ID = "HylandIngest.CheckDigest";
+    /**
+     * Until 2025.22 this constant held a copy/paste of {@code IngestCheckDigestOp.ID}
+     * ({@code "HylandIngest.CheckDigest"}). The operation was never registered in
+     * {@code automation-contrib.xml}, so that duplicate ID was never exposed and nothing can depend on it. The
+     * usual "never rename an operation ID" rule therefore does not apply here.
+     *
+     * @since 2025.22
+     */
+    public static final String ID = "HylandContentLake.GetDocument";
 
     @Context
     protected ContentLakeService clService;

@@ -61,7 +61,14 @@ public class ConfigureServiceOp {
     @OperationMethod
     public void run() {
 
-        keService.setPullResultsSettings(maxTries == null ? 1 : maxTries,
+        /*
+         * Both settings use the same convention: 0 => reset to the configuration/default value, -1 => leave
+         * unchanged, anything else => apply. A missing parameter must therefore map to -1, NOT to a real value:
+         * passing 1 here used to set pullResultsMaxTries=1 on a static field, i.e. for the whole JVM, which made
+         * every subsequent enrichment stop polling after a single attempt (the first call to the results endpoint
+         * usually returns a 202 with no payload).
+         */
+        keService.setPullResultsSettings(maxTries == null ? -1 : maxTries,
                 sleepIntervalMS == null ? -1 : sleepIntervalMS);
 
         // Since plugin version 2025.16, the plugin always uses KE v2 because v1 is deprecated

@@ -90,6 +90,49 @@ public class TestMiscAutomation {
 
     }
 
+    /**
+     * An omitted parameter must behave exactly like -1, i.e. leave the current value untouched.
+     * <p>
+     * Until 2025.22 an omitted {@code maxTries} was translated to 1, which silently set pullResultsMaxTries=1 on a
+     * static field, i.e. for the whole JVM: enrichment then stopped polling after a single attempt and never
+     * returned any result. The pre-existing test always passed both parameters explicitly, so it never exercised
+     * this path.
+     *
+     * @since 2025.22
+     */
+    @Test
+    public void omittedConfigureParamsShouldNotChangeAnything() throws Exception {
+
+        HylandKEServiceImpl impl = (HylandKEServiceImpl) hylandKEService;
+
+        OperationContext ctx = new OperationContext(session);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("maxTries", 20);
+        params.put("sleepIntervalMS", 5000);
+        automationService.run(ctx, ConfigureServiceOp.ID, params);
+        assertEquals(20, impl.getPullResultsMaxTries());
+        assertEquals(5000, impl.getPullResultsSleepIntervalMS());
+
+        // Only sleepIntervalMS is passed: maxTries must be left alone.
+        Map<String, Object> sleepOnly = new HashMap<>();
+        sleepOnly.put("sleepIntervalMS", 1000);
+        automationService.run(ctx, ConfigureServiceOp.ID, sleepOnly);
+        assertEquals(20, impl.getPullResultsMaxTries());
+        assertEquals(1000, impl.getPullResultsSleepIntervalMS());
+
+        // Nothing at all is passed: both must be left alone.
+        automationService.run(ctx, ConfigureServiceOp.ID, new HashMap<>());
+        assertEquals(20, impl.getPullResultsMaxTries());
+        assertEquals(1000, impl.getPullResultsSleepIntervalMS());
+
+        // Restore the defaults so the static state does not leak into the other tests of the shared JVM.
+        Map<String, Object> reset = new HashMap<>();
+        reset.put("maxTries", 0);
+        reset.put("sleepIntervalMS", 0);
+        automationService.run(ctx, ConfigureServiceOp.ID, reset);
+    }
+
     @Test
     @Deploy("nuxeo-hyland-content-intelligence-connector-core:more-mock-configs.xml")
     public void shouldGetConfigNames() throws Exception {

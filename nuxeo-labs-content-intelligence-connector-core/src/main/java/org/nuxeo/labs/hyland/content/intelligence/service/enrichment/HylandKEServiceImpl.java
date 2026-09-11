@@ -565,8 +565,10 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
 
         ServiceCallResult result = null;
 
-        // Get auth token
-        String bearer = getKEToken(null);// enrichmentAuthToken.getToken();
+        // Get auth token. The token MUST be resolved for the requested configuration: the base URL below is
+        // resolved from the same configName, so using another configuration's credentials here would send the
+        // credentials of one tenant to the endpoint of another.
+        String bearer = getKEToken(configName);
         if (StringUtils.isBlank(bearer)) {
             throw new NuxeoException("No authentication info for calling the Enrichment service.");
         }

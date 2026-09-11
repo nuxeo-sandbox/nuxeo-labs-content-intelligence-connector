@@ -51,6 +51,9 @@
         <!-- Ingest -->
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.ingest.IngestCheckDigestOp"/>
 
+        <!-- Content Lake -->
+        <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.contentlake.ContentLakeGetDocumentOp"/>
+
         <!-- All -->
         <operation class="org.nuxeo.labs.hyland.content.intelligence.automation.HylandCIGetContributionNamesOp"/>
 
