@@ -42,6 +42,43 @@ public final class CICServiceConstants {
      */
     public static final boolean MORE_LOGS_DEFAULT = false;
 
+    /**
+     * Global, service-independent connect timeout, in milliseconds, applied to every HTTP call to Content
+     * Intelligence. {@code 0} means "wait forever", which is what the plugin did before 2025.22.
+     * <p>
+     * An unresponsive endpoint used to block the calling thread indefinitely. That is particularly damaging for
+     * the {@code cicEnrichment} Work queue, whose default {@code maxThreads} is 1: a single hung call froze all
+     * asynchronous enrichment, with nothing in the logs to explain it.
+     *
+     * @since 2025.22
+     */
+    public static final String HTTP_CONNECT_TIMEOUT_PARAM = "nuxeo.hyland.cic.http.connectTimeout";
+
+    /**
+     * Default value for {@link #HTTP_CONNECT_TIMEOUT_PARAM}: 30 seconds.
+     *
+     * @since 2025.22
+     */
+    public static final int HTTP_CONNECT_TIMEOUT_DEFAULT = 30000;
+
+    /**
+     * Global, service-independent read timeout, in milliseconds, applied to every HTTP call to Content
+     * Intelligence. {@code 0} means "wait forever".
+     * <p>
+     * The default is deliberately generous: some Content Intelligence endpoints legitimately take a long time to
+     * answer. It only needs to be low enough that a dead connection is eventually released.
+     *
+     * @since 2025.22
+     */
+    public static final String HTTP_READ_TIMEOUT_PARAM = "nuxeo.hyland.cic.http.readTimeout";
+
+    /**
+     * Default value for {@link #HTTP_READ_TIMEOUT_PARAM}: 120 seconds.
+     *
+     * @since 2025.22
+     */
+    public static final int HTTP_READ_TIMEOUT_DEFAULT = 120000;
+
     /*
      * Short service codes used ONLY when building the "Calling CIC <service>/<action>" log messages. They are
      * deliberately distinct from the per-service SERVICE_LABEL constants (e.g. HylandKEService.SERVICE_LABEL is the

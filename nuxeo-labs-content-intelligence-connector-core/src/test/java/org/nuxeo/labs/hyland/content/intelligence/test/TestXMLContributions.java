@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nuxeo.ecm.platform.test.PlatformFeature;
@@ -95,14 +96,28 @@ public class TestXMLContributions {
 
     }
 
+    /**
+     * The parts of the KD contribution that hold offline are checked unconditionally; {@code hasAllValues()} is
+     * only asserted when the credentials are actually configured.
+     * <p>
+     * This test used to assert {@code hasAllValues()} outright, so it failed — rather than skipped — on any
+     * machine without the {@code CIC_DISCOVERY_*} environment variables, since {@code clientId} and friends then
+     * resolve to the empty string. {@code tokenGrantType} and {@code tokenScope}, on the other hand, can never be
+     * blank: their {@code ${...:=}} defaults in the XML are non-empty.
+     */
     @Test
     public void defaultKDContribLooksOK() {
 
         KDDescriptor desc = kdService.getKDDescriptor("default");
         assertNotNull(desc);
 
-        assertTrue(desc.hasAllValues());
+        assertTrue(StringUtils.isNotBlank(desc.getAuthenticationTokenParams().getGrantType()));
+        assertTrue(StringUtils.isNotBlank(desc.getAuthenticationTokenParams().getGrantScope()));
 
+        if (ConfigCheckerFeature.hasDiscoveryClientInfo()) {
+            assertTrue("The Discovery credentials are configured, the contribution should be complete",
+                    desc.hasAllValues());
+        }
     }
 
     @Test

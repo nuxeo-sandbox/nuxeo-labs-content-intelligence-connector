@@ -19,8 +19,6 @@
 package org.nuxeo.labs.hyland.content.intelligence.service.ingest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.nuxeo.common.xmap.annotation.XNode;
 import org.nuxeo.common.xmap.annotation.XObject;
 import org.nuxeo.labs.hyland.content.intelligence.service.AbstractServiceDescriptor;
@@ -31,8 +29,6 @@ import org.nuxeo.labs.hyland.content.intelligence.service.AbstractServiceDescrip
  */
 @XObject("ingest")
 public class IngestDescriptor extends AbstractServiceDescriptor {
-
-    private static final Logger LOG = LogManager.getLogger(IngestDescriptor.class);
 
     @XNode("environment")
     protected String environment;
@@ -50,16 +46,6 @@ public class IngestDescriptor extends AbstractServiceDescriptor {
         if (other instanceof IngestDescriptor otherDesc && StringUtils.isNotBlank(otherDesc.environment)) {
             environment = otherDesc.environment;
         }
-    }
-
-    @Override
-    protected Logger log() {
-        return LOG;
-    }
-
-    @Override
-    protected String serviceLabel() {
-        return IngestService.SERVICE_LABEL;
     }
 
     @Override

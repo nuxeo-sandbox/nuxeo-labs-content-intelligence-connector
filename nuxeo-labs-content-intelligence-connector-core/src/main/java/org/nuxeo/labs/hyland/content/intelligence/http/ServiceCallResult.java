@@ -20,6 +20,7 @@ package org.nuxeo.labs.hyland.content.intelligence.http;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.nuxeo.ecm.core.api.NuxeoException;
 
@@ -53,14 +54,23 @@ public class ServiceCallResult {
         this.objectKeysMapping = objectKeysMapping;
     }
 
-    // M%ainly used in unit tests.
+    /**
+     * Rebuilds a result from the JSON envelope produced by {@link #toJsonString()}. Mainly used in unit tests.
+     * <p>
+     * Every field is read with an {@code opt*} accessor: {@code response} may legitimately be an array rather
+     * than an object, and {@code objectKeysMapping} is absent from most envelopes because {@code JSONObject.put}
+     * removes a key whose value is {@code null}.
+     *
+     * @since 2023
+     */
     public ServiceCallResult(String jsonStr) {
         JSONObject obj = new JSONObject(jsonStr);
 
-        response = obj.getJSONObject("response").toString();
-        responseCode = obj.getInt("responseCode");
-        responseMessage = obj.getString("responseMessage");
-        objectKeysMapping = obj.getJSONArray("objectKeysMapping");
+        Object responseValue = obj.opt("response");
+        response = (responseValue == null || responseValue == JSONObject.NULL) ? null : responseValue.toString();
+        responseCode = obj.optInt("responseCode", -1);
+        responseMessage = obj.optString("responseMessage", "");
+        objectKeysMapping = obj.optJSONArray("objectKeysMapping");
     }
 
     /**
@@ -72,11 +82,7 @@ public class ServiceCallResult {
         JSONObject obj = new JSONObject();
 
         if (StringUtils.isNotBlank(response)) {
-            if (response.startsWith("[")) {
-                obj.put("response", new JSONArray(response));
-            } else {
-                obj.put("response", new JSONObject(response));
-            }
+            obj.put("response", parseResponseOrRaw(response));
         } else {
             if (isHttpSuccess(responseCode)) {
                 obj.put("response", new JSONObject("{\"errorMessage\": \"Empty string as response\"}"));
@@ -89,6 +95,32 @@ public class ServiceCallResult {
         obj.put("objectKeysMapping", objectKeysMapping);
 
         return obj;
+    }
+
+    /**
+     * Parses {@code raw} as a JSON object or array, falling back to the raw string when it is neither.
+     * <p>
+     * The fallback matters since the HTTP layer started forwarding the body of failed calls: Content Intelligence
+     * answers with JSON, but an intermediate gateway or proxy may well return an HTML error page. Putting the
+     * string as-is keeps the envelope valid JSON and preserves the payload, instead of throwing a JSONException
+     * while building an error report.
+     *
+     * @since 2025.22
+     */
+    protected static Object parseResponseOrRaw(String raw) {
+
+        String trimmed = raw.trim();
+        try {
+            if (trimmed.startsWith("{")) {
+                return new JSONObject(trimmed);
+            }
+            if (trimmed.startsWith("[")) {
+                return new JSONArray(trimmed);
+            }
+        } catch (JSONException e) {
+            // Not valid JSON after all: fall through and keep the raw string.
+        }
+        return raw;
     }
 
     /**
@@ -110,7 +142,7 @@ public class ServiceCallResult {
      * Some APIs don't return a JSON object (nor array).
      * And it even may be quoted/double quoted in the response.
      *
-     * @return the response. If it started and ended with ", these are removed.
+     * @return the response. If it both starts and ends with a double quote, these are removed.
      * @since 2023
      */
     public String getResponse() {
@@ -119,19 +151,13 @@ public class ServiceCallResult {
             return response;
         }
 
-        if (response.startsWith("\"")) {
-            // We assume if starts with ", it ends with "
+        // Both ends must be checked: a truncated response starting with a quote would otherwise lose its last
+        // character.
+        if (response.length() > 1 && response.startsWith("\"") && response.endsWith("\"")) {
             return response.substring(1, response.length() - 1);
         }
 
         return response;
-
-        /*
-         * StringUtils.removeStart deprecated in Java 21
-         * String result = StringUtils.removeStart(response, "\"");
-         * result = StringUtils.removeEnd(result, "\"");
-         * return result;
-         */
     }
 
     /**
@@ -158,42 +184,27 @@ public class ServiceCallResult {
     }
 
     /**
-     * Always return a JSON Object with a single field, "result", holding the raw response (that can be a simple String,
-     * or JSON
+     * Always return a JSON Object with a single field, "result", holding the raw response (that can be a simple
+     * String, or JSON).
+     * <p>
+     * Building the JSON through {@link JSONObject#put} rather than by string concatenation is deliberate: it
+     * delegates escaping to the library. The previous implementation concatenated the raw value between quotes,
+     * which produced invalid JSON as soon as the response contained a quote, and it assigned instead of appending
+     * in its last branch, so a plain-string response yielded {@code "xxx"}} and made {@code new JSONObject(...)}
+     * throw. It also called {@code new JSONObject(...)} on a response starting with {@code [}, which always
+     * throws.
      *
      * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public JSONObject forceResponseAsJSONObject() {
 
-        String resultStr;
+        JSONObject result = new JSONObject();
 
         if (response == null) {
-            resultStr = "{\"result\": null}";
-
-            return new JSONObject(resultStr);
+            return result.put("result", JSONObject.NULL);
         }
 
-        if (response.startsWith("{") || response.startsWith("[")) {
-            JSONObject responseJson = new JSONObject(response);
-            JSONObject result = new JSONObject();
-            result.put("result", responseJson);
-
-            return result;
-        }
-
-        // Not null and not JSON string
-        resultStr = "{\"result\":";
-        if (response.startsWith("\"")) {
-            // Assume it ends with "
-            resultStr += response;
-        } else {
-            resultStr = "\"" + response + "\"";
-        }
-        resultStr += "}";
-        return new JSONObject(resultStr);
-
-        // throw new NuxeoException("response is a simple string, cannot be converted to JSON Object. Call
-        // getResponse() instead.");
+        return result.put("result", parseResponseOrRaw(getResponse()));
     }
 
     public void setObjectKeysMapping(JSONArray mapping) {

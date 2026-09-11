@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.nuxeo.common.xmap.annotation.XNode;
 import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationTokenParams;
 
@@ -54,10 +53,6 @@ public abstract class AbstractServiceDescriptor {
     protected String clientSecret;
 
     protected AuthenticationTokenParams authTokenParams;
-
-    protected abstract Logger log();
-
-    protected abstract String serviceLabel();
 
     protected abstract boolean requiresEnvironment();
 
@@ -186,47 +181,4 @@ public abstract class AbstractServiceDescriptor {
         return true;
     }
 
-    /**
-     * @deprecated since 2025.20, superseded by {@link #getMissingValuesAsString()}, which produces one single
-     *             actionable message instead of up to seven separate WARN lines.
-     */
-    @Deprecated
-    public void checkConfigAndLogErrors() {
-        final String serviceLabel = serviceLabel();
-
-        if (StringUtils.isBlank(authenticationBaseUrl)) {
-            log().warn(
-                    "No CIC Authentication endpoint provided for configuration '{}', authentication to {} will fail.",
-                    name, serviceLabel);
-        }
-        if (StringUtils.isBlank(baseUrl)) {
-            log().warn("No CIC {} endpoint provided for configuration '{}', calls to the service will fail.",
-                    serviceLabel,
-                    name);
-        }
-        if (StringUtils.isBlank(tokenGrantType)) {
-            log().warn(
-                    "No CIC {} tokenGrantType provided for configuration '{}', authentication to the service will"
-                            + " fail.",
-                    serviceLabel, name);
-        }
-        if (StringUtils.isBlank(tokenScope)) {
-            log().warn("No CIC {} tokenScope provided for configuration '{}', authentication to the service will fail.",
-                    serviceLabel, name);
-        }
-        if (StringUtils.isBlank(clientId)) {
-            log().warn("No CIC {} clientId provided for configuration '{}', authentication to the service will fail.",
-                    serviceLabel, name);
-        }
-        if (StringUtils.isBlank(clientSecret)) {
-            log().warn(
-                    "No CIC {} clientSecret provided for configuration '{}', authentication to the service will fail.",
-                    serviceLabel, name);
-        }
-        if (requiresEnvironment() && StringUtils.isBlank(getEnvironment())) {
-            log().warn("No CIC {} environment provided for configuration '{}', calls to the service will fail.",
-                    serviceLabel,
-                    name);
-        }
-    }
 }

@@ -18,8 +18,6 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.service.agents;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.nuxeo.common.xmap.annotation.XObject;
 import org.nuxeo.labs.hyland.content.intelligence.service.AbstractServiceDescriptor;
 
@@ -29,18 +27,6 @@ import org.nuxeo.labs.hyland.content.intelligence.service.AbstractServiceDescrip
  */
 @XObject("agent")
 public class AgentDescriptor extends AbstractServiceDescriptor {
-
-    private static final Logger LOG = LogManager.getLogger(AgentDescriptor.class);
-
-    @Override
-    protected Logger log() {
-        return LOG;
-    }
-
-    @Override
-    protected String serviceLabel() {
-        return HylandAgentsService.SERVICE_LABEL;
-    }
 
     @Override
     protected boolean requiresEnvironment() {

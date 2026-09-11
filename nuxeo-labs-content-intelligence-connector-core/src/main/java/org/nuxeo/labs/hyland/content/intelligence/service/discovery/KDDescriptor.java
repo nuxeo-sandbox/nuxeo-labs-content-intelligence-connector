@@ -19,8 +19,6 @@
 package org.nuxeo.labs.hyland.content.intelligence.service.discovery;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.nuxeo.common.xmap.annotation.XNode;
 import org.nuxeo.common.xmap.annotation.XObject;
 import org.nuxeo.labs.hyland.content.intelligence.service.AbstractServiceDescriptor;
@@ -30,8 +28,6 @@ import org.nuxeo.labs.hyland.content.intelligence.service.AbstractServiceDescrip
  */
 @XObject("knowledgeDiscovery")
 public class KDDescriptor extends AbstractServiceDescriptor {
-
-    private static final Logger LOG = LogManager.getLogger(KDDescriptor.class);
 
     @XNode("environment")
     protected String environment;
@@ -51,19 +47,16 @@ public class KDDescriptor extends AbstractServiceDescriptor {
         }
     }
 
-    @Override
-    protected Logger log() {
-        return LOG;
-    }
-
-    @Override
-    protected String serviceLabel() {
-        return HylandKDService.SERVICE_LABEL;
-    }
-
+    /**
+     * Knowledge Discovery does need an environment: it is sent as the {@code Hxp-Environment} header on every
+     * call, and as {@code hxp-environment} on the authentication request.
+     * <p>
+     * This returned {@code false} until 2025.22, so an incomplete configuration raised no error at startup and
+     * only failed at call time — while {@code AuthenticationToken.checkConfigOrThrow} did require the value.
+     */
     @Override
     protected boolean requiresEnvironment() {
-        return false;
+        return true;
     }
 
     @Override

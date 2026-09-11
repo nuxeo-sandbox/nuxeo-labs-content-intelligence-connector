@@ -115,8 +115,9 @@ public class IngestServiceImpl extends AbstractCICServiceComponent<IngestDescrip
         if (StringUtils.isBlank(xpath)) {
             xpath = "file:content";
         }
-        Blob blob = (Blob) doc.getPropertyValue(xpath);
-        if (blob == null) {
+        Object value = doc.getPropertyValue(xpath);
+        if (!(value instanceof Blob blob)) {
+            // Covers both "no value" and "the xpath does not hold a blob", which used to be a ClassCastException.
             log.error("No blob at xpath {}", xpath);
             return new ServiceCallResult("{}", -1, "No blob at xpath " + xpath);
         }
@@ -152,7 +153,7 @@ public class IngestServiceImpl extends AbstractCICServiceComponent<IngestDescrip
         }
 
         // URL/endpoint
-        IngestDescriptor config = getDescriptor(configName);
+        IngestDescriptor config = getDescriptorOrThrow(configName);
         String targetUrl = config.getBaseUrl();
         if (targetUrl.endsWith("/")) {
             targetUrl = targetUrl.substring(0, targetUrl.length() - 1);
@@ -213,7 +214,8 @@ public class IngestServiceImpl extends AbstractCICServiceComponent<IngestDescrip
     @Override
     public void stop(ComponentContext context) throws InterruptedException {
 
-        // log.warn("Stop component");
+        // Drop the cached tokens: they must not outlive the component (hot reload, shutdown).
+        ingestAuthTokens = null;
     }
 
 }

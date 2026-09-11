@@ -110,6 +110,19 @@ Notes:
 * When a `CIC.*` operation runs on several documents, the documents are split into batches and **one line is logged per batch**, i.e. one line per actual call to CIC. The reported count is the number of documents really sent — documents without a usable blob are filtered out beforehand and never appear in the count.
 * Nothing is logged when no call is made at all (for instance when no document in the batch has a blob).
 * Only Knowledge Enrichment and Data Curation emit these traces today. Knowledge Discovery, Agents, Ingest and Content Lake will be covered later.
+* Knowledge Discovery and Knowledge Enrichment additionally dump the full request payload when this parameter is on. Bear in mind that the Discovery payload contains the questions typed by end users.
+* Accepted values are `true`/`yes`/`on`/`1` and `false`/`no`/`off`/`0`, case-insensitively. Anything else logs an error and falls back to the default.
+
+### HTTP timeouts (`nuxeo.hyland.cic.http.*`)
+
+| Parameter | Type | Default |
+| --- | --- | --- |
+| `nuxeo.hyland.cic.http.connectTimeout` | integer, milliseconds | `30000` |
+| `nuxeo.hyland.cic.http.readTimeout` | integer, milliseconds | `120000` |
+
+Both are **global**, like `moreLogs`, and apply to every HTTP call made to Content Intelligence. `0` means "wait forever", which is what the plugin did before 2025.22.
+
+The read timeout is deliberately generous: some Content Intelligence endpoints legitimately take a long time to answer. It only needs to be low enough that a dead connection is eventually released. This matters most for asynchronous enrichment: the `cicEnrichment` Work queue defaults to `maxThreads=1`, so a single call that never returns used to freeze all background enrichment with nothing in the logs to explain it.
 
 ### Multiple accounts: named contributions (`configName`)
 

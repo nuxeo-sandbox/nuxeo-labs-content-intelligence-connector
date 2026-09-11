@@ -144,14 +144,18 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
         }
 
         // URL/endpoint
-        KDDescriptor config = getDescriptor(configName);
+        KDDescriptor config = getDescriptorOrThrow(configName);
         String targetUrl = config.getBaseUrl();
         if (!endpoint.startsWith("/")) {
             targetUrl += "/";
         }
         targetUrl += endpoint;
 
-        if (log.isInfoEnabled()) {
+        /*
+         * Gated by nuxeo.hyland.cic.moreLogs: this dumps the full payload, which includes the questions asked by
+         * end users. Nuxeo's root level being INFO, it used to be emitted on every single call in production.
+         */
+        if (ServicesUtils.isMoreLogs()) {
             StringBuilder sb = new StringBuilder("HylandKDServiceImpl#invokeDiscovery:");
             sb.append("\n  configName: ").append(StringUtils.isBlank(configName) ? "default" : configName);
             sb.append("\n  httpMethod: ").append(httpMethod);
@@ -159,7 +163,7 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
             sb.append("\n  jsonPayload: ").append(jsonPayload);
             sb.append("\n  extraHeaders: ").append(extraHeaders);
 
-            log.info(sb.toString());
+            ServicesUtils.forceLogInfo(getClass(), sb.toString());
         }
 
         // Headers
@@ -257,9 +261,11 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
         String endPoint = "/qna/questions/" + ServicesUtils.encodePathSegment(questionId) + "/answer";
         int count = 0;
         JSONObject response;
-        boolean gotIt = false;
+        // Set as soon as the loop must stop, either because the answer is complete or because retrying is
+        // pointless. Named "done" rather than "gotIt": a definitive error also ends the loop, without an answer.
+        boolean done = false;
         int lastResponseCode = 0;
-        do {
+        while (!done && count < pullResultsMaxTries) {
             count += 1;
 
             if (count == pullResultsMaxTries) {
@@ -275,14 +281,15 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
             lastResponseCode = result.getResponseCode();
             // We need a 200
             if (!result.callResponseOK()) {
-                // If in OK range or a 404 => continue, else, force stop.
-                // Sometimes, early call (right after asking the question) returns a 404
-                // and another call works. Let's say we consider a real error if the 404
-                // is returned up to 3 times pullResultsSleepIntervalMS
-                if (result.callFailed() && lastResponseCode != 404 && count > 4) {
-                    gotIt = true;
-                } else {
-                    sleepBetweenPullAttempts();
+                /*
+                 * A 404 right after the question was asked is expected: the answer resource does not exist yet,
+                 * so we keep polling. Any other failure is definitive and there is no point waiting for the full
+                 * number of attempts.
+                 */
+                if (result.callFailed() && lastResponseCode != 404) {
+                    log.error("getAnswer() for question {} failed with response code {}, giving up.", questionId,
+                            lastResponseCode);
+                    done = true;
                 }
             } else {
                 response = result.getResponseAsJSONObject();
@@ -290,13 +297,14 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
                 // In this case, response.getString("answer") throws an error
                 String answer = response.optString("answer", null);
                 String responseCompleteness = response.optString("responseCompleteness", "");
-                gotIt = StringUtils.isNotBlank(answer) && "complete".equalsIgnoreCase(responseCompleteness);
-                if (!gotIt) {
-                    sleepBetweenPullAttempts();
-                }
+                done = StringUtils.isNotBlank(answer) && "complete".equalsIgnoreCase(responseCompleteness);
             }
 
-        } while (!gotIt && count < pullResultsMaxTries);
+            // Only wait when another attempt will actually follow.
+            if (!done && count < pullResultsMaxTries) {
+                sleepBetweenPullAttempts();
+            }
+        }
 
         return result;
     }
@@ -461,6 +469,7 @@ public class HylandKDServiceImpl extends AbstractCICServiceComponent<KDDescripto
     @Override
     public void stop(ComponentContext context) throws InterruptedException {
 
-        // log.warn("Stop component");
+        // Drop the cached tokens: they must not outlive the component (hot reload, shutdown).
+        discoveryAuthTokens = null;
     }
 }

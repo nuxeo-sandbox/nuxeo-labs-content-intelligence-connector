@@ -27,6 +27,7 @@ import java.util.function.Function;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationToken;
 import org.nuxeo.runtime.model.ComponentContext;
 import org.nuxeo.runtime.model.DefaultComponent;
@@ -58,6 +59,31 @@ public abstract class AbstractCICServiceComponent<D extends AbstractServiceDescr
 
     public D getDescriptor(String configName) {
         return contribs.get(checkConfigName(configName));
+    }
+
+    /**
+     * Same as {@link #getDescriptor(String)}, but fails with an actionable message instead of returning
+     * {@code null} when the configuration name is unknown.
+     * <p>
+     * Every call path that builds a service URL must use this. Callers used to dereference the result directly,
+     * so a typo in the {@code configName} operation parameter produced a bare
+     * {@code NullPointerException: Cannot invoke "...getBaseUrl()" because "config" is null}, deep inside the
+     * service — and, when it happened in an asynchronous Work, with nothing at all surfacing to the user.
+     *
+     * @param configName the contribution name; blank falls back to {@code "default"}
+     * @return the descriptor, never {@code null}
+     * @throws NuxeoException when no contribution carries that name
+     * @since 2025.22
+     */
+    public D getDescriptorOrThrow(String configName) {
+
+        String name = checkConfigName(configName);
+        D descriptor = contribs == null ? null : contribs.get(name);
+        if (descriptor == null) {
+            throw new NuxeoException("No configuration named '" + name + "' for " + getServiceLabel()
+                    + ". Available configuration(s): " + String.join(", ", getContribNames()) + ".");
+        }
+        return descriptor;
     }
 
     public String getToken(Map<String, AuthenticationToken> tokens, String configName) {

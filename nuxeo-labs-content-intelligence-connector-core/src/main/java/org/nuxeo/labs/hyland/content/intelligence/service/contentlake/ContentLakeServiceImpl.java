@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationToken;
 import org.nuxeo.labs.hyland.content.intelligence.authentication.AuthenticationTokenContentLake;
 import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCall;
@@ -90,10 +91,25 @@ public class ContentLakeServiceImpl extends AbstractCICServiceComponent<ContentL
         return super.getToken(clAuthTokens, configName);
     }
 
+    /**
+     * Builds {@code https://<environment>.<baseUrl>}, without a trailing slash.
+     * <p>
+     * {@code baseUrl} must therefore be a bare host name, not a URL: configuring it as
+     * {@code https://example.com} would silently produce {@code https://prod.https://example.com}, hence the
+     * explicit check.
+     */
     protected String buildBaseUrl(String configName) {
-        ContentLakeDescriptor config = getDescriptor(configName);
-        String url = "https://" + config.getEnvironment() + "." + config.getBaseUrl();
-        if (url.endsWith("/")) {
+        ContentLakeDescriptor config = getDescriptorOrThrow(configName);
+
+        String baseUrl = config.getBaseUrl();
+        if (baseUrl != null && baseUrl.contains("://")) {
+            throw new NuxeoException("The Content Lake baseUrl of configuration '" + checkConfigName(configName)
+                    + "' must be a host name without a scheme (got '" + baseUrl
+                    + "'). The URL is built as https://<environment>.<baseUrl>.");
+        }
+
+        String url = "https://" + config.getEnvironment() + "." + baseUrl;
+        while (url.endsWith("/")) {
             url = url.substring(0, url.length() - 1);
         }
         return url;
@@ -194,7 +210,8 @@ public class ContentLakeServiceImpl extends AbstractCICServiceComponent<ContentL
     @Override
     public void stop(ComponentContext context) throws InterruptedException {
 
-        // log.warn("Stop component");
+        // Drop the cached tokens: they must not outlive the component (hot reload, shutdown).
+        clAuthTokens = null;
     }
 
 }

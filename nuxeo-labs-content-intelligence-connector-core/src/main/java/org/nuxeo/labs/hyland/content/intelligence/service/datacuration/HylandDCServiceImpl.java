@@ -196,7 +196,7 @@ public class HylandDCServiceImpl extends AbstractCICServiceComponent<DCDescripto
         }
 
         // ====================> 2. Get presigned stuff
-        DCDescriptor config = getDCDescriptor(configName);
+        DCDescriptor config = getDescriptorOrThrow(configName);
         String targetUrl = config.getBaseUrl();
         targetUrl += "/presign";
 
@@ -259,14 +259,16 @@ public class HylandDCServiceImpl extends AbstractCICServiceComponent<DCDescripto
             throw new IllegalArgumentException("jobId and/or getUrl - presigned - is/are null");
         }
 
-        DCDescriptor config = getDCDescriptor(configName);
+        DCDescriptor config = getDescriptorOrThrow(configName);
         String targetUrl = config.getBaseUrl() + "/status/" + jobId;
         boolean gotIt = false;
         do {
             if (count > 1) {
                 sleepBetweenPullAttempts();
             }
-            if (count > (pullResultsMaxTries / 2)) {
+            // Only warn once past the halfway mark, then every other attempt, instead of on every iteration.
+            int halfway = pullResultsMaxTries / 2;
+            if (count == halfway || (count > halfway && (count - halfway) % 2 == 0)) {
                 log.warn("Pulling Data Curation results is taking time. This is the call #{} (max calls: {})", count,
                         pullResultsMaxTries);
             }
@@ -352,8 +354,8 @@ public class HylandDCServiceImpl extends AbstractCICServiceComponent<DCDescripto
     @Override
     public void stop(ComponentContext context) throws InterruptedException {
 
-        // Nothing for now
-
+        // Drop the cached tokens: they must not outlive the component (hot reload, shutdown).
+        dataCurationAuthTokens = null;
     }
 
 }

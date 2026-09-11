@@ -43,7 +43,7 @@ public class ServicesUtils {
     private static final Logger log = LogManager.getLogger(ServicesUtils.class);
 
     /**
-     * If jsonObjectStr is null or empty, returns null
+     * If jsonObjectStrToMap is null or empty, returns null
      *
      * @since 2023
      */
@@ -59,7 +59,12 @@ public class ServicesUtils {
         Iterator<String> keys = jsonObject.keys();
         while (keys.hasNext()) {
             String key = keys.next();
-            map.put(key, jsonObject.getString(key));
+            /*
+             * optString, not getString: these objects come from operation parameters (extra headers, for
+             * instance), and getString throws on any non-string value. {"X-Retry": 3} would fail the whole call
+             * with "JSONObject[...] not a string" although the intent is unambiguous.
+             */
+            map.put(key, jsonObject.optString(key));
         }
 
         return map;
@@ -87,23 +92,42 @@ public class ServicesUtils {
     }
 
     /**
-     * Converter handling errors.
+     * Converter handling errors, accepting the usual spellings of a boolean.
+     * <p>
+     * {@code true}/{@code yes}/{@code on}/{@code 1} and {@code false}/{@code no}/{@code off}/{@code 0} are all
+     * recognised, case-insensitively. Anything else logs an error and falls back to {@code defaultValue}.
+     * <p>
+     * This used to delegate to {@code Boolean.parseBoolean}, which never throws and maps every unrecognised
+     * string to {@code false}. The {@code catch (NumberFormatException)} around it was dead code, and
+     * {@code nuxeo.hyland.cic.moreLogs=yes} silently disabled the traces it was meant to enable.
      *
      * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
      */
     public static boolean configParamToBoolean(String param, boolean defaultValue) {
 
-        boolean value;
-
-        String paramValue = Framework.getProperty(param, "" + defaultValue);
-        try {
-            value = Boolean.parseBoolean(paramValue);
-        } catch (NumberFormatException e) {
-            log.error("Parameter <{}> is not a valid boolean. Using default value", param);
-            value = defaultValue;
+        String paramValue = Framework.getProperty(param);
+        if (StringUtils.isBlank(paramValue)) {
+            return defaultValue;
         }
 
-        return value;
+        switch (paramValue.trim().toLowerCase()) {
+        case "true":
+        case "yes":
+        case "on":
+        case "1":
+            return true;
+
+        case "false":
+        case "no":
+        case "off":
+        case "0":
+            return false;
+
+        default:
+            log.error("Parameter <{}> is not a valid boolean (got '{}'). Using default value {}.", param, paramValue,
+                    defaultValue);
+            return defaultValue;
+        }
     }
 
     /**

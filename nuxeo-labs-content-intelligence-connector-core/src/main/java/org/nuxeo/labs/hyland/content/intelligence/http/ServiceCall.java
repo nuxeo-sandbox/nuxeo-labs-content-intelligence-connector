@@ -29,8 +29,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
+import org.nuxeo.labs.hyland.content.intelligence.service.ServicesUtils;
 
 /**
  * Utility class, centralizing the HTTP calls and returning a <code>ServiceCallResult</code>
@@ -40,6 +43,25 @@ import org.apache.logging.log4j.Logger;
 public class ServiceCall {
 
     private static final Logger log = LogManager.getLogger(ServiceCall.class);
+
+    /**
+     * Opens the connection and applies the configured timeouts.
+     * <p>
+     * Centralised so no call site can forget them. Without a timeout an unresponsive Content Intelligence
+     * endpoint blocks the calling thread forever, which on the {@code cicEnrichment} queue (default
+     * {@code maxThreads} of 1) means asynchronous enrichment stops altogether.
+     *
+     * @since 2025.22
+     */
+    protected HttpURLConnection openConnection(String url) throws IOException, URISyntaxException {
+
+        var connection = (HttpURLConnection) new URI(url).toURL().openConnection();
+        connection.setConnectTimeout(ServicesUtils.configParamToInt(CICServiceConstants.HTTP_CONNECT_TIMEOUT_PARAM,
+                CICServiceConstants.HTTP_CONNECT_TIMEOUT_DEFAULT));
+        connection.setReadTimeout(ServicesUtils.configParamToInt(CICServiceConstants.HTTP_READ_TIMEOUT_PARAM,
+                CICServiceConstants.HTTP_READ_TIMEOUT_DEFAULT));
+        return connection;
+    }
 
     /**
      * Perform a GET call.
@@ -57,9 +79,7 @@ public class ServiceCall {
 
         HttpURLConnection connection = null;
         try {
-            // Create the URL object
-            var theUrl = new URI(url).toURL();
-            connection = (HttpURLConnection) theUrl.openConnection();
+            connection = openConnection(url);
             connection.setRequestMethod("GET");
 
             if (headers != null) {
@@ -90,9 +110,7 @@ public class ServiceCall {
 
         HttpURLConnection connection = null;
         try {
-            // Create the URL object
-            var theUrl = new URI(url).toURL();
-            connection = (HttpURLConnection) theUrl.openConnection();
+            connection = openConnection(url);
             // POST or PUT
             connection.setRequestMethod(httpMethod);
 
@@ -153,7 +171,7 @@ public class ServiceCall {
 
         HttpURLConnection connection = null;
         try {
-            connection = (HttpURLConnection) new URI(targetUrl).toURL().openConnection();
+            connection = openConnection(targetUrl);
             connection.setDoOutput(true);
             connection.setRequestMethod("PUT");
             connection.setRequestProperty("Content-Type", contentType);
@@ -167,9 +185,11 @@ public class ServiceCall {
                     out.write(buffer, 0, bytesRead);
                 }
                 out.flush();
-
-                result = new ServiceCallResult("{}", connection.getResponseCode(), connection.getResponseMessage());
             }
+
+            int responseCode = connection.getResponseCode();
+            String body = ServiceCallResult.isHttpSuccess(responseCode) ? "{}" : readErrorBody(connection);
+            result = new ServiceCallResult(body, responseCode, connection.getResponseMessage());
 
         } catch (IOException | URISyntaxException e) {
             log.error("Error uploading file with PUT to {}", targetUrl, e);
@@ -184,10 +204,36 @@ public class ServiceCall {
     }
 
     /**
-     * Utility, used by other methods (get, post, put), once the call returns a status >= 200 < 300.
+     * Reads the body of a failed response.
      * <p>
-     * When the call was not successful, the "response" field of the returned <code>ServiceCallResult</code> is an empty
-     * JSON object, "{}".
+     * {@code getInputStream()} throws on an error status: the body is only reachable through
+     * {@code getErrorStream()}. Discarding it, as the plugin did before 2025.22, meant every diagnostic sent by
+     * Content Intelligence was lost and {@code cic_error:fullResponseJson} only ever contained {@code "{}"},
+     * while the actual cause sat in the body. Draining the stream also lets the JVM reuse the connection.
+     *
+     * @param connection the connection whose status is not in the 2xx range
+     * @return the error body, or {@code "{}"} when there is none or it cannot be read
+     * @since 2025.22
+     */
+    protected String readErrorBody(HttpURLConnection connection) {
+
+        try (var errorStream = connection.getErrorStream()) {
+            if (errorStream == null) {
+                return "{}";
+            }
+            String body = new String(errorStream.readAllBytes(), StandardCharsets.UTF_8);
+            return StringUtils.isBlank(body) ? "{}" : body;
+        } catch (IOException e) {
+            log.debug("Could not read the error body", e);
+            return "{}";
+        }
+    }
+
+    /**
+     * Utility, used by other methods (get, post, put).
+     * <p>
+     * On a non-2xx status the body is read from the error stream, so the reason for the failure reaches the
+     * caller and ends up in {@code cic_error:fullResponseJson}.
      *
      * @param connection the connection to read the response from
      * @return a ServiceCallResult holding the response body, code and message
@@ -196,24 +242,24 @@ public class ServiceCall {
      */
     public ServiceCallResult readResponse(HttpURLConnection connection) throws IOException {
 
-        ServiceCallResult result;
-
         int responseCode = connection.getResponseCode();
-        if (ServiceCallResult.isHttpSuccess(responseCode)) {
-            try (var br = new BufferedReader(
-                    new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
-                var responseStr = new StringBuilder();
-                String line;
-                while ((line = br.readLine()) != null) {
-                    responseStr.append(line.trim());
-                }
-                result = new ServiceCallResult(responseStr.toString(), responseCode, connection.getResponseMessage());
-            }
-        } else {
-            result = new ServiceCallResult("{}", responseCode, connection.getResponseMessage());
+
+        if (!ServiceCallResult.isHttpSuccess(responseCode)) {
+            return new ServiceCallResult(readErrorBody(connection), responseCode, connection.getResponseMessage());
         }
 
-        return result;
+        /*
+         * Lines are concatenated without a separator. That is lossless for JSON, which is what the services
+         * return, since a JSON string cannot contain a raw line break.
+         */
+        try (var br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+            var responseStr = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                responseStr.append(line.trim());
+            }
+            return new ServiceCallResult(responseStr.toString(), responseCode, connection.getResponseMessage());
+        }
     }
 
 }

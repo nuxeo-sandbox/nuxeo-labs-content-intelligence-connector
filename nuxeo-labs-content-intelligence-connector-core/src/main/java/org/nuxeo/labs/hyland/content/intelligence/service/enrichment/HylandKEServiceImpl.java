@@ -1,5 +1,5 @@
 /*
-i * (C) Copyright 2025 Hyland (http://hyland.com/) and others.
+ * (C) Copyright 2025 Hyland (http://hyland.com/) and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,9 +104,14 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         return pullResultsSleepIntervalMS;
     }
 
+    /**
+     * Builds the source id used when the caller does not provide one.
+     * <p>
+     * The full UUID is kept: an earlier version dropped its first ten characters to keep the total length at 36,
+     * which cost 40 bits of entropy for no stated reason.
+     */
     protected String getCustomUUID() {
-        String uuid = UUID.randomUUID().toString();
-        return CUSTOM_ID_PREFIX + uuid.substring(CUSTOM_ID_PREFIX.length());
+        return CUSTOM_ID_PREFIX + UUID.randomUUID();
     }
 
     protected void initialize() {
@@ -338,7 +343,9 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         ServiceCallResult result = null;
         JSONObject serviceResponse;
 
-        if (log.isInfoEnabled()) {
+        // Gated by nuxeo.hyland.cic.moreLogs: file names and instructions are sensitive enough not to be dumped
+        // on every call at the default INFO level.
+        if (ServicesUtils.isMoreLogs()) {
             StringBuilder sb = new StringBuilder("HylandKEServiceImpl#enrich:");
             sb.append("\n  configName: ").append(StringUtils.isBlank(configName) ? "default" : configName);
             // We can assume contentObjects has at least one file.
@@ -351,7 +358,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
             sb.append("\n  similarMetadataJsonArrayStr: ").append(similarMetadataJsonArrayStr);
             sb.append("\n  extraJsonPayloadStr: ").append(extraJsonPayloadStr);
 
-            log.info(sb.toString());
+            ServicesUtils.forceLogInfo(getClass(), sb.toString());
         }
 
         result = sendForEnrichment(configName, contentObjects, actions, classes, similarMetadataJsonArrayStr,
@@ -551,8 +558,8 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
                 log.warn("Pulling Enrichment results is taking time. This is the call #{} (max calls: {})", count,
                         pullResultsMaxTries);
                 if (count == 5) {
-                    KEDescriptor config = getKEDescriptor(configName);
-                    log.warn("(Pulling job ID '{}', configuration '{}')", resultId, config.getName());
+                    log.warn("(Pulling job ID '{}', configuration '{}')", resultId,
+                            checkConfigName(configName));
                 }
             }
 
@@ -580,7 +587,7 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         }
 
         // URL/endpoint
-        KEDescriptor config = getKEDescriptor(configName);
+        KEDescriptor config = getDescriptorOrThrow(configName);
         String targetUrl = config.getBaseUrl();
         if (!endpoint.startsWith("/")) {
             targetUrl += "/";
@@ -759,8 +766,8 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
     @Override
     public void stop(ComponentContext context) throws InterruptedException {
 
-        // Nothing for now
-
+        // Drop the cached tokens: they must not outlive the component (hot reload, shutdown).
+        enrichmentAuthTokens = null;
     }
 
 }

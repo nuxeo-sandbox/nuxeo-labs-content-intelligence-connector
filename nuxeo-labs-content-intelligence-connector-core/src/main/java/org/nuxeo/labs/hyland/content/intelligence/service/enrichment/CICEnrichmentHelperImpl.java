@@ -469,7 +469,7 @@ public class CICEnrichmentHelperImpl extends DefaultComponent implements CICEnri
                 continue;
             }
             List<String> parts = new ArrayList<>();
-            // Preserve key order when JSONObject
+            // JSONObject.keys() iterates a HashMap: no order is guaranteed, for either branch.
             Iterator<String> it = (objRaw instanceof JSONObject jo) ? jo.keys() : obj.keySet().iterator();
             while (it.hasNext()) {
                 String key = it.next();

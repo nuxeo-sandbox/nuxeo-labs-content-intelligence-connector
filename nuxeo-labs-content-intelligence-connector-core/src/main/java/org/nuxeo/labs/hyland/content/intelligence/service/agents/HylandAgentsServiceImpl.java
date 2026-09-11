@@ -82,7 +82,7 @@ public class HylandAgentsServiceImpl extends AbstractCICServiceComponent<AgentDe
             throw new NuxeoException("No authentication info for calling the Agents Builder service.");
         }
 
-        AgentDescriptor config = getDescriptor(configName);
+        AgentDescriptor config = getDescriptorOrThrow(configName);
         String targetUrl = config.getBaseUrl();
         targetUrl += "/v1/agents";
 
@@ -120,7 +120,7 @@ public class HylandAgentsServiceImpl extends AbstractCICServiceComponent<AgentDe
             versionId = "latest";
         }
 
-        AgentDescriptor config = getDescriptor(configName);
+        AgentDescriptor config = getDescriptorOrThrow(configName);
         String targetUrl = config.getBaseUrl();
         targetUrl += "/v1/agents/" + ServicesUtils.encodePathSegment(agentId) + "/versions/"
                 + ServicesUtils.encodePathSegment(versionId);
@@ -160,7 +160,7 @@ public class HylandAgentsServiceImpl extends AbstractCICServiceComponent<AgentDe
             versionId = "latest";
         }
 
-        AgentDescriptor config = getDescriptor(configName);
+        AgentDescriptor config = getDescriptorOrThrow(configName);
         String targetUrl = config.getBaseUrl();
         String agentPath = "/v1/agents/" + ServicesUtils.encodePathSegment(agentId) + "/versions/"
                 + ServicesUtils.encodePathSegment(versionId);
@@ -226,7 +226,8 @@ public class HylandAgentsServiceImpl extends AbstractCICServiceComponent<AgentDe
     @Override
     public void stop(ComponentContext context) throws InterruptedException {
 
-        // log.warn("Stop component");
+        // Drop the cached tokens: they must not outlive the component (hot reload, shutdown).
+        agentsAuthTokens = null;
     }
 
 }

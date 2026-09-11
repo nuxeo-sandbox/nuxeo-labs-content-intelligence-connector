@@ -19,8 +19,6 @@
 package org.nuxeo.labs.hyland.content.intelligence.service.enrichment;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.nuxeo.common.xmap.annotation.XNode;
 import org.nuxeo.common.xmap.annotation.XObject;
 import org.nuxeo.labs.hyland.content.intelligence.service.AbstractServiceDescriptor;
@@ -30,8 +28,6 @@ import org.nuxeo.labs.hyland.content.intelligence.service.AbstractServiceDescrip
  */
 @XObject("knowledgeEnrichment")
 public class KEDescriptor extends AbstractServiceDescriptor {
-
-    private static final Logger LOG = LogManager.getLogger(KEDescriptor.class);
 
     /**
      * Optional. Facet to add on the document when persisting embeddings produced by enrichment ops
@@ -107,16 +103,6 @@ public class KEDescriptor extends AbstractServiceDescriptor {
                 pictureRenditionName = otherKE.pictureRenditionName;
             }
         }
-    }
-
-    @Override
-    protected Logger log() {
-        return LOG;
-    }
-
-    @Override
-    protected String serviceLabel() {
-        return HylandKEService.SERVICE_LABEL;
     }
 
     @Override

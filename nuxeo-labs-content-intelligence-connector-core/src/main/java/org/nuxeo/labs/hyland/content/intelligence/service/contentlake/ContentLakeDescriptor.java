@@ -19,8 +19,6 @@
 package org.nuxeo.labs.hyland.content.intelligence.service.contentlake;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.nuxeo.common.xmap.annotation.XNode;
 import org.nuxeo.common.xmap.annotation.XObject;
 import org.nuxeo.labs.hyland.content.intelligence.service.AbstractServiceDescriptor;
@@ -31,8 +29,6 @@ import org.nuxeo.labs.hyland.content.intelligence.service.AbstractServiceDescrip
  */
 @XObject("contentLake")
 public class ContentLakeDescriptor extends AbstractServiceDescriptor {
-
-    private static final Logger LOG = LogManager.getLogger(ContentLakeDescriptor.class);
 
     @XNode("environment")
     protected String environment;
@@ -50,16 +46,6 @@ public class ContentLakeDescriptor extends AbstractServiceDescriptor {
         if (other instanceof ContentLakeDescriptor otherDesc && StringUtils.isNotBlank(otherDesc.environment)) {
             environment = otherDesc.environment;
         }
-    }
-
-    @Override
-    protected Logger log() {
-        return LOG;
-    }
-
-    @Override
-    protected String serviceLabel() {
-        return ContentLakeService.SERVICE_LABEL;
     }
 
     @Override
