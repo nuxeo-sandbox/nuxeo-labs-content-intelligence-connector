@@ -37,6 +37,16 @@ public abstract class AbstractCICTextEnrichmentOp extends AbstractCICEnrichmentO
     @Override
     protected Blob getBlob(DocumentModel doc) {
         String path = StringUtils.isBlank(xpath) ? DEFAULT_TEXT_XPATH : xpath;
+        /*
+         * getPropertyValue throws PropertyNotFoundException when the document type does not carry the schema.
+         * That is a perfectly ordinary situation on a heterogeneous selection — a Note has no file:content — and
+         * it used to abort the whole batch, and with it every remaining batch. Returning null routes the document
+         * through the existing "No blob" path instead: it gets a CICError facet and the others are processed.
+         */
+        int colon = path.indexOf(':');
+        if (colon > 0 && !doc.hasSchema(path.substring(0, colon))) {
+            return null;
+        }
         Object value = doc.getPropertyValue(path);
         return value instanceof Blob b ? b : null;
     }

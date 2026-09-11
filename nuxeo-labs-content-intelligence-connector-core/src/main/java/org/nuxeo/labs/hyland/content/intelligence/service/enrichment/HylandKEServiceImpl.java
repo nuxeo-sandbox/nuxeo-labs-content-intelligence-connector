@@ -122,7 +122,16 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         pullResultsSleepIntervalMS = ServicesUtils.configParamToInt(PULL_RESULTS_SLEEP_INTERVAL_PARAM,
                 PULL_RESULTS_SLEEP_INTERVAL_DEFAULT);
 
-        useKEV2 = ServicesUtils.configParamToBoolean(KE_USE_V2_PARAM, true);
+        /*
+         * Knowledge Enrichment has been v2-only since plugin 2025.16: v1 is deprecated upstream and will be
+         * removed. setUseKEV2(false) throws, so the configuration parameter must not be a back door to the dead
+         * v1 payload branch either.
+         */
+        if (!ServicesUtils.configParamToBoolean(KE_USE_V2_PARAM, true)) {
+            log.warn("Configuration parameter {} is set to false and is ignored: the plugin always uses Knowledge"
+                    + " Enrichment v2, v1 being deprecated. Please remove it from nuxeo.conf.", KE_USE_V2_PARAM);
+        }
+        useKEV2 = true;
 
         logConfigurationInfo();
     }
@@ -328,6 +337,22 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
                                                 .map(ContentToProcess::getObjectKey)
                                                 .collect(Collectors.toList());
 
+        if (objectKeys.isEmpty()) {
+            /*
+             * Every upload failed. Calling /content/process with an empty objectKeys list is pointless and the
+             * resulting response hides the real cause, which is in the per-content error messages collected
+             * above.
+             */
+            String details = contentObjects.stream()
+                                           .map(c -> c.getSourceId() + ": "
+                                                   + (c.getErrorMessage() == null ? "unknown error"
+                                                           : c.getErrorMessage()))
+                                           .collect(Collectors.joining("; "));
+            String msg = "No content could be uploaded to Knowledge Enrichment. " + details;
+            log.error(msg);
+            return new ServiceCallResult("{}", -1, msg);
+        }
+
         JSONObject payload = buildProcessActionPayload(objectKeys, actions, classes, similarMetadataJsonArrayStr,
                 extraJsonPayloadStr);
         result = invokeEnrichment(configName, "POST", "/content/process", payload.toString());
@@ -457,6 +482,18 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
 
                 case "imageMetadataGeneration":
                 case "textMetadataGeneration":
+                    /*
+                     * KE v2 requires a non-empty kSimilarMetadata example for these actions. The high-level
+                     * CIC.Get*Metadata operations already fail fast on a blank value, but the low-level
+                     * Enrich/EnrichSeveral ones accept it as optional: without this check, new JSONArray(null)
+                     * threw a bare NullPointerException.
+                     */
+                    if (StringUtils.isBlank(similarMetadataJsonArrayStr)) {
+                        throw new NuxeoException("Action '" + oneAction
+                                + "' requires a non-empty kSimilarMetadata JSON array (parameter"
+                                + " similarMetadataJsonArrayStr), for example"
+                                + " [{\"document:type\":\"Contract|NDA|Invoice\"}].");
+                    }
                     oneActionObj.put("kSimilarMetadata", new JSONArray(similarMetadataJsonArrayStr));
                     break;
 

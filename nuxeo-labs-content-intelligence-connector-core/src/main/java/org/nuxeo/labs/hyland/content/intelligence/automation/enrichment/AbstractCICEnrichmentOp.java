@@ -506,8 +506,12 @@ public abstract class AbstractCICEnrichmentOp {
             // Build payload list (only docs with a blob); keep sourceId -> DocumentModel mapping.
             // Use LinkedHashMap to preserve insertion order (helps logs and debugging).
             Map<String, DocumentModel> bySourceId = new LinkedHashMap<>();
+            // sourceId -> position in batch, so a saved document can replace the pre-save instance. batch is a
+            // subList view of the caller's list, so writing through it updates what the caller gets back.
+            Map<String, Integer> indexBySourceId = new HashMap<>();
             List<ContentToProcess> contentObjects = new ArrayList<>();
-            for (DocumentModel doc : batch) {
+            for (int i = 0; i < batch.size(); i++) {
+                DocumentModel doc = batch.get(i);
                 if (doc == null) {
                     continue;
                 }
@@ -520,12 +524,13 @@ public abstract class AbstractCICEnrichmentOp {
                                 "No blob available for action " + getActionName() + " on " + doc.getId(), null);
                     }
                     if (saveDocument) {
-                        session.saveDocument(doc);
+                        batch.set(i, session.saveDocument(doc));
                     }
                     continue;
                 }
                 String sourceId = doc.getId();
                 bySourceId.put(sourceId, doc);
+                indexBySourceId.put(sourceId, i);
                 contentObjects.add(new ContentToProcess(sourceId, blob));
             }
 
@@ -548,7 +553,8 @@ public abstract class AbstractCICEnrichmentOp {
             } catch (IOException e) {
                 String msg = "IO error calling KE: " + e.getMessage();
                 LOG.warn("KE batch failed (IO): {}", e.getMessage(), e);
-                failBatch(session, bySourceId, ke, 0, "IO error calling KE", msg, null, saveDocument);
+                failBatch(session, batch, indexBySourceId, bySourceId, ke, 0, "IO error calling KE", msg,
+                        null, saveDocument);
                 outcomeStatus = "FAILURE";
                 outcomeCode = 0;
                 outcomeEnvelopeJson = noCallEnvelopeJson(msg);
@@ -560,7 +566,7 @@ public abstract class AbstractCICEnrichmentOp {
 
             if (result.getResponseCode() != 200) {
                 LOG.warn("KE batch failed (HTTP {}): {}", result.getResponseCode(), result.getResponseMessage());
-                failBatch(session, bySourceId, ke, result.getResponseCode(), "KE call failed",
+                failBatch(session, batch, indexBySourceId, bySourceId, ke, result.getResponseCode(), "KE call failed",
                         result.getResponseMessage(), outcomeEnvelopeJson, saveDocument);
                 outcomeStatus = "FAILURE";
                 return;
@@ -569,8 +575,8 @@ public abstract class AbstractCICEnrichmentOp {
             JSONObject envelope = helper.parseEnrichmentResponse(outcomeEnvelopeJson);
             if (envelope == null) {
                 LOG.warn("KE batch failed: could not parse envelope");
-                failBatch(session, bySourceId, ke, 200, "Invalid envelope", "Could not parse KE envelope",
-                        outcomeEnvelopeJson, saveDocument);
+                failBatch(session, batch, indexBySourceId, bySourceId, ke, 200, "Invalid envelope",
+                        "Could not parse KE envelope", outcomeEnvelopeJson, saveDocument);
                 outcomeStatus = "FAILURE";
                 return;
             }
@@ -578,8 +584,8 @@ public abstract class AbstractCICEnrichmentOp {
             String status = response == null ? null : response.optString("status", null);
             if (response == null || !"SUCCESS".equals(status)) {
                 LOG.warn("KE batch returned status={} (not SUCCESS)", status);
-                failBatch(session, bySourceId, ke, 200, "KE response not SUCCESS", "status=" + status,
-                        outcomeEnvelopeJson, saveDocument);
+                failBatch(session, batch, indexBySourceId, bySourceId, ke, 200, "KE response not SUCCESS",
+                        "status=" + status, outcomeEnvelopeJson, saveDocument);
                 outcomeStatus = "FAILURE";
                 return;
             }
@@ -628,7 +634,7 @@ public abstract class AbstractCICEnrichmentOp {
                     if (actionWrapper == null) {
                         ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Missing action result",
                                 "Result key not found: " + getResultKey(), outcomeEnvelopeJson);
-                        persistIfNeeded(session, doc, saveDocument);
+                        persistBatchDoc(session, batch, indexBySourceId, sourceId, doc, saveDocument);
                         continue;
                     }
                     Object actionError = actionWrapper.opt("error");
@@ -636,14 +642,14 @@ public abstract class AbstractCICEnrichmentOp {
                             && !String.valueOf(actionError).isEmpty()) {
                         ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Action error",
                                 String.valueOf(actionError), outcomeEnvelopeJson);
-                        persistIfNeeded(session, doc, saveDocument);
+                        persistBatchDoc(session, batch, indexBySourceId, sourceId, doc, saveDocument);
                         continue;
                     }
                     Object actionResult = actionWrapper.opt("result");
                     if (actionResult == null || actionResult == JSONObject.NULL) {
                         ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Empty action result",
                                 "Action returned no result", outcomeEnvelopeJson);
-                        persistIfNeeded(session, doc, saveDocument);
+                        persistBatchDoc(session, batch, indexBySourceId, sourceId, doc, saveDocument);
                         continue;
                     }
                     try {
@@ -655,7 +661,7 @@ public abstract class AbstractCICEnrichmentOp {
                         ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Failed writing result",
                                 ex.getMessage(), outcomeEnvelopeJson);
                     }
-                    persistIfNeeded(session, doc, saveDocument);
+                    persistBatchDoc(session, batch, indexBySourceId, sourceId, doc, saveDocument);
                 }
             }
 
@@ -666,11 +672,23 @@ public abstract class AbstractCICEnrichmentOp {
                     LOG.warn("Doc {} is missing from KE response", doc.getId());
                     ke.setCICError(doc, HylandKEService.SERVICE_LABEL, 200, "Missing in CIC response",
                             "Doc " + doc.getId() + " absent from response.results", outcomeEnvelopeJson);
-                    persistIfNeeded(session, doc, saveDocument);
+                    persistBatchDoc(session, batch, indexBySourceId, e.getKey(), doc, saveDocument);
                 }
             }
             // outcomeStatus stays "SUCCESS" (envelope-level success; per-doc errors are tracked
             // via CICError, not by switching the batch-level event status).
+        } catch (RuntimeException e) {
+            /*
+             * Any unexpected failure must be reported as such. The accumulators are initialised to SUCCESS/200,
+             * so without this branch an exception escaping the try block made the finally fire a cicCallKEDone
+             * event claiming success for a batch that was never even sent. A listener acting on that status would
+             * act on a lie. The exception is still rethrown: it is a bug, not a per-document error.
+             */
+            LOG.error("Unexpected failure while processing a KE batch for action {}", getActionName(), e);
+            outcomeStatus = "FAILURE";
+            outcomeCode = 0;
+            outcomeEnvelopeJson = noCallEnvelopeJson("Unexpected failure: " + e.getMessage());
+            throw e;
         } finally {
             try {
                 String envelopeJson = outcomeEnvelopeJson != null ? outcomeEnvelopeJson
@@ -684,18 +702,49 @@ public abstract class AbstractCICEnrichmentOp {
     }
 
     /** Mark every payload-eligible doc in the batch with a CICError (used for batch-level failures). */
-    protected void failBatch(CoreSession session, Map<String, DocumentModel> bySourceId, HylandKEService ke,
-            int responseCode, String shortMessage, String fullMessage, String fullJson, boolean saveDocument) {
-        for (DocumentModel doc : bySourceId.values()) {
+    protected void failBatch(CoreSession session, List<DocumentModel> batch, Map<String, Integer> indexBySourceId,
+            Map<String, DocumentModel> bySourceId, HylandKEService ke, int responseCode, String shortMessage,
+            String fullMessage, String fullJson, boolean saveDocument) {
+        for (Map.Entry<String, DocumentModel> entry : bySourceId.entrySet()) {
+            DocumentModel doc = entry.getValue();
             ke.setCICError(doc, HylandKEService.SERVICE_LABEL, responseCode, shortMessage, fullMessage, fullJson);
-            persistIfNeeded(session, doc, saveDocument);
+            persistBatchDoc(session, batch, indexBySourceId, entry.getKey(), doc, saveDocument);
         }
     }
 
-    protected void persistIfNeeded(CoreSession session, DocumentModel doc, boolean saveDocument) {
-        if (saveDocument) {
-            session.saveDocument(doc);
+    /**
+     * Saves the document if requested, and writes the saved instance back into {@code batch}.
+     * <p>
+     * {@code batch} is a {@code subList} view of the caller's list, so the replacement propagates to the list the
+     * caller gets back. Without it the caller kept pre-save instances, whose change token and system metadata are
+     * already stale.
+     *
+     * @since 2025.22
+     */
+    protected void persistBatchDoc(CoreSession session, List<DocumentModel> batch,
+            Map<String, Integer> indexBySourceId, String sourceId, DocumentModel doc, boolean saveDocument) {
+
+        if (!saveDocument) {
+            return;
         }
+        DocumentModel saved = session.saveDocument(doc);
+        Integer index = indexBySourceId.get(sourceId);
+        if (index != null) {
+            batch.set(index, saved);
+        }
+    }
+
+    /**
+     * Saves the document if requested, and returns the instance the caller should keep.
+     * <p>
+     * {@code session.saveDocument} returns a new instance; ignoring it left the caller's list holding pre-save
+     * documents, whose change token and system metadata are already stale.
+     */
+    protected DocumentModel persistIfNeeded(CoreSession session, DocumentModel doc, boolean saveDocument) {
+        if (saveDocument) {
+            return session.saveDocument(doc);
+        }
+        return doc;
     }
 
     /** Local copy of the {@code CICError} facet name to avoid coupling to the impl class. */

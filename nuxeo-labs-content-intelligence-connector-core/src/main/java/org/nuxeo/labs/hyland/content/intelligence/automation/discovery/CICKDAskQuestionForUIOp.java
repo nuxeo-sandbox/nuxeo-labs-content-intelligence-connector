@@ -169,12 +169,16 @@ public class CICKDAskQuestionForUIOp {
         if (!ids.isEmpty()) {
             // Build NXQL: SELECT * FROM Document WHERE ecm:uuid IN (...) [OR kdinfo:objectId IN (...)]
             String idsList = "\"" + String.join("\",\"", ids) + "\"";
-            String nxql = "SELECT * FROM Document WHERE ecm:uuid IN (" + idsList + ")";
+            // Exclude proxies, versions and trashed documents, otherwise the same document can be listed
+            // several times among the references.
+            String nxql = "SELECT * FROM Document WHERE ecm:isProxy = 0 AND ecm:isVersion = 0"
+                    + " AND ecm:isTrashed = 0 AND (ecm:uuid IN (" + idsList + ")";
             // Only add kdinfo:objectId clause if the schema is registered
             boolean kdinfoSchemaAvailable = isKdinfoSchemaAvailable();
             if (kdinfoSchemaAvailable) {
                 nxql += " OR kdinfo:objectId IN (" + idsList + ")";
             }
+            nxql += ")";
 
             DocumentModelList docs = session.query(nxql);
             for (DocumentModel doc : docs) {
@@ -212,12 +216,15 @@ public class CICKDAskQuestionForUIOp {
     }
 
     /**
-     * Reproduces the JS extractNuxeoDocID helper: split on "__" and return parts[1] if it
-     * exists, otherwise parts[0].
+     * Extracts the Nuxeo document id from a Knowledge Discovery object id.
+     * <p>
+     * KD ids are built as {@code <source>__<uuid>}, so the id is the <b>last</b> segment. Taking
+     * {@code parts[1]} returned the wrong fragment whenever the source itself contained {@code __} — harmless in
+     * practice, since the caller validates the result as a UUID and skips it, but it silently lost the reference.
      */
     protected static String extractNuxeoDocID(String objectId) {
         String[] parts = objectId.split("__");
-        return parts.length > 1 ? parts[1] : parts[0];
+        return parts.length > 1 ? parts[parts.length - 1] : parts[0];
     }
 
     /**

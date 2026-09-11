@@ -24,6 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
 import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
@@ -58,6 +60,8 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
 public class HylandKEEnrichSeveralOp {
 
     public static final String ID = "HylandKnowledgeEnrichment.EnrichSeveral";
+
+    private static final Logger LOG = LogManager.getLogger(HylandKEEnrichSeveralOp.class);
 
     @Context
     protected HylandKEService keService;
@@ -97,22 +101,45 @@ public class HylandKEEnrichSeveralOp {
     public Blob run(DocumentModelList docs) {
 
         BlobList blobs = new BlobList();
+        List<String> ids = new ArrayList<>();
+        boolean buildIds = StringUtils.isBlank(sourceIds);
 
-        logTarget = ServicesUtils.targetDocuments(docs.size());
-
-        if (StringUtils.isBlank(sourceIds)) {
-            List<String> ids = new ArrayList<>();
-            for (DocumentModel doc : docs) {
+        /*
+         * Documents without a usable blob are skipped instead of aborting the whole call. Adding a null to the
+         * BlobList used to reach the ContentToProcess constructor, which recognises neither a Blob nor a File and
+         * threw IllegalArgumentException("Expecting Blob or File") — naming neither the document nor the xpath.
+         */
+        for (DocumentModel doc : docs) {
+            Blob blob = getBlobOrNull(doc);
+            if (blob == null) {
+                LOG.warn("Document {} has no blob at xpath {}, skipped.", doc.getId(), xpath);
+                continue;
+            }
+            blobs.add(blob);
+            if (buildIds) {
                 ids.add(doc.getId());
             }
+        }
+
+        if (buildIds) {
             sourceIds = String.join(",", ids);
         }
 
-        for (DocumentModel doc : docs) {
-            blobs.add((Blob) doc.getPropertyValue(xpath));
-        }
+        logTarget = ServicesUtils.targetDocuments(blobs.size());
 
         return run(blobs);
+    }
+
+    /** Returns the blob at {@code xpath}, or {@code null} when the document has neither the schema nor a blob. */
+    protected Blob getBlobOrNull(DocumentModel doc) {
+
+        String path = StringUtils.isBlank(xpath) ? "file:content" : xpath;
+        int colon = path.indexOf(':');
+        if (colon > 0 && !doc.hasSchema(path.substring(0, colon))) {
+            return null;
+        }
+        Object value = doc.getPropertyValue(path);
+        return value instanceof Blob b ? b : null;
     }
 
     @OperationMethod

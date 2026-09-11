@@ -485,25 +485,52 @@ public class CICEnrichmentHelperImpl extends DefaultComponent implements CICEnri
         return String.join("\n", lines);
     }
 
-    /** JS inner valueToString() in objectsArrayToString: falsy => "", object => JSON.stringify. */
+    /**
+     * JS inner valueToString() in objectsArrayToString, with the falsy rule replaced by an explicit boolean
+     * normalisation.
+     * <p>
+     * The JS port treated {@code 0}, {@code false} and {@code ""} as falsy and returned {@code ""}, which made
+     * {@link #objectsArrayToString} drop the key entirely: a metadata value of {@code 0} or {@code false} simply
+     * vanished. Only {@code null} and the empty string are omitted now.
+     * <p>
+     * Boolean-looking values are normalised to {@code "true"} / {@code "false"}: a real {@code Boolean}, and the
+     * strings {@code true}/{@code yes}/{@code false}/{@code no}, case-insensitively. Numbers are deliberately
+     * left alone — coercing {@code 1} to {@code "true"} would corrupt an ordinary count such as
+     * {@code {"pageCount": 1}}.
+     *
+     * @since 2025.22 (boolean normalisation)
+     */
     protected String valueToStringObjectsArray(Object v) {
         if (v == null || v == JSONObject.NULL) {
             return "";
         }
-        // JS "!v" treats 0, "", false as falsy => "". Match that.
-        if (v instanceof String s && s.isEmpty()) {
-            return "";
+        if (v instanceof Boolean b) {
+            return b.toString();
         }
-        if (v instanceof Number n && n.doubleValue() == 0.0d) {
-            return "";
-        }
-        if (v instanceof Boolean b && !b) {
-            return "";
+        if (v instanceof String s) {
+            if (s.isEmpty()) {
+                return "";
+            }
+            String normalized = normalizeBooleanString(s);
+            return normalized == null ? s : normalized;
         }
         if (isObjectLike(v) || isArrayLike(v)) {
             return jsonStringifyOrString(v);
         }
         return String.valueOf(v);
+    }
+
+    /**
+     * Returns {@code "true"} / {@code "false"} when the string spells out a boolean, {@code null} otherwise.
+     *
+     * @since 2025.22
+     */
+    protected static String normalizeBooleanString(String value) {
+        return switch (value.trim().toLowerCase()) {
+            case "true", "yes" -> "true";
+            case "false", "no" -> "false";
+            default -> null;
+        };
     }
 
     /** Port of JS {@code mixedArrayToString}. */
@@ -596,6 +623,11 @@ public class CICEnrichmentHelperImpl extends DefaultComponent implements CICEnri
                 result = jsonStringifyOrString(value);
                 break;
         }
+        /*
+         * DELIBERATE, do not "fix": a value shaped like an ISO date has its hyphens replaced with a bullet.
+         * Inherited from the Studio JS port and kept on purpose. Covered by TestCICEnrichmentHelper so the
+         * behaviour cannot be dropped by accident.
+         */
         if (ISO_DATE.matcher(result).matches()) {
             result = result.replace("-", BULLET);
         }
