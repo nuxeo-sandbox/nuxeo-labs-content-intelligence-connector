@@ -3,11 +3,13 @@
   "label.document.type.cicagenticagentandconfig": "Agent Agentic et configuration",
   "label.document.type.cicagentsandconfigs": "Agents-Configs KD",
   "label.document.type.cicagenticagentsandconfigs": "Agents-Configs Agentic",
+  "label.ui.cic.doctype.CICAgentAndConfig.description": "Un agent Knowledge Discovery et la configuration CIC \u00e0 utiliser avec lui.",
+  "label.ui.cic.doctype.CICAgenticAgentAndConfig.description": "Un agent Agentic et la configuration CIC \u00e0 utiliser avec lui.",
   "label.ui.cic.doctype.CICAgentsAndConfigs.description": "Conteneur pour les définitions d'agents Knowledge Discovery.",
   "label.ui.cic.doctype.CICAgenticAgentsAndConfigs.description": "Conteneur pour les définitions d'agents Agentic.",
 
-  "label.ui.cic.agents.lookupAgent": "Lookup Agent",
-  "label.ui.cic.agents.lookupAgent.done": "Lookup Agent: Done",
+  "label.ui.cic.agents.lookupAgent": "Rechercher l'agent",
+  "label.ui.cic.agents.lookupAgent.done": "Recherche de l'agent : termin\u00e9e",
 
   "label.ui.cic.agentic-invoke.invokeAgenticAgent": "Invoquer un agent",
   "label.ui.cic.agentic-invoke.agentRequest": "Requête d'agent",
@@ -52,7 +54,7 @@
   "label.ui.cic.kd-ask.noanswer": "Aucune réponse reçue.",
   "label.ui.cic.kd-ask.nodocs": "Aucun document sélectionné...",
   "label.ui.cic.kd-ask.references": "Référence(s)",
-  "label.ui.cic.kd-ask.usingDocs": "En utilisant ces HOW_MANY  documents...",
+  "label.ui.cic.kd-ask.usingDocs": "En utilisant ces HOW_MANY documents...",
   "label.ui.cic.kd-ask.usingDocsAsk": "...posez votre question",
   "label.ui.cic.kd-ask.usingOneDoc": "En utilisant ce document...",
 

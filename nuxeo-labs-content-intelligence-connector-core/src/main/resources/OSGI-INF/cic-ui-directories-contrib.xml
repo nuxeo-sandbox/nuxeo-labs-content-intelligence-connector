@@ -1,30 +1,39 @@
 <?xml version="1.0"?>
 <component name="org.nuxeo.labs.hyland.content.intelligence.ui.directories">
 
-  <extension target="org.nuxeo.ecm.directory.sql.SQLDirectoryFactory" point="directories">
+  <!--
+    Contributed through GenericDirectory + template-vocabulary, NOT through SQLDirectoryFactory.
 
-    <directory name="cicImageClassification">
-      <schema>vocabulary</schema>
-      <types>
-        <type>system</type>
-      </types>
-      <dataSource>java:/nxsqldirectory</dataSource>
+    The previous version targeted org.nuxeo.ecm.directory.sql.SQLDirectoryFactory and hardcoded
+    <dataSource>java:/nxsqldirectory</dataSource>, a JNDI name bound only by the common-sql server template.
+    Two consequences. On a deployment that does not include common-sql the lookup fails outright and both
+    vocabularies are unusable, so the classification operations fall back to an empty candidate list and the
+    <nuxeo-directory-suggestion> widgets of the cic-classification forms stay empty. And on a deployment that
+    does include it alongside mongodb — the common case — the CIC vocabularies end up in the SQL database
+    while every other vocabulary lives in MongoDB, which splits backup, tooling and the Admin Center
+    vocabulary editor across two stores for no reason.
+
+    Extending template-vocabulary makes them follow whatever backend the server template configures, exactly
+    like the stock continent / country / subject vocabularies.
+
+    template-vocabulary supplies schema, idField and createTablePolicy. The <table> names are kept explicit
+    so existing SQL deployments keep pointing at the tables that already hold their data.
+
+    No <require> on org.nuxeo.ecm.directories on purpose: DirectoryRegistry recomputes a directory when the
+    template it extends is registered later, so the ordering takes care of itself. This is what Nuxeo's own
+    external bundles do (see studio.extensions.nuxeo-routing-default, which contributes WorkflowType the same
+    way). Adding the require would make this whole component unresolvable wherever that component is absent.
+  -->
+  <extension target="org.nuxeo.ecm.directory.GenericDirectory" point="directories">
+
+    <directory name="cicImageClassification" extends="template-vocabulary">
       <table>cic_image_classification</table>
-      <idField>id</idField>
       <dataFile>directories/cic-image-classification.csv</dataFile>
-      <createTablePolicy>on_missing_columns</createTablePolicy>
     </directory>
 
-    <directory name="cicTextClassification">
-      <schema>vocabulary</schema>
-      <types>
-        <type>system</type>
-      </types>
-      <dataSource>java:/nxsqldirectory</dataSource>
+    <directory name="cicTextClassification" extends="template-vocabulary">
       <table>cic_text_classification</table>
-      <idField>id</idField>
       <dataFile>directories/cic-text-classification.csv</dataFile>
-      <createTablePolicy>on_missing_columns</createTablePolicy>
     </directory>
 
   </extension>

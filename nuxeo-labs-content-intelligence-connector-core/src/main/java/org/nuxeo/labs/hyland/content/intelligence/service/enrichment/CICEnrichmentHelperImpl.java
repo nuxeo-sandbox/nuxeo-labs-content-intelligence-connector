@@ -69,6 +69,12 @@ public class CICEnrichmentHelperImpl extends DefaultComponent implements CICEnri
 
     public static final String FIELD_METADATA_DETECTION = "cic_metadata_detection:metadata";
 
+    /*
+     * RESERVED. Nothing writes into cic_text_metadata today: both CIC.GetTextMetadata and CIC.GetImageMetadata
+     * go through writeMetadataDetection, i.e. cic_metadata_detection:metadata. The schema, the CICTextMetadata
+     * facet and these five constants are kept for a future, more structured text-metadata mapping. Kept on
+     * purpose — do not report them as dead code.
+     */
     public static final String FIELD_TEXT_METADATA_COMPANY = "cic_text_metadata:company";
 
     public static final String FIELD_TEXT_METADATA_KEYWORDS = "cic_text_metadata:keywords";

@@ -49,7 +49,12 @@ public class IngestCheckDigestOp {
     @Param(name = "xpath", required = false)
     protected String xpath;
 
-    @Param(name = "sourceId", required = true)
+    /**
+     * Optional, as the operation description states: when not passed, the service falls back to
+     * {@code nuxeo.hyland.cic.ingest.default.sourceId}. It was declared required until 2025.22, which made that
+     * documented fallback unreachable from Automation.
+     */
+    @Param(name = "sourceId", required = false)
     protected String sourceId;
 
     @Param(name = "configName", required = false)

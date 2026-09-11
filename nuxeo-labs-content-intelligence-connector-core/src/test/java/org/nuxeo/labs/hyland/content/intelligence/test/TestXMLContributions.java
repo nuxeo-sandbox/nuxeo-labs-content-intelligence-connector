@@ -19,15 +19,22 @@
 package org.nuxeo.labs.hyland.content.intelligence.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.nuxeo.directory.test.DirectoryFeature;
+import org.nuxeo.ecm.directory.Directory;
+import org.nuxeo.ecm.directory.Session;
+import org.nuxeo.ecm.directory.api.DirectoryService;
 import org.nuxeo.ecm.platform.test.PlatformFeature;
 import org.nuxeo.labs.hyland.content.intelligence.service.CICServiceConstants;
 import org.nuxeo.labs.hyland.content.intelligence.service.agents.HylandAgentsService;
@@ -39,6 +46,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.discovery.KDDescriptor
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.KEDescriptor;
 import org.nuxeo.labs.hyland.content.intelligence.service.ingest.IngestService;
+import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
@@ -46,7 +54,7 @@ import org.nuxeo.runtime.test.runner.FeaturesRunner;
 import jakarta.inject.Inject;
 
 @RunWith(FeaturesRunner.class)
-@Features({ PlatformFeature.class, ConfigCheckerFeature.class })
+@Features({ PlatformFeature.class, DirectoryFeature.class, ConfigCheckerFeature.class })
 @Deploy("nuxeo-hyland-content-intelligence-connector-core")
 public class TestXMLContributions {
 
@@ -145,6 +153,34 @@ public class TestXMLContributions {
         DCDescriptor dcDesc = dcService.getDCDescriptor("more-dc-1");
         assertNotNull(dcDesc);
         assertTrue(dcDesc.hasAllValues());
+    }
+
+    /**
+     * The two classification vocabularies must actually open and be populated.
+     * <p>
+     * They were contributed to {@code SQLDirectoryFactory} with a hardcoded {@code java:/nxsqldirectory}
+     * datasource until 2025.22, which is bound only by the {@code common-sql} server template: on any MongoDB
+     * deployment both directories were unusable, the classification operations fell back to an empty candidate
+     * list and the {@code cic-classification} form widgets stayed empty. They now extend
+     * {@code template-vocabulary} through {@code GenericDirectory}, which is backend agnostic.
+     *
+     * @since 2025.22
+     */
+    @Test
+    @Deploy("nuxeo-hyland-content-intelligence-connector-core:test-vocabulary-template-contrib.xml")
+    public void classificationVocabulariesShouldBeUsable() {
+
+        DirectoryService ds = Framework.getService(DirectoryService.class);
+        assertNotNull(ds);
+
+        for (String name : new String[] { "cicImageClassification", "cicTextClassification" }) {
+            Directory directory = ds.getDirectory(name);
+            assertNotNull("Directory " + name + " is not registered", directory);
+            try (Session dirSession = ds.open(name)) {
+                assertFalse("Directory " + name + " is empty, the CSV was not loaded",
+                        dirSession.query(Map.of(), Set.of()).isEmpty());
+            }
+        }
     }
 
     /**

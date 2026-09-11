@@ -1,52 +1,60 @@
 <?xml version="1.0"?>
 <component name="org.nuxeo.labs.hyland.content.intelligence.HylandKEService">
 
-	<implementation
-		class="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl" />
+  <implementation
+    class="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl" />
 
-	<service>
-		<provide
-			interface="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService" />
-	</service>
+  <service>
+    <provide
+      interface="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService" />
+  </service>
 
-	<extension-point name="knowledgeEnrichment">
-		<object
-			class="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.KEDescriptor" />
-	</extension-point>
+  <extension-point name="knowledgeEnrichment">
+    <object
+      class="org.nuxeo.labs.hyland.content.intelligence.service.enrichment.KEDescriptor" />
+  </extension-point>
 
-	<!-- Default contributions use configuration parameters -->
-	<extension
-		target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
-		point="knowledgeEnrichment">
-		<knowledgeEnrichment>
-			<name>default</name>
-			<authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
-			<baseUrl>${nuxeo.hyland.cic.contextEnrichment.baseUrl:=}</baseUrl>
-			<tokenGrantType>${nuxeo.hyland.cic.enrichment.auth.grantType:=client_credentials}</tokenGrantType>
-			<tokenScope>${nuxeo.hyland.cic.enrichment.auth.scope:=environment_authorization}</tokenScope>
-			<clientId>${nuxeo.hyland.cic.enrichment.clientId:=}</clientId>
-			<clientSecret>${nuxeo.hyland.cic.enrichment.clientSecret:=}</clientSecret>
-			<!--
-				Optional: where to persist embeddings produced by the CIC.GetTextEmbeddings,
-				CIC.GetImageDescriptionAndEmbeddings and CIC.ImageGetAll operations.
+  <!-- Default contributions use configuration parameters -->
+  <extension
+    target="org.nuxeo.labs.hyland.content.intelligence.HylandKEService"
+    point="knowledgeEnrichment">
+    <knowledgeEnrichment>
+      <name>default</name>
+      <authenticationBaseUrl>${nuxeo.hyland.cic.auth.baseUrl:=}</authenticationBaseUrl>
+      <baseUrl>${nuxeo.hyland.cic.contextEnrichment.baseUrl:=}</baseUrl>
+      <tokenGrantType>${nuxeo.hyland.cic.enrichment.auth.grantType:=client_credentials}</tokenGrantType>
+      <tokenScope>${nuxeo.hyland.cic.enrichment.auth.scope:=environment_authorization}</tokenScope>
+      <clientId>${nuxeo.hyland.cic.enrichment.clientId:=}</clientId>
+      <clientSecret>${nuxeo.hyland.cic.enrichment.clientSecret:=}</clientSecret>
 
-				This plugin does NOT ship an embeddings facet/schema (so the historical
-				`Embeddings` facet / `embeddings:image` + `embeddings:text` schema declared
-				by another plugin or by your studio project keeps owning the storage and
-				cross-plugin compatibility is preserved).
+      <!--
+        Optional. Picture rendition (view) used by every image CIC.* operation to get a JPEG of the
+        document, through the MultiviewPicture adapter, when the caller does not pass an explicit
+        renditionName. Defaults to FullHD when left out.
+      -->
+      <pictureRenditionName>${nuxeo.hyland.cic.enrichment.pictureRenditionName:=FullHD}</pictureRenditionName>
 
-				If any of the three values below is missing, the corresponding embedding
-				is silently NOT written on the document; the API call still runs and the
-				JSON response is still returned to the caller.
+      <!--
+        Optional: where to persist embeddings produced by the CIC.GetTextEmbeddings,
+        CIC.GetImageDescriptionAndEmbeddings and CIC.ImageGetAll operations.
 
-				Uncomment and adapt to your storage:
-			-->
-			<!--
-			<embeddingsFacet>Embeddings</embeddingsFacet>
-			<embeddingsImageXpath>embeddings:image</embeddingsImageXpath>
-			<embeddingsTextXpath>embeddings:text</embeddingsTextXpath>
-			-->
-		</knowledgeEnrichment>
-	</extension>
-	
+        This plugin does NOT ship an embeddings facet/schema (so the historical
+        `Embeddings` facet / `embeddings:image` + `embeddings:text` schema declared
+        by another plugin or by your studio project keeps owning the storage and
+        cross-plugin compatibility is preserved).
+
+        If any of the three values below is missing, the corresponding embedding
+        is silently NOT written on the document; the API call still runs and the
+        JSON response is still returned to the caller.
+
+        Uncomment and adapt to your storage:
+      -->
+      <!--
+      <embeddingsFacet>Embeddings</embeddingsFacet>
+      <embeddingsImageXpath>embeddings:image</embeddingsImageXpath>
+      <embeddingsTextXpath>embeddings:text</embeddingsTextXpath>
+      -->
+    </knowledgeEnrichment>
+  </extension>
+
 </component>

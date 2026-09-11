@@ -14,6 +14,13 @@
 
     <schema name="cic_metadata_detection" prefix="cicmetadatadetection"
             src="schemas/cic_metadata_detection.xsd"/>
+    <!--
+      RESERVED, not written by any code today. CIC.GetTextMetadata and CIC.GetImageMetadata both
+      write into cic_metadata_detection:metadata through CICEnrichmentHelper.writeMetadataDetection.
+      This schema and the matching CICTextMetadata facet are kept for a future, more structured
+      text-metadata mapping. Do not report them as orphans, and do not remove them without checking
+      that no Studio project binds them in a layout.
+    -->
 
     <schema name="cic_text_metadata" prefix="cictextmetadata"
             src="schemas/cic_text_metadata.xsd"/>

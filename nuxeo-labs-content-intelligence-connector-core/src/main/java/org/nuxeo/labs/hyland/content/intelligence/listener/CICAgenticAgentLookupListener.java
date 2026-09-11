@@ -41,9 +41,8 @@ import org.nuxeo.runtime.api.Framework;
  * {@code documentCreated} event for a {@code CICAgenticAgentAndConfig} document, so the agent's input schema and tools
  * are auto-populated right after creation.
  * <p>
- * Throws a {@link NuxeoException} if the document is created with a blank {@code cicagenticagentandconfig:agentId}.
- * Because the listener is post-commit + async, the throw does not roll back the creation; it is logged by the async
- * event machinery.
+ * A document created with a blank {@code cicagenticagentandconfig:agentId} is logged and skipped. Each event of the
+ * bundle is handled independently, so one failing document never prevents the others from being processed.
  *
  * @since 2025.18
  */
@@ -53,7 +52,20 @@ public class CICAgenticAgentLookupListener implements PostCommitEventListener {
 
     @Override
     public void handleEvent(EventBundle events) {
-        events.forEach(this::handleEvent);
+        /*
+         * Each event is handled independently: a failure on one document must not stop the others. Throwing out
+         * of the forEach used to abort the rest of the bundle, so a single CICAgenticAgentAndConfig created
+         * without an agentId silently prevented the lookup for every other document created in the same
+         * transaction (an import, a provisioning script).
+         */
+        for (Event event : events) {
+            try {
+                handleEvent(event);
+            } catch (RuntimeException e) {
+                log.error("Failed to run {} for one event of the bundle, continuing with the others.",
+                        CICAgenticAgentLookupOp.ID, e);
+            }
+        }
     }
 
     protected void handleEvent(Event event) {
@@ -75,8 +87,13 @@ public class CICAgenticAgentLookupListener implements PostCommitEventListener {
 
         String agentId = (String) doc.getPropertyValue(CICAgenticAgentLookupOp.XPATH_AGENT_ID);
         if (agentId == null || agentId.isBlank()) {
-            throw new NuxeoException(
-                    "CICAgenticAgentAndConfig requires a non-blank agentId (doc id=" + doc.getId() + ")");
+            /*
+             * Logged, not thrown. The listener is post-commit and asynchronous, so throwing could never block the
+             * creation anyway — it only produced a stack trace in the async event machinery.
+             */
+            log.warn("{} created with a blank agentId (doc id={}), nothing to look up.",
+                    CICAgenticAgentLookupOp.DOCTYPE, doc.getId());
+            return;
         }
 
         AutomationService automation = Framework.getService(AutomationService.class);

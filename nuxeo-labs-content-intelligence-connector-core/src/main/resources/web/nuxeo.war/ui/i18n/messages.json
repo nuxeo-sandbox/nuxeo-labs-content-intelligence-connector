@@ -3,6 +3,8 @@
   "label.document.type.cicagenticagentandconfig": "Agentic Agent and Config",
   "label.document.type.cicagentsandconfigs": "KD Agents-Configs",
   "label.document.type.cicagenticagentsandconfigs": "Agentic Agents-Configs",
+  "label.ui.cic.doctype.CICAgentAndConfig.description": "A Knowledge Discovery agent and the CIC configuration to use with it.",
+  "label.ui.cic.doctype.CICAgenticAgentAndConfig.description": "An Agentic agent and the CIC configuration to use with it.",
   "label.ui.cic.doctype.CICAgentsAndConfigs.description": "Container for Knowledge Discovery agent definitions.",
   "label.ui.cic.doctype.CICAgenticAgentsAndConfigs.description": "Container for Agentic agent definitions.",
 
