@@ -65,6 +65,8 @@ Two more `ConfigCheckerFeature` traps when diagnosing "why are my tests skipped"
 - the `*_BASE_URL` values are only **logged**, never ANDed into the `has*ClientInfo` gates (except via the shared `CIC_AUTH_BASE_URL`) — a missing base URL does not skip a group, it fails at call time.
 - the Ingest branch logs `Missing CIC Content Lake Base URL => no Content Lake tests` (copy/paste in the message, not in the logic). Read the variable names, not the log text.
 
+Until 2025.23, `ConfigCheckerFeature.hasProperty()` returned `false` when the system property was already set. Surefire runs every test class in one JVM by default (`reuseForks=true`), so the first class copied the env vars into the system properties and **every later class skipped its live tests**, silently. Fixed: an already-set property now counts. Consequence: a full `mvn test` with the `CIC_*` variables exported now really runs the live tests of every family (KD, Agents, Ingest, Content Lake included), so it takes longer and uses CIC quota. Live results obtained before this fix are not comparable.
+
 Full authoritative list and mapping: `nuxeo-labs-content-intelligence-connector-core/src/test/java/org/nuxeo/labs/hyland/content/intelligence/test/ConfigCheckerFeature.java`.
 
 **There is no CI** — no `.github/workflows/`, nothing runs the build or tests automatically. The local root reactor build is the only gate.

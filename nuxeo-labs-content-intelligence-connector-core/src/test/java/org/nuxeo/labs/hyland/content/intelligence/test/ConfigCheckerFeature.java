@@ -301,16 +301,25 @@ public class ConfigCheckerFeature implements RunnerFeature {
 
     }
 
+    /**
+     * Tells whether the configuration parameter is available, either already set as a system property or provided
+     * by the environment variable, which is then copied into the system property.
+     * <p>
+     * An already set system property must count as available: surefire runs every test class in the same JVM by
+     * default, so the first class copies the environment variables into the system properties, and the next ones
+     * find them there. This method used to return {@code false} in that case, which silently skipped the live tests
+     * of every class but the first one.
+     */
     protected boolean hasProperty(String property, String envVar) {
 
-        String value = systemProps.getProperty(property);
+        if (StringUtils.isNotBlank(systemProps.getProperty(property))) {
+            return true;
+        }
 
-        if (StringUtils.isBlank(value)) {
-            value = System.getenv(envVar);
-            if (!StringUtils.isBlank(value)) {
-                systemProps.put(property, value);
-                return true;
-            }
+        String value = System.getenv(envVar);
+        if (StringUtils.isNotBlank(value)) {
+            systemProps.put(property, value);
+            return true;
         }
 
         return false;
