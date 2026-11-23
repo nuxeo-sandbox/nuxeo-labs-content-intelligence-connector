@@ -422,12 +422,15 @@ public class TestHylandKEDCService {
         JSONObject metadataResult = metadata.getJSONObject("result");
         assertNotNull(metadataResult);
 
-        // Given the fake similar metadata, it should find at least TheSource and "custom"
-        String value = metadataResult.getString("dc:source");
-        assertEquals("TheSource", value);
-
-        value = metadataResult.getString("dc:format");
-        assertEquals("custom", value);
+        /*
+         * The values are chosen by the model and change from one call to another (it returned "Disney" for
+         * dc:source rather than the "TheSource" of the examples): only check the fields of the kSimilarMetadata
+         * examples are filled, not their exact values.
+         */
+        for (String key : List.of("dc:source", "dc:format")) {
+            assertTrue("Missing or blank value for " + key + " in " + metadataResult,
+                    StringUtils.isNotBlank(metadataResult.optString(key, null)));
+        }
 
     }
 
