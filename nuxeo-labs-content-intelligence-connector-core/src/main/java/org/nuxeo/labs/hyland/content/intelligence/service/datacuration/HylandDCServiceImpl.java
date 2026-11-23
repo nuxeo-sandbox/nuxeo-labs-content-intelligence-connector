@@ -203,7 +203,9 @@ public class HylandDCServiceImpl extends AbstractCICServiceComponent<DCDescripto
         Map<String, String> headers = new HashMap<>();
         headers.put("Accept", "*/*");
         headers.put("Authorization", "Bearer " + bearer);
-        // headers.put("Content-Type", "application/json");
+        // Mandatory: without it HttpURLConnection sends application/x-www-form-urlencoded, and the service rejects
+        // the JSON options with a 400 "Input should be a valid dictionary or object to extract fields from".
+        headers.put("Content-Type", "application/json");
 
         if (StringUtils.isBlank(jsonOptions)) {
             jsonOptions = DATA_CURATION_PRESIGN_DEFAULT_OPTIONS;
