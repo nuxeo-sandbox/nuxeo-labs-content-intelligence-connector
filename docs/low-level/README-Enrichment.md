@@ -37,12 +37,12 @@ To summarize, every call returns a Blob, stringified JSON object that has at lea
 
 ## About Knowledge Enrichment V2
 
-Since versions 2025.9/2023.12, the plugin supports the new API V2 of Knowledge Enrichment, allowing for passing/using "instructions". As this requires sending the JSON payload in a [different format](https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/Reference/Context%20API/migration-guide-v1-to-v2):
+The plugin only uses the V2 API of Knowledge Enrichment, the v1 API having been removed by Hyland. V2 allows for passing/using "instructions", and its JSON payload has a [different format](https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/Reference/Context%20API/migration-guide-v1-to-v2), built by the plugin.
 
-* **Since plugin version 2025.16, the default value is `true` (V2 is used)**, because the v1 API of Knowledge Enrichment is deprecated and will be removed at some point. Earlier plugin versions defaulted to v1.
-* The plugin uses only v2 everywhere
-  * For example, the `HylandKnowledgeEnrichment.Configure` will ignore the `useKEV2` parameter
-* You don't need to use the `nuxeo.hyland.cic.enrichment.v2` parameter at all => remove it from your nuxeo.conf
+* There is no v1/v2 switch anymore. Since plugin version 2025.23:
+  * The `useKEV2` parameter of `HylandKnowledgeEnrichment.Configure` is removed (if your Studio project still passes it, it is simply ignored)
+  * The `nuxeo.hyland.cic.enrichment.v2` configuration parameter is removed (if still in your nuxeo.conf, it is simply ignored => you can remove it)
+  * The `HylandKEService#setUseKEV2` and `HylandKEService#getUseKEV2` Java methods are removed
 * If your Nuxeo Studio project still relies on the KE V1 API, **you must change it**:
   * Change all dash-based actions (`text-summarization`, `image-description`, ...) to lowerCamelCase (`textSummarization`, `imageDescription`, ...)
   * Check the returned value (the plugin handles the v2 JSON formatting)
@@ -88,8 +88,6 @@ Other parameters are used to tune the behavior (independant to the service confi
   * `nuxeo.hyland.cic.pullResultsSleepInterval`: an integer, the sleep value in milliseconds. Default value is `5000
   
   So, with these default values, the code will try maximum 10 times and it will take about 30s max.
-
-* `nuxeo.hyland.cic.enrichment.v2`, a boolean that tells the plugin to use the Knowledge Enrichment v2 format for the JSON paylod of all requests. Default is `false`.
 
 #### XML Contribution
 
@@ -188,7 +186,7 @@ The service returns a token valid a certain time: The plugin handles this timeou
 ## Operations
 
 > [!TIP]
-> As of "today" (July 2025), CIC Knowledge Enrichment service accepts only PDF for text-based files (`text-classification`, `text-summarization`, etc.).
+> As of "today" (July 2025), CIC Knowledge Enrichment service accepts only PDF for text-based files (`textClassification`, `textSummarization`, etc.).
 > For text-based files enrichment, do not forget to first convert to PDF (see [JS Automation Examples](./README-Enrichment-JS-Automation-Examples.md))
 
 * `HylandKnowledgeEnrichment.Enrich`
@@ -202,7 +200,7 @@ The service returns a token valid a certain time: The plugin handles this timeou
 
 ## About the "instructions" property of Knowledge Enrichment V2
 
-Since V2, the format of the JSON payload has changed and now an "instructions" field can be passed along with every action (except embeddings). If you want to use this new property:
+Knowledge Enrichment V2 accepts an "instructions" field along with every action (except embeddings). If you want to use this property:
 
 * It must be passed in the `"instructionsV2JsonStr"` parameter of the operations declaring this parameter
 * It is an object of objects, one per action
@@ -233,7 +231,7 @@ A high level operation that handles all the different calls to the service (get 
   * `actions`: String required. A list of comma separated actions to perform. See KE documentation about available actions
   * `classes`: String, optional.  A list of comma separated classes, to be used with some classification actions (can be ommitted or null for other actions)
   * `similarMetadata`: String, optional.  A JSON Array (as string) of similar metadata (array of key/value pairs). To be used with the misc. "metadata" actions.
-  * `instructionsV2JsonStr`: String, optional. Only relevant is Kknowledge Enrichment v2 is used.
+  * `instructionsV2JsonStr`: String, optional. Knowledge Enrichment instructions.
     * It is an object of objects, one per action requested. See example above, at "About the "instructions" property of Knowledge Enrichment V2"
   * `extraPayloadJsonStr`: String, optional. A JSON object as string, with extra parameters for the service. For example, use "maxWordCount" to increase or decrease the text-summary. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload.
   * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
@@ -260,7 +258,7 @@ This operation performs the same features as `HylandKnowledgeEnrichment.Enrich`,
   * `actions`: String required. A list of comma separated actions to perform. See KE documentation about available actions
   * `classes`: String, optional.  A list of comma separated classes, to be used with some classification actions (can be ommitted or null for other actions)
   * `similarMetadata`: String, optional.  A JSON Array (as string) of similar metadata (array of key/value pairs). To be used with the misc. "metadata" actions.
-  * `instructionsV2JsonStr`: String, optional. Only relevant is Kknowledge Enrichment v2 is used.
+  * `instructionsV2JsonStr`: String, optional. Knowledge Enrichment instructions.
     * It is an object of objects, one per action requested. See example above, at "About the "instructions" property of Knowledge Enrichment V2"
   * `extraPayloadJsonStr`: String, optional. A JSON object as string, with extra parameters for the service. For example, use "maxWordCount" to increase or decrease the text-summary. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload.
   *  `xpath`: String, optional. When input is `document`, the xpath to use to get the blob. Default "file:content".
@@ -268,7 +266,7 @@ This operation performs the same features as `HylandKnowledgeEnrichment.Enrich`,
   * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
 
 > [!IMPORTANT]
-> Make sure the files are of the same kind, supporting the `actions` request. For example, do not mix images and PDFs if you ask for image-description. Or do not pass images and PDFs ans ask for both image-description and text-summarization. This is because the service, in this case, will return a global PARTIAL_FAILURE, and for each file, a failure for the requested action when the file is not of the good type.
+> Make sure the files are of the same kind, supporting the `actions` request. For example, do not mix images and PDFs if you ask for `imageDescription`. Or do not pass images and PDFs ans ask for both `imageDescription` and `textSummarization`. This is because the service, in this case, will return a global PARTIAL_FAILURE, and for each file, a failure for the requested action when the file is not of the good type.
 
 #### About `sourceIds`
 When calling the service for several files, it returns an array of results. Each single result holds a property, `objectKey`, that is unique. The plugin also returns an array used for the mapping. This arrays is stored in the `objectKeysMapping` property and contains objects with 2 fields:
@@ -310,7 +308,7 @@ This can be interesting when you need more fine tuning or when you know the proc
   * `actions`: String required. A list of comma separated actions to perform. See KE documentation about available actions
   * `classes`: String, optional.  A list of comma separated classes, to be used with some classification actions (can be ommitted or null for other actions)
   * `similarMetadata`: String, optional.  A JSON Array (as string) of similar metadata (array of key/value pairs). To be used with the misc. "metadata" actions.
-  * `instructionsV2JsonStr`: String, optional. Only relevant is Kknowledge Enrichment v2 is used.
+  * `instructionsV2JsonStr`: String, optional. Knowledge Enrichment instructions.
     * It is an object of objects, one per action requested. See example above, at "About the "instructions" property of Knowledge Enrichment V2"
   * `extraPayloadJsonStr`: String, optional. A JSON object as string, with extra parameters for the service. For example, use "maxWordCount" to increase or decrease the text-summary. This parameter is also useful in case the service adds more tuning in the misc. calls => no need to wait for a plugin update, just change your payload.
   * `configName`: String, optional. The name of the XML contribution to use for baseUrl, clientId, etc. If not passed, the plugin uses `"default"`.
@@ -465,7 +463,6 @@ See _Nuxeo Configuration Parameters_ above for explanation on the values.
     * If 0 => reset to configuration parameter. If no config. param is set, use default value.
     * If -1 => Do not change (same effect as not passing the parameter)
     * Other values set the parameter (make sure you don't pass a negative value)
-  * `useKEV2`: Boolean, optional. Allows for setting the format/behavior when calling KE (it can also be set with the `nuxeo.hyland.cic.enrichment.v2` configuraiton parameter). Once set, it is used for all and every calls (no need to call this operation before calling other operations)
 
 <br>
 

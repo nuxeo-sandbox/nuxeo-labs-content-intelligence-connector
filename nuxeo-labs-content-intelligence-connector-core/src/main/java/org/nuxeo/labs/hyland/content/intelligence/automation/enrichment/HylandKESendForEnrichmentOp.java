@@ -39,7 +39,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
         label = "CIC Knowledge Enrichement Send Blob", description = ""
         + "Invoke the Hyland Knowledge Enrichment (KE) API to send the blob for enrichment. actions is a list of"
         + " actions to process"
-        + " (image-description, image-embeddings, …, or imageDescription, imageEmbeddings, … for KE v2),"
+        + " (imageDescription, imageEmbeddings, …),"
         + " classes a list of values to be used for classification,"
         + " and similarValues is used for metadata endpoint. It must be passed as a. (See KE documentation for details,"
         + " limitation, etc.)"
@@ -51,7 +51,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
         + " document when calling HylandKnowledgeEnrichment.GetEnrichmentResults."
         + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using"
         + " 'default')"
-        + " Since KE V2, you can pass instructions as an object of objects, one per action "
+        + " instructionsV2JsonStr lets you pass instructions as an object of objects, one per action"
         + " (see plugin doc for details.)")
 public class HylandKESendForEnrichmentOp {
 

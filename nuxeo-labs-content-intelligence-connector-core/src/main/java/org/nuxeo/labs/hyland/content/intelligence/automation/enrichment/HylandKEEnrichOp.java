@@ -38,10 +38,10 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
 @Operation(id = HylandKEEnrichOp.ID, category = "Hyland Knowledge Enrichment",
         label = "CIC Knowledge Enrichement on Blob", description = ""
         + "Invoke the Hyland Knowledge Enrichment (KE) API to enrich the blob. actions is a list of actions to process"
-        + " (image-Description, imageEmbeddings, …), classes a list of values to be used for classification,"
+        + " (imageDescription, imageEmbeddings, …), classes a list of values to be used for classification,"
         + " and similarValues is used for metadata endpoint. It must be passed as a JSON string."
         + " (See KE documentation for details, limitation, etc.)"
-        + " Since KE V2, you can pass instructions as an object of objects, one per action "
+        + " instructionsV2JsonStr lets you pass instructions as an object of objects, one per action"
         + " (see plugin doc for details.)"
         + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using"
         + " 'default')")

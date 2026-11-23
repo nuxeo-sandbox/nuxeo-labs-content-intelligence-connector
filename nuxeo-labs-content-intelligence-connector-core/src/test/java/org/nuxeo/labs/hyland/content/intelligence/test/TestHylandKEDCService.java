@@ -156,7 +156,7 @@ public class TestHylandKEDCService {
         // 1. Send file
         File f = FileUtils.getResourceFileFromContext(TEST_IMAGE_PATH);
         ServiceCallResult result = hylandKEService.sendForEnrichment(null, f, null, TEST_IMAGE_MIMETYPE,
-                List.of("image-description"), null, null, null);
+                List.of("imageDescription"), null, null, null);
         assertNotNull(result);
 
         assertTrue(result.callResponseOK());
@@ -200,37 +200,6 @@ public class TestHylandKEDCService {
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         File f = FileUtils.getResourceFileFromContext(TEST_IMAGE_PATH);
-        ServiceCallResult result = hylandKEService.enrich(null, f, TEST_IMAGE_MIMETYPE, List.of("image-description"),
-                null, null, null);
-        assertNotNull(result);
-
-        // Expecting HTTP OK
-        assertTrue(result.callResponseOK());
-
-        JSONObject responseJson = result.getResponseAsJSONObject();
-        assertNotNull(responseJson);
-        String status = responseJson.getString("status");
-        assertEquals("SUCCESS", status);
-
-        JSONArray results = responseJson.getJSONArray("results");
-        JSONObject theResult = results.getJSONObject(0);
-        JSONObject descriptionJson = theResult.getJSONObject("imageDescription");
-        assertTrue(descriptionJson.getBoolean("isSuccess"));
-
-        String description = descriptionJson.getString("result");
-        // We should have at least "Mickey"
-        assertTrue(description.toLowerCase().indexOf("mickey") > -1);
-    }
-
-    @Test
-    public void shouldGetImageDescriptionWithV2() throws Exception {
-
-        Assume.assumeTrue("No configuration parameters set => ignoring the test",
-                ConfigCheckerFeature.hasEnrichmentClientInfo());
-
-        hylandKEService.setUseKEV2(true);
-
-        File f = FileUtils.getResourceFileFromContext(TEST_IMAGE_PATH);
         ServiceCallResult result = hylandKEService.enrich(null, f, TEST_IMAGE_MIMETYPE, List.of("imageDescription"),
                 null, null, null);
         assertNotNull(result);
@@ -255,7 +224,7 @@ public class TestHylandKEDCService {
 
     @Ignore
     @Test
-    public void shouldGetImageDescriptionWithV2Instructions() throws Exception {
+    public void shouldGetImageDescriptionWithInstructions() throws Exception {
 
         // WARNING as of JAN 2026, "instructions can only be used with text/imageClassification
         // and text/ImageMetadata, but I don't get how it changes/tunes the result...
@@ -264,8 +233,6 @@ public class TestHylandKEDCService {
 
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
-
-        hylandKEService.setUseKEV2(true);
 
         JSONObject extraPayload = new JSONObject();
         JSONObject instructions = new JSONObject();
@@ -297,7 +264,7 @@ public class TestHylandKEDCService {
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         File f = FileUtils.getResourceFileFromContext(TEST_IMAGE_PATH);
-        ServiceCallResult result = hylandKEService.enrich(null, f, TEST_IMAGE_MIMETYPE, List.of("image-embeddings"),
+        ServiceCallResult result = hylandKEService.enrich(null, f, TEST_IMAGE_MIMETYPE, List.of("imageEmbeddings"),
                 null, null, null);
         assertNotNull(result);
 
@@ -324,7 +291,7 @@ public class TestHylandKEDCService {
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
 
         File f = FileUtils.getResourceFileFromContext(TEST_IMAGE_PATH);
-        ServiceCallResult result = hylandKEService.enrich(null, f, TEST_IMAGE_MIMETYPE, List.of("image-classification"),
+        ServiceCallResult result = hylandKEService.enrich(null, f, TEST_IMAGE_MIMETYPE, List.of("imageClassification"),
                 List.of("Disney", "DC Comics", "Marvel"), null, null);
         assertNotNull(result);
 
@@ -352,7 +319,7 @@ public class TestHylandKEDCService {
 
         File f = FileUtils.getResourceFileFromContext(TEST_IMAGE_PATH);
         ServiceCallResult result = hylandKEService.enrich(null, f, TEST_IMAGE_MIMETYPE,
-                List.of("image-description", "image-embeddings", "image-classification"),
+                List.of("imageDescription", "imageEmbeddings", "imageClassification"),
                 List.of("Disney", "DC Comics", "Marvel"), null, null);
         assertNotNull(result);
 
@@ -425,7 +392,7 @@ public class TestHylandKEDCService {
         do {
 
             ServiceCallResult result = hylandKEService.enrich(null, f, TEST_IMAGE_MIMETYPE,
-                    List.of("image-metadata-generation"), null, similarMetadata, null);
+                    List.of("imageMetadataGeneration"), null, similarMetadata, null);
             assertNotNull(result);
 
             // Expecting HTTP OK
@@ -492,7 +459,7 @@ public class TestHylandKEDCService {
         List<ContentToProcess> content = List.of(new ContentToProcess<File>("12345", f1),
                 new ContentToProcess<File>("67890", f2));
 
-        ServiceCallResult result = hylandKEService.enrich(null, content, List.of("image-description"), null, null,
+        ServiceCallResult result = hylandKEService.enrich(null, content, List.of("imageDescription"), null, null,
                 null);
         assertNotNull(result);
 
@@ -586,7 +553,7 @@ public class TestHylandKEDCService {
         File f = FileUtils.getResourceFileFromContext(TEST_CONTRACT_PATH);
 
         ServiceCallResult result = hylandKEService.enrich(null, f, TEST_CONTRACT_MIMETYPE,
-                List.of("text-summarization"), null, null, null);
+                List.of("textSummarization"), null, null, null);
         assertNotNull(result);
 
         // Expecting HTTP OK
@@ -609,7 +576,7 @@ public class TestHylandKEDCService {
         File f = FileUtils.getResourceFileFromContext(TEST_CONTRACT_PATH);
 
         ServiceCallResult result = hylandKEService.enrich(null, f, TEST_CONTRACT_MIMETYPE,
-                List.of("text-summarization"), null, null, null);
+                List.of("textSummarization"), null, null, null);
         assertNotNull(result);
 
         // Here we skip result.callResponseOK() etc.
@@ -618,7 +585,7 @@ public class TestHylandKEDCService {
         String summary1 = summaryObj.getString("result");
 
         // Now, same call, few words
-        result = hylandKEService.enrich(null, f, TEST_CONTRACT_MIMETYPE, List.of("text-summarization"), null, null,
+        result = hylandKEService.enrich(null, f, TEST_CONTRACT_MIMETYPE, List.of("textSummarization"), null, null,
                 "{\"maxWordCount\": 50}");
         assertNotNull(result);
 

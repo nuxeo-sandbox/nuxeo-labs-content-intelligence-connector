@@ -74,7 +74,7 @@ public class TestHylandKEEnrichOp {
     protected HylandKEService hylandKEService;
 
     @Test
-    public void shouldEnrichBlobV1() throws Exception {
+    public void shouldEnrichBlob() throws Exception {
 
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
@@ -88,7 +88,7 @@ public class TestHylandKEEnrichOp {
         ctx.setInput(blob);
 
         Map<String, Object> params = new HashMap<>();
-        params.put("actions", "image-description,image-embeddings,image-classification");
+        params.put("actions", "imageDescription,imageEmbeddings,imageClassification");
         params.put("classes", "Disney,DC Comics,Marvel");
         // No similarMetadat in this test
 
@@ -132,12 +132,11 @@ public class TestHylandKEEnrichOp {
     }
 
     @Test
-    public void shouldEnrichBlobV2WithInstructions() throws Exception {
+    public void shouldEnrichBlobWithInstructions() throws Exception {
 
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
 
-        hylandKEService.setUseKEV2(true);
         hylandKEService.setPullResultsSettings(20, 0);
 
         OperationContext ctx = new OperationContext(session);
@@ -203,12 +202,11 @@ public class TestHylandKEEnrichOp {
     }
 
     @Test
-    public void shouldEnrichBlobV2WithInstructionsAndMaxWords() throws Exception {
+    public void shouldEnrichBlobWithInstructionsAndMaxWords() throws Exception {
 
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
 
-        hylandKEService.setUseKEV2(true);
         hylandKEService.setPullResultsSettings(20, 0);
 
         OperationContext ctx = new OperationContext(session);
@@ -269,7 +267,7 @@ public class TestHylandKEEnrichOp {
     }
 
     @Test
-    public void shouldEnrichSeveralBlobsV1() throws Exception {
+    public void shouldEnrichSeveralBlobs() throws Exception {
 
         Assume.assumeTrue("No configuration parameters set => ignoring the test",
                 ConfigCheckerFeature.hasEnrichmentClientInfo());
@@ -291,7 +289,7 @@ public class TestHylandKEEnrichOp {
         OperationContext ctx = new OperationContext(session);
         ctx.setInput(blobs);
         Map<String, Object> params = new HashMap<>();
-        params.put("actions", "image-description");
+        params.put("actions", "imageDescription");
         params.put("sourceIds", "12345,67890");
         // no classes in this test
         // No similarMetadat in this test

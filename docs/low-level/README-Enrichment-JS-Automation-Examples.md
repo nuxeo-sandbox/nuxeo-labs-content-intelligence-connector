@@ -8,20 +8,12 @@ These examples are referenced from the [README](./README-Enrichment.md) of the p
 > [!IMPORTANT]
 > All the examples assume Nuxeo was correctly configured to access Hyland CIC Knowledge Enrichment service. See [README](./README-Enrichment.md) > Nuxeo Configuration Parameters
 
-## About Examples and Knowledge Enrichment V1/V2
+## About Examples and Knowledge Enrichment V2
 
 > [!IMPORTANT]
-> **All examples assume using V2**
-> (But by default, the plugin uses v1 for backward compatibility when v2 is not explicitely requested - see below)
+> **All examples use Knowledge Enrichment V2**, the only version used by the plugin (v1 has been removed by Hyland). There is nothing to configure: the `nuxeo.hyland.cic.enrichment.v2` configuration parameter and the `useKEV2` parameter of `HylandKnowledgeEnrichment.Configure` are removed since 2025.23.
 
-This means:
-
-* Either you set the `nuxeo.hyland.cic.enrichment.v2` configuration parameter to `true` (`nuxeo.hyland.cic.enrichment.v2=true`)
-* Or you called `HylandKnowledgeEnrichment.Configure` with its `useKEV2` parameter set to `true`
-
-In both cases, it makes all and every calls to use v2 or v1 (it cannot be tuned per call, which anyway would not really make sense)
-
-See [Knowledge Enrichment documentation](https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/Reference/Context%20API/migration-guide-v1-to-v2) for the changes between the versions. In short:
+See [Knowledge Enrichment documentation](https://hyland.github.io/ContentIntelligence-Docs/KnowledgeEnrichment/Reference/Context%20API/migration-guide-v1-to-v2) for the changes from v1. In short:
 
 * Actions are now `lowerCamelCase` instead of using dashes (`textSummarization` instead of `text-summarization`)
 * `"instructions"` can be passed in the `instructionsV2JsonStr` parameter
@@ -229,7 +221,7 @@ function run(input, params) {
   pdf = Blob.ToPDF(blob, {});
 
   // Call the service
-  // With "text-classification", we must pass at least 2 values in "classes"
+  // With "textClassification", we must pass at least 2 values in "classes"
   result = HylandKnowledgeEnrichment.Enrich(
     blob, {
       'actions': "textClassification",

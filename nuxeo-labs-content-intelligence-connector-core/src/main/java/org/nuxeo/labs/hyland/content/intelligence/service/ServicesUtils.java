@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
-import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService;
 import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEServiceImpl;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.osgi.OSGiRuntimeService;
@@ -131,9 +130,9 @@ public class ServicesUtils {
     }
 
     /**
-     * Centralize KE operations parameters handling since the new "instructions" property available in KE V2.
-     * basically, add them to the extraJsonPayload. See "About KE v1->v2 compatibility and format" in
-     * {@link HylandKEServiceImpl}.
+     * Centralize KE operations parameters handling of the Knowledge Enrichment v2 "instructions" property:
+     * basically, add them to the extraJsonPayload. See "About the Knowledge Enrichment API version" in
+     * {@link org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKEService}.
      * If instructionsV2JsonStr is empty => returns extraPayloadJsonStr unchanged (may be null)
      *
      * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
@@ -141,12 +140,6 @@ public class ServicesUtils {
     public static String addInstructionsToExtraPayload(String instructionsV2JsonStr, String extraPayloadJsonStr) {
 
         if (StringUtils.isBlank(instructionsV2JsonStr)) {
-            return extraPayloadJsonStr;
-        }
-
-        HylandKEService keService = Framework.getService(HylandKEService.class);
-
-        if (!keService.getUseKEV2()) {
             return extraPayloadJsonStr;
         }
 

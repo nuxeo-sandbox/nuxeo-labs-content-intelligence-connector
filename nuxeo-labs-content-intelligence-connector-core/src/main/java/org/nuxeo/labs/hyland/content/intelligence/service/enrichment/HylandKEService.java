@@ -29,10 +29,13 @@ import org.nuxeo.labs.hyland.content.intelligence.http.ServiceCallResult;
 
 /**
  * ==================================================
- * JAN 2026: About KE v1->v2 compatibility and format
+ * About the Knowledge Enrichment API version
  * ==================================================
- * For compatibility KE v1-v2, the extra optional "instructions" KE-V2 are to be passed in the extraJsonPayloadStr
- * parameter of the misc. methods:
+ * The plugin only uses the v2 API of Knowledge Enrichment (v1 has been removed by Hyland): actions use the v2
+ * lowerCamelCase names ({@code imageDescription}, {@code textSummarization}, ...), and the payload is always built
+ * in the v2 format. Since 2025.23, the former {@code setUseKEV2} / {@code getUseKEV2} methods are removed.
+ * <p>
+ * The optional v2 "instructions" are to be passed in the extraJsonPayloadStr parameter of the misc. methods:
  * <ul>
  * <li>It must be in the "instructions" property of extraJsonPayloadStr
  * <li>It is an object of objects, one per action
@@ -99,20 +102,6 @@ public interface HylandKEService {
      * @since 2025.16
      */
     public int getDefaultBatchSize();
-
-    /**
-     * Using KE v2 is global to every call. It is not possible to use v2 for a call, then v1 for another, etc.
-     * It can be set at startup with the HylandKEServiceImpl#KE_USE_V2_PARAM configuration parameter
-     *
-     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
-     */
-    public void setUseKEV2(boolean value);
-
-    /**
-     * @return the value of current setting.
-     * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
-     */
-    public boolean getUseKEV2();
 
     /**
      * Send the blob for enrichment. In the response, and if succesful, there will be the job ID to use with

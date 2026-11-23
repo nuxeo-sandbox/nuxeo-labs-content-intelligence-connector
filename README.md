@@ -14,7 +14,7 @@ Since its **2025.16** version this plugin **ships a full Web UI on top of the ex
 
 > [!IMPORTANT]
 > * Low-Level operations are available at [docs/low-level/README.md](docs/low-level/README.md) and fully functional.
-> * KE v1 is gone (v2-only)
+> * ⚠️ **Knowledge Enrichment v2 only**: KE v1 has been removed by Hyland, and since 2025.23 the plugin no longer has any v1/v2 switch. The `useKEV2` parameter of `HylandKnowledgeEnrichment.Configure`, the `nuxeo.hyland.cic.enrichment.v2` configuration parameter and the `HylandKEService#setUseKEV2` / `getUseKEV2` Java methods are removed (a leftover `useKEV2` parameter or `nuxeo.conf` entry is simply ignored). Actions must use the v2 lowerCamelCase names (`imageDescription`, `textSummarization`, ...), not the v1 dash-based ones (`image-description`, `text-summarization`, ...).
 > * ⚠️ in dev. mode, if you need to override a `"default"` XML contribution, redeclare **all and every field** of the original for Hot Reload to work. See [Overriding an existing contribution](#overriding-an-existing-contribution).
 
 ## The Nuxeo Labs Content Intelligence Connector
@@ -54,7 +54,7 @@ This is the historical surface (any version `<= 2025.15`, plus `2023.18`). The p
 
 Use this level when you want full control: bespoke document model, custom triggers (event handler, listener, page provider action), custom result rendering, batch processing of selected documents, etc.
 
-The only behavioral change carried forward in the current versions is that **Knowledge Enrichment is v2-only**: the deprecated v1 API is no longer reachable from the plugin (the legacy `useKEV2=false` parameter is ignored and logs a WARN).
+The only behavioral change carried forward in the current versions is that **Knowledge Enrichment is v2-only**: the v1 API, removed by Hyland, is no longer reachable from the plugin, and since 2025.23 the v1/v2 switches (`useKEV2`, `nuxeo.hyland.cic.enrichment.v2`) are removed altogether.
 
 For the full list of operations, parameters, JSON envelopes and Automation Script examples, **see [the low-level README](docs/low-level/README.md)** and its companion files (`docs/low-level/README-Enrichment.md`, `docs/low-level/README-Enrichment-JS-Automation-Examples.md`, `docs/low-level/README-Discovery.md`, `docs/low-level/README-Discovery-JS-Automation-Examples.md`, `docs/low-level/README-Agents.md`).
 
@@ -693,7 +693,7 @@ The event is a standard `DocumentEventContext`. Its **principal document** is th
 
 | Context property             | Type                | Meaning                                                                                       |
 | ---------------------------- | ------------------- | --------------------------------------------------------------------------------------------- |
-| `cicActionName`              | `String`            | KE action key (e.g. `"imageDescription"`, `"textSummarization"`, `"image-classification"`)    |
+| `cicActionName`              | `String`            | KE action key (e.g. `"imageDescription"`, `"textSummarization"`, `"imageClassification"`)     |
 | `cicOpClassName`             | `String`            | FQN of the executing `CIC*Op` class                                                           |
 | `cicConfigName`              | `String` (nullable) | Contribution name the op was invoked with (`null` means the op fell back to `"default"`)      |
 | `cicDocIds`                  | `ArrayList<String>` | Full UID list covered by this batch (size 1 for single-doc; full batch for multi-doc)         |

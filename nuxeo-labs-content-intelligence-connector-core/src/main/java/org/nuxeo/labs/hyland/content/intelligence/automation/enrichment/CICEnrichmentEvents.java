@@ -60,11 +60,11 @@ public final class CICEnrichmentEvents {
     public static final String CIC_CALL_KE_DONE = "cicCallKEDone";
 
     /**
-     * KE action key the operation requested (e.g. {@code "image-description"},
-     * {@code "text-summarization"}, {@code "text-classification"}, {@code "image-classification"},
-     * {@code "text-embeddings"}, {@code "image-embeddings"}, {@code "text-metadata-generation"},
-     * {@code "image-metadata-generation"}, {@code "named-entities-from-text"},
-     * {@code "named-entities-from-image"}). Same value as
+     * KE action key the operation requested, i.e. the Knowledge Enrichment v2 action name: one of
+     * {@code "imageDescription"}, {@code "textSummarization"}, {@code "textClassification"},
+     * {@code "imageClassification"}, {@code "textEmbeddings"}, {@code "imageEmbeddings"},
+     * {@code "textMetadataGeneration"}, {@code "imageMetadataGeneration"},
+     * {@code "namedEntityRecognitionText"}, {@code "namedEntityRecognitionImage"}. Same value as
      * {@link AbstractCICEnrichmentOp#getActionName()} on the executing op.
      */
     public static final String CTX_ACTION_NAME = "cicActionName";

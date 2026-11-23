@@ -18,8 +18,6 @@
  */
 package org.nuxeo.labs.hyland.content.intelligence.automation.enrichment;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
 import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
@@ -28,23 +26,21 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
 
 /**
  * Configure runtime tuning of the Knowledge Enrichment service.
+ * <p>
+ * Since 2025.23 the operation no longer declares the {@code useKEV2} parameter: the plugin only uses Knowledge
+ * Enrichment v2. Automation silently ignores an undeclared parameter, so existing callers still passing it keep
+ * working.
  *
- * @since 2025.16 the {@code useKEV2} parameter is ignored: the plugin always uses Knowledge Enrichment v2
- *        because v1 is deprecated and will be removed. Passing {@code useKEV2=false} logs a WARN.
+ * @since 2025.16 (note: not properly tracked, exact first-release version unknown)
  */
 @Operation(id = ConfigureServiceOp.ID, category = "Hyland Knowledge Enrichment", label = "Configure Calls to Service",
         description = ""
         + "Allows for dynamically changing some settings when calling the service."
         + " maxTries and sleepIntervalMS: if a value is 0 => reset to configuration or default value."
-        + " If -1 (or not passed) => do not change."
-        + " useKEV2 is deprecated and ignored since plugin version 2025.16: the plugin always uses"
-        + " Knowledge Enrichment v2 because v1 is deprecated and will be removed."
-        + " Passing useKEV2=false will be ignored and a WARN will be logged.")
+        + " If -1 (or not passed) => do not change.")
 public class ConfigureServiceOp {
 
     public static final String ID = "HylandKnowledgeEnrichment.Configure";
-
-    private static final Logger log = LogManager.getLogger(ConfigureServiceOp.class);
 
     @Context
     protected HylandKEService keService;
@@ -54,9 +50,6 @@ public class ConfigureServiceOp {
 
     @Param(name = "sleepIntervalMS", required = false)
     protected Integer sleepIntervalMS = null;
-
-    @Param(name = "useKEV2", required = false)
-    protected Boolean useKEV2 = null;
 
     @OperationMethod
     public void run() {
@@ -70,14 +63,6 @@ public class ConfigureServiceOp {
          */
         keService.setPullResultsSettings(maxTries == null ? -1 : maxTries,
                 sleepIntervalMS == null ? -1 : sleepIntervalMS);
-
-        // Since plugin version 2025.16, the plugin always uses KE v2 because v1 is deprecated
-        // and will be removed. The useKEV2 parameter is kept for backward compatibility but is ignored.
-        if (useKEV2 != null && !useKEV2.booleanValue()) {
-            log.warn("The 'useKEV2' parameter of {} is deprecated and ignored since plugin version 2025.16."
-                    + " The plugin always uses Knowledge Enrichment v2 because v1 is deprecated and will be removed."
-                    + " Please remove this parameter from your call.", ID);
-        }
 
     }
 

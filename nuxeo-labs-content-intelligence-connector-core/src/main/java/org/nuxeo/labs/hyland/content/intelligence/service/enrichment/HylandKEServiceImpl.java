@@ -51,7 +51,13 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
 
     private static final Logger log = LogManager.getLogger(HylandKEServiceImpl.class);
 
-    public static final String KE_USE_V2_PARAM = "nuxeo.hyland.cic.enrichment.v2";
+    /**
+     * Value of the {@code version} property of the {@code /content/process} payload. The plugin only speaks
+     * Knowledge Enrichment v2, v1 having been removed by Hyland.
+     *
+     * @since 2025.23
+     */
+    public static final String KE_API_VERSION = "context.api/v2";
 
     public static final String KE_INSTRUCTIONS_OBJ_IN_EXTRA_PAYLOAD = "instructions";
 
@@ -80,8 +86,6 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
     public static final String CUSTOM_ID_PREFIX = "CUSTOM_ID-";
 
     protected static ServiceCall serviceCall = new ServiceCall();
-
-    protected static boolean useKEV2 = true;
 
     // ====================> Extensions points
     protected static final String EXT_POINT_KE = "knowledgeEnrichment";
@@ -122,17 +126,6 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         pullResultsSleepIntervalMS = ServicesUtils.configParamToInt(PULL_RESULTS_SLEEP_INTERVAL_PARAM,
                 PULL_RESULTS_SLEEP_INTERVAL_DEFAULT);
 
-        /*
-         * Knowledge Enrichment has been v2-only since plugin 2025.16: v1 is deprecated upstream and will be
-         * removed. setUseKEV2(false) throws, so the configuration parameter must not be a back door to the dead
-         * v1 payload branch either.
-         */
-        if (!ServicesUtils.configParamToBoolean(KE_USE_V2_PARAM, true)) {
-            log.warn("Configuration parameter {} is set to false and is ignored: the plugin always uses Knowledge"
-                    + " Enrichment v2, v1 being deprecated. Please remove it from nuxeo.conf.", KE_USE_V2_PARAM);
-        }
-        useKEV2 = true;
-
         logConfigurationInfo();
     }
 
@@ -141,7 +134,6 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         // We don't want a WARN, this is an INFO
         String msg = "Knowledge Enrichment startup configuration:\n  pullResultsMaxTries=" + pullResultsMaxTries;
         msg += "\n  pullResultsSleepIntervalMS=" + pullResultsSleepIntervalMS;
-        msg += "\n  useKEV2=" + useKEV2;
         ServicesUtils.forceLogInfo(this.getClass(), msg);
     }
 
@@ -164,24 +156,6 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
     // Service Implementation
     // ======================================================================
     // ======================================================================
-    @Override
-    public void setUseKEV2(boolean value) {
-
-        if (!value) {
-            throw new NuxeoException(
-                    "Since verison 2025.16 of the plugin, it is not possible to use KE API in its version 1, that is"
-                            + " deprecated.");
-        }
-        useKEV2 = value;
-
-        logConfigurationInfo();
-    }
-
-    @Override
-    public boolean getUseKEV2() {
-        return useKEV2;
-    }
-
     @Override
     public void setPullResultsSettings(int maxTries, int sleepIntervalMS) {
 
@@ -446,6 +420,12 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
         return result;
     }
 
+    /**
+     * Builds the Knowledge Enrichment v2 payload of the {@code /content/process} call.
+     * <p>
+     * The optional {@code instructions} object of {@code extraJsonPayloadStr} is dispatched to each action and is
+     * never copied at the top level; every other property of {@code extraJsonPayloadStr} is copied as is.
+     */
     protected JSONObject buildProcessActionPayload(List<String> objectKeys, List<String> actions, List<String> classes,
             String similarMetadataJsonArrayStr, String extraJsonPayloadStr) {
 
@@ -458,84 +438,68 @@ public class HylandKEServiceImpl extends AbstractCICServiceComponent<KEDescripto
 
         Integer maxWordCount = extraJsonPayload.optIntegerObject("maxWordCount", null);
 
-        if (useKEV2) {
-            payload.put("version", "context.api/v2");
-            JSONArray objKeysV2 = new JSONArray();
-            for (String oneKey : objectKeys) {
-                JSONObject oneKeyObj = new JSONObject();
-                oneKeyObj.put("path", oneKey);
-                objKeysV2.put(oneKeyObj);
-            }
-            payload.put("objectKeys", objKeysV2);
-
-            JSONObject instructions = extraJsonPayload.optJSONObject(KE_INSTRUCTIONS_OBJ_IN_EXTRA_PAYLOAD,
-                    new JSONObject());
-
-            JSONObject actionsObj = new JSONObject();
-            for (String oneAction : actions) {
-                JSONObject oneActionObj = new JSONObject();
-                switch (oneAction) {
-                case "textClassification":
-                case "imageClassification":
-                    oneActionObj.put("Classes", new JSONArray(classes));
-                    break;
-
-                case "imageMetadataGeneration":
-                case "textMetadataGeneration":
-                    /*
-                     * KE v2 requires a non-empty kSimilarMetadata example for these actions. The high-level
-                     * CIC.Get*Metadata operations already fail fast on a blank value, but the low-level
-                     * Enrich/EnrichSeveral ones accept it as optional: without this check, new JSONArray(null)
-                     * threw a bare NullPointerException.
-                     */
-                    if (StringUtils.isBlank(similarMetadataJsonArrayStr)) {
-                        throw new NuxeoException("Action '" + oneAction
-                                + "' requires a non-empty kSimilarMetadata JSON array (parameter"
-                                + " similarMetadataJsonArrayStr), for example"
-                                + " [{\"document:type\":\"Contract|NDA|Invoice\"}].");
-                    }
-                    oneActionObj.put("kSimilarMetadata", new JSONArray(similarMetadataJsonArrayStr));
-                    break;
-
-                case "imageDescription":
-                case "textSummarization":
-                    if (maxWordCount != null) {
-                        oneActionObj.put("maxWordCount", maxWordCount);
-                    }
-                    break;
-
-                default:
-                    break;
-                }
-
-                JSONObject oneActionInstructions = instructions.optJSONObject(oneAction);
-                if (oneActionInstructions != null) {
-                    oneActionObj.put("instructions", oneActionInstructions);
-                }
-
-                actionsObj.put(oneAction, oneActionObj);
-            }
-
-            payload.put("actions", actionsObj);
-
-        } else {
-            payload.put("objectKeys", new JSONArray(objectKeys));
-            payload.put("actions", new JSONArray(actions));
-            if (similarMetadataJsonArrayStr == null) {
-                payload.put("kSimilarMetadata", new JSONArray());
-            } else {
-                payload.put("kSimilarMetadata", new JSONArray(similarMetadataJsonArrayStr));
-            }
-            if (classes == null) {
-                payload.put("classes", new JSONArray());
-            } else {
-                payload.put("classes", new JSONArray(classes));
-            }
+        payload.put("version", KE_API_VERSION);
+        JSONArray objKeys = new JSONArray();
+        for (String oneKey : objectKeys) {
+            JSONObject oneKeyObj = new JSONObject();
+            oneKeyObj.put("path", oneKey);
+            objKeys.put(oneKeyObj);
         }
+        payload.put("objectKeys", objKeys);
+
+        JSONObject instructions = extraJsonPayload.optJSONObject(KE_INSTRUCTIONS_OBJ_IN_EXTRA_PAYLOAD,
+                new JSONObject());
+
+        JSONObject actionsObj = new JSONObject();
+        for (String oneAction : actions) {
+            JSONObject oneActionObj = new JSONObject();
+            switch (oneAction) {
+            case "textClassification":
+            case "imageClassification":
+                oneActionObj.put("Classes", new JSONArray(classes));
+                break;
+
+            case "imageMetadataGeneration":
+            case "textMetadataGeneration":
+                /*
+                 * KE v2 requires a non-empty kSimilarMetadata example for these actions. The high-level
+                 * CIC.Get*Metadata operations already fail fast on a blank value, but the low-level
+                 * Enrich/EnrichSeveral ones accept it as optional: without this check, new JSONArray(null)
+                 * threw a bare NullPointerException.
+                 */
+                if (StringUtils.isBlank(similarMetadataJsonArrayStr)) {
+                    throw new NuxeoException("Action '" + oneAction
+                            + "' requires a non-empty kSimilarMetadata JSON array (parameter"
+                            + " similarMetadataJsonArrayStr), for example"
+                            + " [{\"document:type\":\"Contract|NDA|Invoice\"}].");
+                }
+                oneActionObj.put("kSimilarMetadata", new JSONArray(similarMetadataJsonArrayStr));
+                break;
+
+            case "imageDescription":
+            case "textSummarization":
+                if (maxWordCount != null) {
+                    oneActionObj.put("maxWordCount", maxWordCount);
+                }
+                break;
+
+            default:
+                break;
+            }
+
+            JSONObject oneActionInstructions = instructions.optJSONObject(oneAction);
+            if (oneActionInstructions != null) {
+                oneActionObj.put("instructions", oneActionInstructions);
+            }
+
+            actionsObj.put(oneAction, oneActionObj);
+        }
+
+        payload.put("actions", actionsObj);
 
         if (!extraJsonPayload.isEmpty()) {
             for (String key : JSONObject.getNames(extraJsonPayload)) {
-                if (!useKEV2 || !KE_INSTRUCTIONS_OBJ_IN_EXTRA_PAYLOAD.equals(key)) {
+                if (!KE_INSTRUCTIONS_OBJ_IN_EXTRA_PAYLOAD.equals(key)) {
                     payload.put(key, extraJsonPayload.get(key));
                 }
             }

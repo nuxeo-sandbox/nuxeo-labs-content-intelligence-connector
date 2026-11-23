@@ -46,7 +46,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
         label = "CIC Knowledge Enrichement on Blobs or documents", description = ""
         + "Invoke the Hyland Knowledge Enrichment (KE) API to enrich the input documents/blobs. actions is a list of"
         + " actions to process"
-        + " (image-description, image-embeddings, …), classes a list of values to be used for classification,"
+        + " (imageDescription, imageEmbeddings, …), classes a list of values to be used for classification,"
         + " and similarValues is used for metadata endpoint. (See KE documentation for details, limitation, etc.)"
         + " If input is Documents, use xpath to tell the operation where to find the blobs."
         + " To map the 'objectKey' returned by the service with your blobs, use the sourceIds param (comma separated"
@@ -55,7 +55,7 @@ import org.nuxeo.labs.hyland.content.intelligence.service.enrichment.HylandKESer
         + " See the documentation for details."
         + " configName is the name of the XML configuration to use for authentication and baseUrl (if not passed, using"
         + " 'default')."
-        + " Since KE V2, you can pass instructions as an object of objects, one per action "
+        + " instructionsV2JsonStr lets you pass instructions as an object of objects, one per action"
         + " (see plugin doc for details.)")
 public class HylandKEEnrichSeveralOp {
 
