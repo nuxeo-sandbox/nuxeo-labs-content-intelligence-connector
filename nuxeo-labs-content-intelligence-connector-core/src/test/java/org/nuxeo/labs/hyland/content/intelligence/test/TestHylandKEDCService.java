@@ -169,15 +169,16 @@ public class TestHylandKEDCService {
         java.lang.Thread.sleep(3000);
 
         // 3. Get results
-        // Need to loop until we get an actual result
+        // Need to loop until we get an actual result, but not forever: the service may never answer 200.
+        final int maxPolls = 10;
         int count = 0;
         do {
             count += 1;
             result = hylandKEService.getJobIdResult(null, jobId);
-            if (!result.callResponseOK()) {
+            if (!result.callResponseOK() && count < maxPolls) {
                 java.lang.Thread.sleep(3000);
             }
-        } while (!result.callResponseOK() || count > 5);
+        } while (!result.callResponseOK() && count < maxPolls);
 
         assertTrue(result.callResponseOK());
 
@@ -386,9 +387,10 @@ public class TestHylandKEDCService {
 
         JSONObject responseJson;
         String status;
+        final int maxTries = 3;
         int tryCount = 0;
-        // In first beat version of the service, it may fail then work fine (most of the
-        // time it works fine), so let's try it 2-3 times? (except if response is not OK 200)
+        // In first beta version of the service, it may fail then work fine (most of the time it works fine), so
+        // let's try it up to 3 times, stopping at the first SUCCESS (except if response is not OK 200)
         do {
 
             ServiceCallResult result = hylandKEService.enrich(null, f, TEST_IMAGE_MIMETYPE,
@@ -402,12 +404,13 @@ public class TestHylandKEDCService {
             status = responseJson.getString("status");
 
             tryCount += 1;
-            if (tryCount > 1) {
-                log.info("shouldGetImageMetadata: Servcice returned {}n trying again.", status);
+            if (!"SUCCESS".equals(status) && tryCount < maxTries) {
+                log.info("shouldGetImageMetadata: Service returned {}, trying again ({}/{}).", status, tryCount,
+                        maxTries);
             }
 
-        } while (tryCount < 4 || !"SUCCESS".equals(status));
-        // Fail after the 2-3 attempts
+        } while (!"SUCCESS".equals(status) && tryCount < maxTries);
+        // Fail after the last attempt
         assertEquals("SUCCESS", status);
 
         JSONArray results = responseJson.getJSONArray("results");
