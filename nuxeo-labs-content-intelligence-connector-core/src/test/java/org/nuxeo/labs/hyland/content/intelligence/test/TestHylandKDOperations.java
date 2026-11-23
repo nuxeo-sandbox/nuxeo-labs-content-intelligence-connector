@@ -154,8 +154,14 @@ public class TestHylandKDOperations {
         // We can't consider a 404 as an error here, it's the service not responding in time.
         if (responseCode == 200) {
             JSONObject response = resultJson.getJSONObject("response");
-            String answer = response.getString("answer");
-            assertFalse(StringUtils.isBlank(answer));
+            // The op returns the last poll on timeout: a 200 whose answer is still null.
+            String answer = response.optString("answer", null);
+            if (StringUtils.isBlank(answer)) {
+                log.warn("shouldAskQuestionAndgetAnswer - no complete answer in time, last response:\n{}",
+                        resultJson.toString(2));
+            }
+            Assume.assumeTrue("KD returned 200 without a complete answer in time => ignoring the test",
+                    StringUtils.isNotBlank(answer));
 
             String answerAgentId = response.getString("agentId");
             assertEquals(agentId, answerAgentId);

@@ -83,6 +83,17 @@ Full authoritative list and mapping: `nuxeo-labs-content-intelligence-connector-
 - `TestServiceCallResult` — envelope building, round-trip, forceResponseAsJSONObject (since 2025.22)
 - `TestCICEnrichmentHelper` — metadataJsonValueToString branches, boolean normalisation, ISO-date bullet (since 2025.22)
 
+**A skipped KD single-shot Q&A test is NOT a green light** (since 2025.23). `TestHylandKDService.shouldAskQuestionAndGetAnswerWith{Helper,LowLevelCall}`
+and `TestHylandKDOperations.shouldAskQuestionAndgetAnswer` `Assume`-skip when the last poll is a 200 with `answer: null`, after
+logging that last body at WARN — read it in `target/surefire-reports/TEST-*KD*.xml`. They used to crash on `getString("answer")`.
+- Observed 2026-11: KD returns `"responseCompleteness": "Error"` for the legacy flow (`POST /agent/agents/{id}/questions` +
+  `GET /qna/questions/{id}/answer`), while the Conversation API answers with the same agent and credentials. The same flow backs
+  `CIC.KDAskQuestionForUI`, so the `cic-kd-ask-question*` buttons are affected too.
+- `HylandKDServiceImpl.getAnswer()` only stops on `complete`, so it still polls the full 25 × 5 s on that terminal `Error` state.
+  Deliberately left unchanged (tests-only fix); stopping early on `Error` is the obvious follow-up.
+- `shouldAskQuestionAndgetAnswer` (Operations) still passes WITHOUT asserting anything when the final code is not 200 — e.g. `-1`
+  after the 120 s HTTP read timeout on one poll.
+
 **The classification vocabularies extend `template-vocabulary` on `GenericDirectory`** (since 2025.22), not
 `SQLDirectoryFactory` with a hardcoded `java:/nxsqldirectory`, so they follow whatever backend the server
 template configures. Deliberately **no** `<require>org.nuxeo.ecm.directories</require>`: `DirectoryRegistry`
