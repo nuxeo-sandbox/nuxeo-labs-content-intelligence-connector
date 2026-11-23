@@ -224,9 +224,13 @@ public class TestHylandKEEnrichOp {
 
         JSONObject instructions = new JSONObject();
         JSONObject descriptionInstructions = new JSONObject();
+        /*
+         * Keep this a plain descriptive request. The previous wording asked the model to insert literal text in its
+         * output ("add to the description the exact words '(Black in there)'"), which KE's Prompt Attack guardrail
+         * rejects as a prompt injection (GuardrailViolation, status FAILURE), not on every call.
+         */
         descriptionInstructions.put("requirement",
-                "Carefully examine the colors in the image. If you find any amount of black color, then add to the"
-                        + " description the exact words '(Black in there)'");
+                "Describe the colors visible in the image, including any black areas.");
         instructions.put("imageDescription", descriptionInstructions);
         params.put("instructionsV2JsonStr", instructions.toString());
 
@@ -257,7 +261,8 @@ public class TestHylandKEEnrichOp {
             String description = descriptionJson.getString("result");
             // We should have at least "Mickey"
             assertTrue(description.toLowerCase().indexOf("mickey") > -1);
-            assertTrue(description.indexOf("(Black in there)") > -1);
+            // Instructions followed: the colors, black included, are described
+            assertTrue(description.toLowerCase().indexOf("black") > -1);
 
             // Apache split words.
             // Assume a 30% margin in number of words
