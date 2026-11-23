@@ -278,13 +278,13 @@ public class TestHylandKEEnrichOp {
         blob1.setFilename(f1.getName());
 
         File f2 = FileUtils.getResourceFileFromContext(TestHylandKEDCService.TEST_OTHER_IMAGE_PATH);
-        Blob blo2b = new FileBlob(f1);
-        blo2b.setMimeType(TestHylandKEDCService.TEST_OTHER_IMAGE_MIMETYPE);
-        blo2b.setFilename(f2.getName());
+        Blob blob2 = new FileBlob(f2);
+        blob2.setMimeType(TestHylandKEDCService.TEST_OTHER_IMAGE_MIMETYPE);
+        blob2.setFilename(f2.getName());
 
         BlobList blobs = new BlobList();
         blobs.add(blob1);
-        blobs.add(blo2b);
+        blobs.add(blob2);
 
         OperationContext ctx = new OperationContext(session);
         ctx.setInput(blobs);
